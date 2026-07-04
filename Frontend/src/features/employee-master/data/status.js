@@ -1,6 +1,18 @@
 export const statusOptions = [
-  "All Status",
-  "Active",
-  "Inactive",
-  "Probation",
+  {
+    label: "All Status",
+    value: "",
+  },
+  {
+    label: "Active",
+    value: "Active",
+  },
+  {
+    label: "Inactive",
+    value: "Inactive",
+  },
+  {
+    label: "Probation",
+    value: "Probation",
+  },
 ];

@@ -1,6 +1,9 @@
 import { Search } from "lucide-react";
 
-const EmployeeSearch = () => {
+const EmployeeSearch = ({
+  search,
+  setSearch
+}) => {
   return (
     <div className="relative w-full">
      <Search
@@ -11,10 +14,12 @@ const EmployeeSearch = () => {
       <input
         type="text"
         placeholder="Search by Name, Employee ID or Email..."
+        value={search}
+        onChange={(e)=>setSearch(e.target.value)}
         className="input w-full md:w-80 lg:w-120 rounded-xl py-3 pl-12 pr-4 outline-none"
       />
     </div>
   );
-};
+};{}
 
 export default EmployeeSearch;

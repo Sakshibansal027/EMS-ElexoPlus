@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { departments } from "../data/departments";
 import { roles } from "../data/roles";
 import { statusOptions } from "../data/status";
@@ -7,19 +6,24 @@ import { ChevronDown } from "lucide-react";
 import CustomSelect from "../components/ui/CustomSelect";
 
 
-const EmployeeFilters = () => {
-    const [department, setDepartment] = useState("");
-    const [role, setRole] = useState("");
-    const [status, setStatus] = useState("");
+const EmployeeFilters = ({
+    department,
+    setDepartment,
+    role,
+    setRole,
+    status,
+    setStatus,
+    setSearch, }) => {
+
     return (
         <div className="flex flex-wrap items-center gap-4 ">
             <div className="relative">
-               <CustomSelect
-  placeholder="Department"
-  options={departments}
-  value={department}
-  onValueChange={setDepartment}
-/>
+                <CustomSelect
+                    placeholder="Department"
+                    options={departments}
+                    value={department}
+                    onValueChange={setDepartment}
+                />
                 <ChevronDown
                     size={18}
                     className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--color-primary)]"
@@ -27,12 +31,12 @@ const EmployeeFilters = () => {
             </div>
 
             <div className="relative">
-               <CustomSelect
-  placeholder="Role"
-  options={roles}
-  value={role}
-  onValueChange={setRole}
-/>
+                <CustomSelect
+                    placeholder="Role"
+                    options={roles}
+                    value={role}
+                    onValueChange={setRole}
+                />
                 <ChevronDown
                     size={18}
                     className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--color-primary)]"
@@ -41,14 +45,14 @@ const EmployeeFilters = () => {
 
 
 
-            
-             <div className="relative">
-               <CustomSelect
-  placeholder="All Status"
-  options={statusOptions}
-  value={status}
-  onValueChange={setStatus}
-/>
+
+            <div className="relative">
+                <CustomSelect
+                    placeholder="All Status"
+                    options={statusOptions}
+                    value={status}
+                    onValueChange={setStatus}
+                />
                 <ChevronDown
                     size={18}
                     className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--color-primary)]"
@@ -70,11 +74,16 @@ px-5 h-12
 transition-all duration-300
 hover:border-[var(--color-primary)]
 hover:text-[var(--color-primary)]"
-
+                onClick={() => {
+                    setDepartment("");
+                    setRole("");
+                    setStatus("");
+                     setSearch("");
+                }}
             >
                 <RotateCcw size={16} className="text-[var(--color-primary)]" />
                 <span> Reset Filters</span>
-                
+
             </button>
 
         </div>
