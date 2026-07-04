@@ -62,266 +62,307 @@ const employees = [
       { name: "Offer Letter", status: "Uploaded" },
     ],
   },
-  {
-    id: "EMP002",
 
-    name: "Sneha Kapoor",
 
-    designation: "QA Engineer",
 
-    department: "Testing",
 
-    role: "QA Engineer",
 
-    email: "sneha@elexoplus.com",
+{
+  id: "EMP002",
+  name: "Sneha Kapoor",
+  designation: "QA Engineer",
+  department: "Testing",
+  role: "QA Engineer",
 
-    phone: "+91 9876543223",
+  email: "sneha@elexoplus.com",
+  phone: "+91 9876543223",
 
-    address: "Jaipur, Rajasthan",
+  address: "Jaipur, Rajasthan",
 
-    gender: "Female",
+  gender: "Female",
 
-    dob: "18 Jan 1999",
+  dob: "18 Jan 1999",
 
-    joiningDate: "09 Sep 2024",
+  joiningDate: "09 Sep 2024",
 
-    manager: "Rahul Sharma",
+  manager: "Rahul Sharma",
 
-    employmentType: "Full Time",
+  employmentType: "Full Time",
 
-    location: "Jaipur",
+  location: "Jaipur",
 
-    status: "Active",
+  status: "Active",
 
-    salary: {
-      basic: 40000,
-      hra: 16000,
-      allowance: 8000,
-      bonus: 5000,
-      deduction: 3500,
-      total: 65500,
-    },
+  bankName: "HDFC Bank",
 
-    bank: {
-      bankName: "HDFC Bank",
-      accountNo: "XXXXXX4589",
-      ifsc: "HDFC000123",
-    },
+  accountNo: "XXXXXX4589",
 
-    documents: {
-      pan: "ABCDE1234F",
-      aadhaar: "1234-5678-9012",
-      uan: "10012345679",
-    },
-  },
-  {
-    id: "EMP003",
+  ifsc: "HDFC000123",
 
-    name: "Amit Singh",
+  pan: "ABCDE1234F",
 
-    designation: "Sales Executive",
+  aadhaar: "1234-5678-9012",
 
-    department: "Sales",
+  uan: "10012345679",
 
-    role: "Sales Executive",
+  grossSalary: "₹61,000",
 
-    email: "amit@elexoplus.com",
+  basicSalary: "₹40,000",
 
-    phone: "+91 9876543290",
+  hra: "₹16,000",
 
-    address: "Jaipur, Rajasthan",
+  allowance: "₹5,000",
 
-    gender: "Male",
+  bonus: "₹5,000",
 
-    dob: "22 Mar 1998",
+  netSalary: "₹57,500",
 
-    joiningDate: "20 Mar 2025",
+  casualLeave: 8,
 
-    manager: "Rajesh Sharma",
+  earnedLeave: 15,
 
-    employmentType: "Full Time",
+  sickLeave: 10,
 
-    location: "Jaipur",
+  documents: [
+    { name: "PAN Card", status: "Uploaded" },
+    { name: "Aadhaar", status: "Uploaded" },
+    { name: "Resume", status: "Uploaded" },
+    { name: "Offer Letter", status: "Uploaded" },
+  ],
+},
 
-    status: "Inactive",
 
-    salary: {
-      basic: 40000,
-      hra: 16000,
-      allowance: 8000,
-      bonus: 5000,
-      deduction: 3500,
-      total: 65500,
-    },
+ {
+  id: "EMP003",
+  name: "Amit Singh",
+  designation: "Sales Executive",
+  department: "Sales",
+  role: "Sales Executive",
 
-    bank: {
-      bankName: "HDFC Bank",
-      accountNo: "XXXXXX4590",
-      ifsc: "HDFC000123",
-    },
+  email: "amit@elexoplus.com",
+  phone: "+91 9876543290",
 
-    documents: {
-      pan: "BCDEF2345G",
-      aadhaar: "2345-6789-0123",
-      uan: "10012345680",
-    },
-  },
-  {
-    id: "EMP004",
+  address: "Delhi",
 
-    name: "Neha Gupta",
+  gender: "Male",
 
-    designation: "UI/UX Designer",
+  dob: "22 Mar 1998",
 
-    department: "Design",
+  joiningDate: "20 Mar 2025",
 
-    role: "UI/UX Designer",
+  manager: "Rajesh Sharma",
 
-    email: "neha@elexoplus.com",
+  employmentType: "Full Time",
 
-    phone: "+91 9876543278",
+  location: "Delhi",
 
-    address: "Jaipur, Rajasthan",
+  status: "Inactive",
 
-    gender: "Female",
+  bankName: "ICICI Bank",
 
-    dob: "05 Jul 1997",
+  accountNo: "XXXXXX7890",
 
-    joiningDate: "08 Apr 2025",
+  ifsc: "ICIC000456",
 
-    manager: "Admin Kumar",
+  pan: "PQRSX5678L",
 
-    employmentType: "Full Time",
+  aadhaar: "5678-1234-9012",
 
-    location: "Jaipur",
+  uan: "10012345680",
 
-    status: "Active",
+  grossSalary: "₹55,000",
 
-    salary: {
-      basic: 45000,
-      hra: 18000,
-      allowance: 7000,
-      bonus: 6000,
-      deduction: 4000,
-      total: 72000,
-    },
+  basicSalary: "₹35,000",
 
-    bank: {
-      bankName: "ICICI Bank",
-      accountNo: "XXXXXX4591",
-      ifsc: "ICIC0000456",
-    },
+  hra: "₹12,000",
 
-    documents: {
-      pan: "CDEFG3456H",
-      aadhaar: "3456-7890-1234",
-      uan: "10012345681",
-    },
-  },
-  {
-    id: "EMP005",
+  allowance: "₹4,000",
 
-    name: "Rohit Mehta",
+  bonus: "₹4,000",
 
-    designation: "Accountant",
+  netSalary: "₹51,000",
 
-    department: "Finance",
+  casualLeave: 7,
 
-    role: "Accountant",
+  earnedLeave: 12,
 
-    email: "rohit@elexoplus.com",
+  sickLeave: 8,
 
-    phone: "+91 9876543267",
+  documents: [
+    { name: "PAN Card", status: "Uploaded" },
+    { name: "Aadhaar", status: "Uploaded" },
+    { name: "Resume", status: "Uploaded" },
+    { name: "Offer Letter", status: "Uploaded" },
+  ],
+},
 
-    address: "Jaipur, Rajasthan",
 
-    gender: "Male",
 
-    dob: "12 Nov 1996",
+ {
+  id: "EMP004",
+  name: "Neha Gupta",
+  designation: "UI/UX Designer",
+  department: "Design",
+  role: "UI/UX Designer",
 
-    joiningDate: "18 May 2025",
+  email: "neha@elexoplus.com",
+  phone: "+91 9876543278",
 
-    manager: "Admin Kumar",
+  address: "Pune",
 
-    employmentType: "Full Time",
+  gender: "Female",
 
-    location: "Jaipur",
+  dob: "10 Jul 1998",
 
-    status: "Active",
+  joiningDate: "08 Apr 2025",
 
-    salary: {
-      basic: 42000,
-      hra: 17000,
-      allowance: 6000,
-      bonus: 5000,
-      deduction: 3500,
-      total: 66500,
-    },
+  manager: "Admin Kumar",
 
-    bank: {
-      bankName: "Axis Bank",
-      accountNo: "XXXXXX4592",
-      ifsc: "UTIB0000789",
-    },
+  employmentType: "Full Time",
 
-    documents: {
-      pan: "DEFGH4567J",
-      aadhaar: "4567-8901-2345",
-      uan: "10012345682",
-    },
-  },
-  {
-    id: "EMP006",
+  location: "Pune",
 
-    name: "Karan Malhotra",
+  status: "Active",
 
-    designation: "Operations Executive",
+  bankName: "Axis Bank",
 
-    department: "Operations",
+  accountNo: "XXXXXX3456",
 
-    role: "Operations Executive",
+  ifsc: "UTIB000234",
 
-    email: "karan@elexoplus.com",
+  pan: "LMNOP9876Q",
 
-    phone: "+91 9876543256",
+  aadhaar: "4321-8765-2109",
 
-    address: "Jaipur, Rajasthan",
+  uan: "10012345681",
 
-    gender: "Male",
+  grossSalary: "₹65,000",
 
-    dob: "10 Oct 1998",
+  basicSalary: "₹42,000",
 
-    joiningDate: "02 Jun 2025",
+  hra: "₹14,000",
 
-    manager: "Anjali Sharma",
+  allowance: "₹5,000",
 
-    employmentType: "Full Time",
+  bonus: "₹4,000",
 
-    location: "Jaipur",
+  netSalary: "₹60,000",
 
-    status: "Inactive",
+  casualLeave: 8,
 
-    salary: {
-      basic: 40000,
-      hra: 16000,
-      allowance: 8000,
-      bonus: 5000,
-      deduction: 3500,
-      total: 65500,
-    },
+  earnedLeave: 14,
 
-    bank: {
-      bankName: "HDFC Bank",
-      accountNo: "XXXXXX4589",
-      ifsc: "HDFC000123",
-    },
+  sickLeave: 10,
 
-    documents: {
-      pan: "ABCDE1234F",
-      aadhaar: "1234-5678-9012",
-      uan: "10012345678",
-    },
-  },
+  documents: [
+    { name: "PAN Card", status: "Uploaded" },
+    { name: "Aadhaar", status: "Uploaded" },
+    { name: "Resume", status: "Uploaded" },
+    { name: "Offer Letter", status: "Uploaded" },
+  ],
+},
+
+
+
+
+
+{
+  id: "EMP005",
+  name: "Anjali Verma",
+  designation: "UI/UX Designer",
+  department: "Design",
+  role: "Senior Designer",
+
+  email: "anjali@elexoplus.com",
+  phone: "+91 9876501234",
+
+  address: "Delhi",
+
+  gender: "Female",
+
+  dob: "22 Mar 1998",
+
+  joiningDate: "10 Feb 2022",
+
+  manager: "Neha Kapoor",
+  employmentType: "Full Time",
+  location: "Delhi",
+  status: "Active",
+
+  bankName: "ICICI",
+  accountNo: "XXXXXX54321",
+  ifsc: "ICIC000456",
+  pan: "PQRSV1234L",
+  aadhaar: "XXXX-XXXX-5678",
+  uan: "10098765432",
+
+  grossSalary: "₹65,000",
+  basicSalary: "₹35,000",
+  hra: "₹14,000",
+  allowance: "₹8,000",
+  bonus: "₹8,000",
+  netSalary: "₹52,000",
+
+  casualLeave: 8,
+  earnedLeave: 15,
+  sickLeave: 10,
+
+  documents: [
+    { name: "PAN Card", status: "Uploaded" },
+    { name: "Aadhaar", status: "Uploaded" },
+    { name: "Resume", status: "Uploaded" },
+    { name: "Offer Letter", status: "Uploaded" }
+  ]
+},
+
+{
+  id: "EMP006",
+  name: "Vikram Singh",
+  designation: "DevOps Engineer",
+  department: "IT Infrastructure",
+  role: "Engineer",
+
+  email: "vikram@elexoplus.com",
+  phone: "+91 9876605678",
+
+  address: "Pune",
+
+  gender: "Male",
+
+  dob: "05 Nov 1996",
+
+  joiningDate: "18 Jun 2021",
+
+  manager: "Rajesh Mehta",
+  employmentType: "Full Time",
+  location: "Pune",
+  status: "Active",
+
+  bankName: "SBI",
+  accountNo: "XXXXXX98765",
+  ifsc: "SBIN000789",
+  pan: "LMNOP6789Q",
+  aadhaar: "XXXX-XXXX-9012",
+  uan: "10011223344",
+
+  grossSalary: "₹80,000",
+  basicSalary: "₹45,000",
+  hra: "₹18,000",
+  allowance: "₹9,000",
+  bonus: "₹8,000",
+  netSalary: "₹63,000",
+
+  casualLeave: 6,
+  earnedLeave: 18,
+  sickLeave: 8,
+
+  documents: [
+    { name: "PAN Card", status: "Uploaded" },
+    { name: "Aadhaar", status: "Uploaded" },
+    { name: "Resume", status: "Uploaded" },
+    { name: "Offer Letter", status: "Uploaded" }
+  ]
+}
 
   ,
 ];
