@@ -1,8 +1,21 @@
 import { NavLink } from "react-router-dom";
 import MENUS from "../../config/navigation/menu";
+import Logo from "../../assets/logos/logo.png";
+
+import ROLES from "../../config/roles";
+
+const PORTAL_NAME = {
+  [ROLES.ADMIN]: "ADMIN PORTAL",
+  [ROLES.HR]: "HR PORTAL",
+  [ROLES.ASM]: "AREA SALES PORTAL",
+  [ROLES.SALES_EXECUTIVE]: "SALES EXECUTIVE PORTAL",
+};
+
 
 const Sidebar = ({ role, user }) => {
   const menu = MENUS[role] || [];
+const portalName = PORTAL_NAME[role] || "EMPLOYEE PORTAL";
+
 
   return (
     <aside className="w-72 h-screen bg-background-secondary border-r border-border flex flex-col">
@@ -10,32 +23,18 @@ const Sidebar = ({ role, user }) => {
                           Logo
       ================================================== */}
 
-      <div className="h-24 shrink-0 border-b border-border px-6 flex items-center gap-4">
-        <div
-          className="
-            h-12
-            w-12
-            rounded-xl
-            bg-primary
-            text-black
-            flex
-            items-center
-            justify-center
-            text-xl
-            font-black
-            shadow-[var(--shadow-primary)]
-          "
-        >
-          ⚡
-        </div>
+      {/* Logo Section Update */}
+      {/* Logo Section */}
+      <div className="h-24 shrink-0 border-b border-border px-6 flex items-center">
+        <div className="flex flex-col justify-center">
+          <img
+            src={Logo}
+            alt="ElexoPlus"
+            className="w-40 h-auto object-contain"
+          />
 
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight text-primary">
-            ElexoPlus
-          </h2>
-
-          <p className="text-xs uppercase tracking-[0.25em] text-foreground-muted">
-            Admin Portal
+          <p className="mt-1 ml-1 text-xs uppercase tracking-[0.28em] text-foreground-muted">
+            {portalName}
           </p>
         </div>
       </div>
@@ -152,7 +151,9 @@ const Sidebar = ({ role, user }) => {
             <div>
               <h3 className="font-semibold text-foreground">{user.name}</h3>
 
-              <p className="text-xs text-foreground-muted">{user.designation}</p>
+              <p className="text-xs text-foreground-muted">
+                {user.designation}
+              </p>
             </div>
           </div>
 

@@ -8,6 +8,7 @@ import KPISection from "../widgets/KPISection";
 import AnalyticsSection from "../widgets/AnalyticsSection";
 import ANALYTICS_DATA from "../config/analyticsData";
 import TaskActivitySection from "../widgets/TaskActivitySection";
+import QuickActionSection from "../widgets/QuickActionSection";
 
 const Dashboard = () => {
   const { role, user } = useOutletContext();
@@ -24,6 +25,7 @@ const Dashboard = () => {
 
         <TaskActivitySection role={role}/>
 
+        <QuickActionSection role={role}/>
       </div>
     </div>
   );
