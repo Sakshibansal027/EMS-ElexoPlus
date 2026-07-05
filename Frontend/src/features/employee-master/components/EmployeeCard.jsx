@@ -8,7 +8,7 @@ import {
   Trash2,
 } from "lucide-react";
 
-const EmployeeCard = ({ employee,onView }) => {
+const EmployeeCard = ({ employee,onView,onEdit}) => {
   return (
     <div
       className="
@@ -220,7 +220,7 @@ const EmployeeCard = ({ employee,onView }) => {
         duration-300
         hover:bg-[var(--color-primary)]
         hover:text-black
-      "
+      " onClick={() => onEdit(employee)}
     >
       <Pencil size={18} />
     </button>

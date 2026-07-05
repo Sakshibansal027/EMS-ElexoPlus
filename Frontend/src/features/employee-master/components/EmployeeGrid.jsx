@@ -1,7 +1,7 @@
 import { useState } from "react";
 import EmployeeCard from "./EmployeeCard";
 import EmployeeDetailsModal from "./EmployeeDetailsModal/EmployeeDetailsModal";
-const EmployeeGrid = ({ employees }) => {
+const EmployeeGrid = ({ employees,onEdit }) => {
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   return (
     <>
@@ -13,6 +13,7 @@ const EmployeeGrid = ({ employees }) => {
               key={employee.id}
               employee={employee}
               onView={() => setSelectedEmployee(employee)}
+              onEdit={onEdit}
             />
 
           )

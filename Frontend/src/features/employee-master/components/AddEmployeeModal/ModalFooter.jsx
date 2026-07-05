@@ -1,6 +1,6 @@
 import { RotateCcw, Save, X } from "lucide-react";
 
-const ModalFooter = ({ onClose, onSave, onReset }) => {
+const ModalFooter = ({ onClose, onSave, onReset,isEditMode }) => {
   return (
     <div
       className="
@@ -43,12 +43,12 @@ const ModalFooter = ({ onClose, onSave, onReset }) => {
       </button>
 
       {/* Reset */}
-
-      <button
-        className="
-        flex
-        items-center
-        gap-2
+{!isEditMode && (
+        <button
+          className="
+          flex
+          items-center
+          gap-2
         rounded-xl
         border
         border-[var(--color-primary)]
@@ -64,7 +64,7 @@ const ModalFooter = ({ onClose, onSave, onReset }) => {
         <RotateCcw size={18} />
         Reset
       </button>
-
+)}
       {/* Save */}
 
       <button

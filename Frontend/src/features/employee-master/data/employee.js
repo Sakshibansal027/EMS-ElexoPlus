@@ -7,7 +7,7 @@ const employees = [
     role: "Team Lead",
 
     email: "rahul@elexoplus.com",
-    phone: "+91 9876543210",
+    phone: "9876543210",
 
     address: "Bangalore",
 
@@ -75,7 +75,7 @@ const employees = [
   role: "QA Engineer",
 
   email: "sneha@elexoplus.com",
-  phone: "+91 9876543223",
+  phone: "9876543223",
 
   address: "Jaipur, Rajasthan",
 
@@ -140,7 +140,7 @@ const employees = [
   role: "Sales Executive",
 
   email: "amit@elexoplus.com",
-  phone: "+91 9876543290",
+  phone: "9876543290",
 
   address: "Delhi",
 
@@ -206,7 +206,7 @@ const employees = [
   role: "UI/UX Designer",
 
   email: "neha@elexoplus.com",
-  phone: "+91 9876543278",
+  phone: "9876543278",
 
   address: "Pune",
 
@@ -274,7 +274,7 @@ const employees = [
   role: "Senior Designer",
 
   email: "anjali@elexoplus.com",
-  phone: "+91 9876501234",
+  phone: "9876501234",
 
   address: "Delhi",
 
@@ -323,7 +323,7 @@ const employees = [
   role: "Engineer",
 
   email: "vikram@elexoplus.com",
-  phone: "+91 9876605678",
+  phone: "9876605678",
 
   address: "Pune",
 
