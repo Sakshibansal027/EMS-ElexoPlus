@@ -1,5 +1,5 @@
 import { X, UserPlus } from "lucide-react";
-
+import { useState } from "react";
 import PersonalSection from "./sections/PersonalSection";
 import EmploymentSection from "./sections/EmploymentSection";
 import SalarySection from "./sections/SalarySection";
@@ -8,7 +8,187 @@ import DocumentsSection from "./sections/DocumentSection";
 
 import ModalFooter from "./ModalFooter";
 
-const AddEmployeeModal = ({ onClose }) => {
+const AddEmployeeModal = ({ onClose,  addEmployee }) => {
+  const [formData, setFormData] = useState({
+    name: "",
+    designation: "",
+    department: "",
+    role: "",
+
+    email: "",
+    phone: "",
+
+    address: "",
+    gender: "",
+    dob: "",
+
+    joiningDate: "",
+    manager: "",
+    employmentType: "",
+    location: "",
+    status: "Active",
+
+    bankName: "",
+    accountNo: "",
+    ifsc: "",
+
+    pan: "",
+    aadhaar: "",
+    uan: "",
+
+    grossSalary: "",
+    basicSalary: "",
+    hra: "",
+    allowance: "",
+    bonus: "",
+    netSalary: "",
+
+    casualLeave: 0,
+    earnedLeave: 0,
+    sickLeave: 0,
+
+    documents: [
+      { name: "PAN Card", status: "Pending" },
+      { name: "Aadhaar", status: "Pending" },
+      { name: "Resume", status: "Pending" },
+      { name: "Offer Letter", status: "Pending" },
+    ],
+  });
+  const [errors, setErrors] = useState({});
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+ let newValue = value;
+
+  if (name === "phone") {
+    newValue = value.replace(/\D/g, "").slice(0, 10);
+  }
+    setFormData((prev) => ({
+      ...prev,
+      [name]: newValue,
+    }));
+
+     setErrors((prev) => ({
+    ...prev,
+    [name]: "",
+  }));
+  };
+const validateForm = () => {
+  const newErrors = {};
+
+  if (!formData.name.trim()) {
+    newErrors.name = "Full Name is required";
+  }
+
+  if (!formData.email.trim()) {
+    newErrors.email = "Email is required";
+  }else if (
+  !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)
+) {
+  newErrors.email = "Please enter a valid email";
+}
+
+  if (!formData.phone.trim()) {
+    newErrors.phone = "Phone Number is required";
+  }else if (!/^\d{10}$/.test(formData.phone)) {
+  newErrors.phone = "Phone Number must be 10 digits";
+}
+
+  if (!formData.department) {
+    newErrors.department = "Department is required";
+  }
+
+  if (!formData.role) {
+    newErrors.role = "Role is required";
+  }
+
+  if (!formData.designation.trim()) {
+    newErrors.designation = "Designation is required";
+  }
+
+  if (!formData.joiningDate) {
+    newErrors.joiningDate = "Joining Date is required";
+  }
+
+  if (!formData.employmentType) {
+    newErrors.employmentType = "Employment Type is required";
+  }
+
+  if (!formData.location.trim()) {
+    newErrors.location = "Work Location is required";
+  }
+
+  if (!formData.gender) {
+    newErrors.gender = "Gender is required";
+  }
+
+  if (!formData.address.trim()) {
+    newErrors.address = "Address is required";
+  }
+
+  setErrors(newErrors);
+console.log(newErrors);
+  return Object.keys(newErrors).length === 0;
+};
+  const handleSubmit = () => {
+     if (!validateForm()) {
+    return;
+  }
+  const newEmployee = {
+    ...formData,
+  };
+
+  addEmployee(newEmployee);
+
+  onClose();
+};
+
+  const handleReset = () => {
+    setFormData({
+      name: "",
+      email: "",
+      phone: "",
+      department: "",
+      role: "",
+      designation: "",
+      address: "",
+      gender: "",
+      dob: "",
+
+      joiningDate: "",
+      manager: "",
+      employmentType: "",
+      location: "",
+      status: "Active",
+
+      bankName: "",
+      accountNo: "",
+      ifsc: "",
+
+      pan: "",
+      aadhaar: "",
+      uan: "",
+
+      grossSalary: "",
+      basicSalary: "",
+      hra: "",
+      allowance: "",
+      bonus: "",
+      netSalary: "",
+
+      casualLeave: 0,
+      earnedLeave: 0,
+      sickLeave: 0,
+
+      documents: [
+        { name: "PAN Card", status: "Pending" },
+        { name: "Aadhaar", status: "Pending" },
+        { name: "Resume", status: "Pending" },
+        { name: "Offer Letter", status: "Pending" },
+      ],
+    });
+    setErrors({});
+  };
+
   return (
     <div
       className="
@@ -122,15 +302,33 @@ const AddEmployeeModal = ({ onClose }) => {
             scrollbarColor: "#F4C21C transparent",
           }}
         >
-          <PersonalSection />
+          <PersonalSection 
+          formData={formData}
+            handleChange={handleChange}
+            setFormData={setFormData}
+              errors={errors} />
 
-          <EmploymentSection />
+          <EmploymentSection 
+          formData={formData}
+            handleChange={handleChange}
+            setFormData={setFormData} 
+              errors={errors}
+              setErrors={setErrors}/>
 
-          <SalarySection />
+          <SalarySection 
+          formData={formData}
+            handleChange={handleChange}
+            setFormData={setFormData} />
 
-          <BankSection />
+          <BankSection 
+          formData={formData}
+            handleChange={handleChange}
+            setFormData={setFormData} />
 
-          <DocumentsSection />
+          <DocumentsSection 
+          formData={formData}
+            handleChange={handleChange}
+            setFormData={setFormData} />
         </div>
 
         {/* Footer */}
@@ -143,7 +341,7 @@ const AddEmployeeModal = ({ onClose }) => {
           bg-[var(--color-card)]
         "
         >
-          <ModalFooter onClose={onClose} />
+          <ModalFooter onClose={onClose}  onSave={handleSubmit} onReset={handleReset} />
         </div>
       </div>
     </div>

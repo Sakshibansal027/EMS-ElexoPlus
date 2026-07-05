@@ -11,16 +11,21 @@ const CustomSelect = ({
   options = [],
   value,
   onValueChange,
-  width = "w-56", // fixed width by default
+  width = "w-56",
+   required = false,
+  error, 
 }) => {
   return (
     <div className={`flex flex-col gap-2 ${width}`}>
       {label && (
-        <label className="text-sm font-medium text-gray-300">
-          {label}
-        </label>
-      )}
+  <label className="text-sm font-medium text-gray-300">
+    {label}
 
+    {required && (
+      <span className="ml-1 text-red-500">*</span>
+    )}
+  </label>
+)}
       <Select.Root
         value={value}
         onValueChange={onValueChange}
@@ -51,6 +56,7 @@ const CustomSelect = ({
           data-[state=open]:ring-[var(--color-primary)]/20
         "
         >
+         
           {/* Selected Text */}
 
           <Select.Value
@@ -72,7 +78,11 @@ const CustomSelect = ({
             />
           </Select.Icon>
         </Select.Trigger>
-
+ {error && (
+  <p className="text-sm text-red-500">
+    {error}
+  </p>
+)}
         {/* Dropdown */}
 
         <Select.Portal>

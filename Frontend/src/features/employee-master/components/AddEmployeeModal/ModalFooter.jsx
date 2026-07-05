@@ -1,6 +1,6 @@
 import { RotateCcw, Save, X } from "lucide-react";
 
-const ModalFooter = ({ onClose }) => {
+const ModalFooter = ({ onClose, onSave, onReset }) => {
   return (
     <div
       className="
@@ -59,7 +59,7 @@ const ModalFooter = ({ onClose }) => {
         duration-300
         hover:bg-[rgba(244,194,28,.12)]
         cursor-pointer
-        "
+        " onClick={onReset}
       >
         <RotateCcw size={18} />
         Reset
@@ -83,7 +83,7 @@ const ModalFooter = ({ onClose }) => {
         hover:scale-105
         hover:shadow-[0_0_18px_rgba(244,194,28,.25)]
         cursor-pointer
-        "
+        "   onClick={onSave}
       >
         <Save size={18} />
         Save Employee

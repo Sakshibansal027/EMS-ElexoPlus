@@ -1,10 +1,12 @@
 const FormInput = ({
   label,
+  name,
   type = "text",
   placeholder,
   value,
   onChange,
   required = false,
+  error,
 }) => {
   return (
     <div className="flex flex-col gap-2">
@@ -17,6 +19,7 @@ const FormInput = ({
 
       <input
         type={type}
+        name={name}
         placeholder={placeholder}
         value={value}
         onChange={onChange}
@@ -38,6 +41,11 @@ const FormInput = ({
           placeholder:text-gray-500
         "
       />
+     {error && (
+  <p className="text-sm text-red-500">
+    {error}
+  </p>
+)}
     </div>
   );
 };

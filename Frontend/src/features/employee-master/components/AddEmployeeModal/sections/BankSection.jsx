@@ -1,7 +1,11 @@
 import { Landmark } from "lucide-react";
 import FormInput from "../FormInput";
 
-const BankSection = () => {
+const BankSection = ({
+  formData,
+  handleChange,
+  setFormData,
+}) => {
   return (
     <div
       className="
@@ -49,32 +53,49 @@ const BankSection = () => {
 
         <FormInput
           label="Bank Name"
-          placeholder="Enter Bank Name"
+          name="bankName"
+          value={formData.bankName}
+          onChange={handleChange}
         />
 
         <FormInput
           label="Account Number"
-          placeholder="Enter Account Number"
+          name="accountNo"
+          value={formData.accountNo}
+          onChange={handleChange}
         />
-
         <FormInput
           label="IFSC Code"
-          placeholder="SBIN0001234"
+          name="ifsc"
+          value={formData.ifsc}
+          onChange={handleChange}
         />
 
         <FormInput
           label="PAN Number"
           placeholder="ABCDE1234F"
+          name="pan"
+          value={formData.pan}
+          onChange={handleChange}
+
         />
 
         <FormInput
           label="Aadhaar Number"
           placeholder="1234 5678 9012"
+
+          name="aadhaar"
+          value={formData.aadhaar}
+          onChange={handleChange}
+
         />
 
         <FormInput
           label="UAN Number"
           placeholder="100123456789"
+          name="uan"
+          value={formData.uan}
+          onChange={handleChange}
         />
 
       </div>

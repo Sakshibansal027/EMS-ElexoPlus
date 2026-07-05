@@ -11,9 +11,9 @@ const EmployeeMaster = () => {
     const [department, setDepartment] = useState("");
     const [role, setRole] = useState("");
     const [status, setStatus] = useState("");
-    const [employeesData, setEmployeesData] = useState(employees);
     const [search, setSearch] = useState("");
-  const filteredEmployees = employees.filter((employee) => {
+    const [employeeList, setEmployeeList] = useState(employees);
+  const filteredEmployees = employeeList.filter((employee) => {
      const matchSearch =
     employee.name.toLowerCase().includes(search.toLowerCase()) ||
     employee.id.toLowerCase().includes(search.toLowerCase()) ||
@@ -29,6 +29,21 @@ const EmployeeMaster = () => {
 
   return matchSearch&&matchDepartment && matchRole && matchStatus;
 });
+const addEmployee = (newEmployee) => {
+   setEmployeeList((prev) => {
+  const lastEmployee = prev[prev.length - 1];
+  const lastId = Number(lastEmployee.id.slice(3));
+  const nextId = `EMP${String(lastId + 1).padStart(3, "0")}`;
+
+  return [
+    ...prev,
+    {
+      ...newEmployee,
+      id: nextId,
+    },
+  ];
+});
+};
     return (
 
         <>
@@ -99,6 +114,7 @@ const EmployeeMaster = () => {
             {
                 openAddModal && (
                     <AddEmployeeModal
+                       addEmployee={addEmployee}
                         onClose={() => setOpenAddModal(false)}
                     />
                 )}

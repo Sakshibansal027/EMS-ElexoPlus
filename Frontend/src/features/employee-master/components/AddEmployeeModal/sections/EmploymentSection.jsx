@@ -4,11 +4,17 @@ import FormInput from "../FormInput";
 import FormSelect from "../FormSelect";
 
 import { departments } from "../../../data/departments";
-import {roles} from "../../../data/roles";
+import { roles } from "../../../data/roles";
 import { employmentTypes } from "../../../data/employmentTypes";
 import { employeeStatus } from "../../../data/employeeStatus";
 
-const EmploymentSection = () => {
+const EmploymentSection = ({
+  formData,
+  handleChange,
+  setFormData,
+  errors,
+  setErrors,
+}) => {
   return (
     <div
       className="
@@ -56,41 +62,109 @@ const EmploymentSection = () => {
         <FormSelect
           label="Department"
           options={departments}
-        />
+          value={formData.department}
+           required
+          error={errors.department}
+          onChange={(value) => {
+            setFormData((prev) => ({
+              ...prev,
+              department: value,
+            }))
+            setErrors((prev) => ({
+              ...prev,
+              department: "",
+            }));
+          }
 
+
+          }
+         
+        />
         <FormSelect
           label="Role"
           options={roles}
+          value={formData.role}
+          onChange={(value) =>{  setFormData((prev) => ({
+              ...prev,
+              role: value,
+            }))
+             setErrors((prev) => ({
+          ...prev,
+          role: "",
+  }));}
+          
+            
+          }
+        required
+        error={errors.role}
         />
 
         <FormInput
           label="Designation"
+          name="designation"
           placeholder="Enter Designation"
+          value={formData.designation}
+          onChange={handleChange}
+          required
+          error={errors.designation}
         />
 
         <FormInput
           label="Reporting Manager"
+          name="manager"
           placeholder="Enter Reporting Manager"
+          value={formData.manager}
+          onChange={handleChange}
         />
 
         <FormInput
           label="Joining Date"
           type="date"
-        />
+          name="joiningDate"
+          value={formData.joiningDate}
+          onChange={handleChange}
+          required
+          error={errors.joiningDate}
 
+        />
         <FormSelect
           label="Employment Type"
           options={employmentTypes}
+          value={formData.employmentType}
+          required
+          error={errors.employmentType}
+          onChange={(value) =>{
+            setFormData((prev) => ({
+              ...prev,
+              employmentType: value,
+            }))
+            setErrors((prev) => ({
+              ...prev,
+              employmentType: "",
+            }));}
+            
+          }
         />
 
         <FormInput
           label="Work Location"
+          name="location"
           placeholder="Enter Work Location"
+          value={formData.location}
+          onChange={handleChange}
+          required
+          error={errors.location}
         />
-
         <FormSelect
           label="Employee Status"
           options={employeeStatus}
+          value={formData.status}
+          onChange={(value) =>
+            setFormData((prev) => ({
+              ...prev,
+              status: value,
+            }))
+          }
         />
       </div>
     </div>

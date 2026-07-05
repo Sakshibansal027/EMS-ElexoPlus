@@ -1,7 +1,9 @@
 import { FileText } from "lucide-react";
 import UploadBox from "../UploadBox";
 
-const DocumentsSection = () => {
+const DocumentsSection = ({formData,
+  handleChange,
+  setFormData,}) => {
   return (
     <div
       className="

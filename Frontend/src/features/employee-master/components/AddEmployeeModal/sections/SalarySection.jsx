@@ -1,7 +1,11 @@
 import { IndianRupee } from "lucide-react";
 import FormInput from "../FormInput";
 
-const SalarySection = () => {
+const SalarySection = ({
+  formData,
+  handleChange,
+  setFormData,
+}) => {
   return (
     <div
       className="
@@ -50,46 +54,56 @@ const SalarySection = () => {
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
 
         <FormInput
-          label="Basic Salary"
-          type="number"
-          prefix="₹"
-          placeholder="50000"
-        />
+  label="Basic Salary"
+  type="number"
+  name="basicSalary"
+  placeholder="50000"
+  value={formData.basicSalary}
+  onChange={handleChange}
+/>
 
         <FormInput
-          label="HRA"
-          type="number"
-          prefix="₹"
-          placeholder="15000"
-        />
+  label="HRA"
+  type="number"
+  name="hra"
+  placeholder="15000"
+  value={formData.hra}
+  onChange={handleChange}
+/>
+<FormInput
+  label="Allowance"
+  type="number"
+  name="allowance"
+  placeholder="5000"
+  value={formData.allowance}
+  onChange={handleChange}
+/>
 
         <FormInput
-          label="Allowance"
-          type="number"
-          prefix="₹"
-          placeholder="5000"
-        />
+  label="Bonus"
+  type="number"
+  name="bonus"
+  placeholder="10000"
+  value={formData.bonus}
+  onChange={handleChange}
+/>
 
-        <FormInput
-          label="Bonus"
-          type="number"
-          prefix="₹"
-          placeholder="10000"
-        />
-
-        <FormInput
-          label="Gross Salary"
-          type="number"
-          prefix="₹"
-          placeholder="80000"
-        />
-
-        <FormInput
-          label="Net Salary"
-          type="number"
-            prefix="₹"
-          placeholder="65000"
-        />
+      <FormInput
+  label="Gross Salary"
+  type="number"
+  name="grossSalary"
+  placeholder="80000"
+  value={formData.grossSalary}
+  onChange={handleChange}
+/>
+      <FormInput
+  label="Net Salary"
+  type="number"
+  name="netSalary"
+  placeholder="65000"
+  value={formData.netSalary}
+  onChange={handleChange}
+/>
 
       </div>
     </div>
