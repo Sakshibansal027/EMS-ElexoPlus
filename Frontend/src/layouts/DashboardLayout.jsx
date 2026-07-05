@@ -9,11 +9,8 @@ import ROLES from "../config/roles";
 // Temporary Development Role
 // =========================================
 
-const CURRENT_ROLE = ROLES.SALES_EXECUTIVE; // Change this to test different roles:
-// ROLES.ADMIN
-// ROLES.HR
-// ROLES.ASM
-// ROLES.SALES_EXECUTIVE
+const CURRENT_ROLE = ROLES.ASM; // Change this to test different roles:
+
 
 // =========================================
 // Temporary Mock User
@@ -86,6 +83,8 @@ const DashboardLayout = () => {
           <div className="dashboard-bg">
             <div className="mx-auto w-full max-w-[1800px] p-8">
               <Outlet context={DASHBOARD_STATE} />
+
+              
             </div>
           </div>
         </main>

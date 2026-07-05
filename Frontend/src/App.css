@@ -661,3 +661,24 @@ body{
     box-shadow:var(--shadow-primary);
 
 }
+
+
+/* ==========================================
+   Remove Recharts Focus Outline
+========================================== */
+
+.recharts-wrapper:focus,
+.recharts-wrapper:focus-visible,
+.recharts-surface:focus,
+.recharts-surface:focus-visible,
+.recharts-responsive-container:focus,
+.recharts-responsive-container:focus-visible,
+svg:focus,
+svg:focus-visible {
+  outline: none !important;
+}
+
+.recharts-wrapper *,
+.recharts-surface * {
+  outline: none !important;
+}
