@@ -7,6 +7,7 @@ import KPISection from "../widgets/KPISection";
 
 import AnalyticsSection from "../widgets/AnalyticsSection";
 import ANALYTICS_DATA from "../config/analyticsData";
+import TaskActivitySection from "../widgets/TaskActivitySection";
 
 const Dashboard = () => {
   const { role, user } = useOutletContext();
@@ -20,6 +21,9 @@ const Dashboard = () => {
         <KPISection data={KPI_DATA[role]} />
 
         <AnalyticsSection data={ANALYTICS_DATA[role]} />
+
+        <TaskActivitySection role={role}/>
+
       </div>
     </div>
   );

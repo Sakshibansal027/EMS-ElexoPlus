@@ -682,3 +682,30 @@ svg:focus-visible {
 .recharts-surface * {
   outline: none !important;
 }
+
+/* ==========================================
+   Dashboard Scrollbar
+========================================== */
+
+.dashboard-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-primary) transparent;
+}
+
+.dashboard-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dashboard-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dashboard-scrollbar::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-primary) 70%, transparent);
+  border-radius: 999px;
+  transition: all 0.3s ease;
+}
+
+.dashboard-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
+}
