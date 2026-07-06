@@ -1,15 +1,21 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { Bell, ChevronDown, LogOut, User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
+import useAuth from "../../features/auth/hooks/useAuth";
+import { ROUTES } from "../../routes/routes";
 
 import MENUS from "../../config/navigation/menu";
 
-const Navbar = ({ role,user }) => {
+const Navbar = ({ role, user }) => {
   const location = useLocation();
 
   const dropdownRef = useRef(null);
 
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const { logout } = useAuth();
+  const navigate = useNavigate();
 
   const currentPage = useMemo(() => {
     const menu = MENUS[role] || [];
@@ -21,7 +27,10 @@ const Navbar = ({ role,user }) => {
     );
   }, [location.pathname, role]);
 
-
+  const handleLogout = () => {
+    logout();
+    navigate(ROUTES.LOGIN, { replace: true });
+  };
 
   const initials = user.name
     .split(" ")
@@ -42,21 +51,14 @@ const Navbar = ({ role,user }) => {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsProfileOpen(false);
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
 
-    return () =>
-      document.removeEventListener(
-        "mousedown",
-        handleClickOutside
-      );
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   return (
@@ -77,32 +79,23 @@ const Navbar = ({ role,user }) => {
       ====================================== */}
 
       <div>
-
         <h1 className="text-3xl font-bold tracking-tight text-foreground">
-
           {currentPage.label}
-
         </h1>
 
         <div className="mt-2 flex items-center gap-2">
-
           <span className="pulse-dot" />
 
           <p className="text-sm text-foreground-muted">
-
             {getGreeting()}, {user.name}
-
           </p>
-
         </div>
-
       </div>
-            {/* ======================================
+      {/* ======================================
                   Right Section
       ====================================== */}
 
       <div className="flex items-center gap-4">
-
         {/* ===========================
                 Notification
         =========================== */}
@@ -136,11 +129,7 @@ const Navbar = ({ role,user }) => {
                   Profile
         =========================== */}
 
-        <div
-          ref={dropdownRef}
-          className="relative"
-        >
-
+        <div ref={dropdownRef} className="relative">
           <button
             onClick={() => setIsProfileOpen((prev) => !prev)}
             className="
@@ -158,31 +147,20 @@ const Navbar = ({ role,user }) => {
               duration-300
             "
           >
-
             {/* Avatar */}
 
-            <div className="avatar">
-
-              {initials}
-
-            </div>
+            <div className="avatar">{initials}</div>
 
             {/* User */}
 
             <div className="text-left">
-
               <p className="text-sm font-semibold text-foreground">
-
                 {user.name}
-
               </p>
 
               <p className="text-xs text-foreground-muted">
-
                 {user.designation}
-
               </p>
-
             </div>
 
             <ChevronDown
@@ -190,14 +168,9 @@ const Navbar = ({ role,user }) => {
               className={`
                 transition-transform
                 duration-300
-                ${
-                  isProfileOpen
-                    ? "rotate-180"
-                    : ""
-                }
+                ${isProfileOpen ? "rotate-180" : ""}
               `}
             />
-
           </button>
 
           {/* ===========================
@@ -205,7 +178,6 @@ const Navbar = ({ role,user }) => {
           =========================== */}
 
           {isProfileOpen && (
-
             <div
               className="
                 dropdown-enter
@@ -219,43 +191,27 @@ const Navbar = ({ role,user }) => {
                 z-50
               "
             >
-
               {/* Header */}
 
               <div className="border-b border-border p-5">
-
                 <div className="flex items-center gap-3">
-
-                  <div className="avatar">
-
-                    {initials}
-
-                  </div>
+                  <div className="avatar">{initials}</div>
 
                   <div>
-
                     <h3 className="font-semibold text-foreground">
-
                       {user.name}
-
                     </h3>
 
                     <p className="text-sm text-foreground-muted">
-
                       {user.email}
-
                     </p>
-
                   </div>
-
                 </div>
-
               </div>
 
               {/* Menu */}
 
               <div className="p-2">
-
                 <button
                   className="
                     hover-lift
@@ -271,14 +227,12 @@ const Navbar = ({ role,user }) => {
                     hover:text-primary
                   "
                 >
-
                   <User size={18} />
-
                   My Profile
-
                 </button>
 
                 <button
+                onClick={handleLogout}
                   className="
                     hover-lift
                     mt-1
@@ -294,23 +248,14 @@ const Navbar = ({ role,user }) => {
                     hover:bg-danger/10
                   "
                 >
-
                   <LogOut size={18} />
-
                   Logout
-
                 </button>
-
               </div>
-
             </div>
-
           )}
-
         </div>
-
       </div>
-
     </header>
   );
 };

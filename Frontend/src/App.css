@@ -75,8 +75,8 @@
     --gradient-glow:
         radial-gradient(
             circle at top right,
-            rgba(244,194,28,.08),
-            transparent 60%
+            rgba(244,194,28,.20),
+            transparent 80%
         );
 
    
