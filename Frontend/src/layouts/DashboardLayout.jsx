@@ -9,7 +9,7 @@ import ROLES from "../config/roles";
 // Temporary Development Role
 // =========================================
 
-const CURRENT_ROLE = ROLES.ASM// Change this to test different roles:
+const CURRENT_ROLE = ROLES.ADMIN // Change this to test different roles:
 
 
 // =========================================

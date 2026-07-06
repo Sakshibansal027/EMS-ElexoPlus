@@ -14,6 +14,7 @@ import {
   TrendingUp,
   MapPinned,
   Package,
+  HelpCircle
 } from "lucide-react";
 
 const HeroBanner = ({ user, heroData }) => {
@@ -149,7 +150,7 @@ const HeroBanner = ({ user, heroData }) => {
 
       <div className="mt-10 flex flex-wrap gap-4">
         {heroData.actions.map((item) => {
-          const Icon = ACTION_ICONS[item.icon];
+          const Icon = ACTION_ICONS[item.icon] || HelpCircle;
 
           return (
             <button

@@ -15,6 +15,7 @@ import {
   MapPinned,
   ShoppingCart,
   BadgeIndianRupee,
+  HelpCircle
 } from "lucide-react";
 
 const ICON_MAP = {
@@ -53,10 +54,12 @@ const TREND_MAP = {
 };
 
 const KPICard = ({ data, onClick }) => {
-  const Icon = ICON_MAP[data.icon];
+  const Icon = ICON_MAP[data.icon] || HelpCircle;
 
   const Trend =
     TREND_MAP[data.trend] || TREND_MAP.neutral;
+
+    const trendText = (data.trend || "neutral").toUpperCase();
 
   const TrendIcon = Trend.icon;
 
@@ -111,7 +114,7 @@ const KPICard = ({ data, onClick }) => {
         >
           <TrendIcon size={14} />
 
-          {data.trend.toUpperCase()}
+          {trendText}
         </div>
 
       </div>

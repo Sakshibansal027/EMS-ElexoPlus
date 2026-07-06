@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 
 import ANALYTICS_MOCK from "../mock/analyticsMock";
+import AreaChart from "../charts/AreaChart";
 import CHART_MAP from "../config/chartMap";
 
 const AnalyticsSection = ({ data = [] }) => {
@@ -28,7 +29,7 @@ const AnalyticsSection = ({ data = [] }) => {
 
       <div className="grid grid-cols-12 gap-6">
         {data.slice(0, 2).map((item) => {
-          const Chart = CHART_MAP[item.chart];
+          const Chart = CHART_MAP[item.chart] || AreaChart;
 
           const chartData = ANALYTICS_MOCK[item.mock];
 
