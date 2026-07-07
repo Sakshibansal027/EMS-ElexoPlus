@@ -8,7 +8,7 @@ import ProtectedRoute from "../features/auth/components/ProtectedRoute";
 
 import Dashboard from "../features/dashboard/pages/Dashboard";
 import ComingSoon from "../components/common/ComingSoon";
-
+import EmployeeMaster from "../features/employee-master/pages/EmployeeMaster";
 import { ROUTES } from "./routes";
 
 const AppRoutes = () => {
@@ -55,7 +55,7 @@ const AppRoutes = () => {
 
           <Route
             path={ROUTES.EMPLOYEE}
-            element={<ComingSoon title="Employee Master" />}
+            element={<EmployeeMaster />}
           />
 
           <Route

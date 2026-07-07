@@ -5,7 +5,7 @@ import AddEmployeeModal from "../components/AddEmployeeModal/AddEmployeeModal";
 import EmployeeSearch from "../components/EmployeeSearch";
 import EmployeeFilters from "../components/EmployeeFilters";
 import EmployeeGrid from "../components/EmployeeGrid";
-import employees from "../data/employee";
+import employees from "../mock/employees";
 const EmployeeMaster = () => {
     const [openAddModal, setOpenAddModal] = useState(false);
     const [selectedEmployee, setSelectedEmployee] = useState(null);
@@ -65,7 +65,7 @@ const EmployeeMaster = () => {
     return (
 
         <>
-            <main className="p-8" >
+           
 
                 {/* Header */}
                 <div className="flex items-center justify-between">
@@ -136,7 +136,7 @@ const EmployeeMaster = () => {
                         onEdit={handleEdit} />
 
                 </div>
-            </main>
+            
             {
                 openAddModal && (
                    <AddEmployeeModal

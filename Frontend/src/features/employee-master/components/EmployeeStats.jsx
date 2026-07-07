@@ -1,5 +1,5 @@
 import StatsCard from "./StatsCard";
-import { employeeStats } from "../data/employeeStats";
+import { employeeStats } from "../mock/employeeStats";
 
 const EmployeeStats = () => {
   return (

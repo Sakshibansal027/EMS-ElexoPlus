@@ -1,6 +1,6 @@
-import { departments } from "../data/departments";
-import { roles } from "../data/roles";
-import { statusOptions } from "../data/status";
+import { departments } from "../config/departments";
+import { roles } from "../config/roles";
+import { statusOptions } from "../config/status";
 import { RotateCcw } from "lucide-react";
 import { ChevronDown } from "lucide-react";
 import CustomSelect from "../components/ui/CustomSelect";

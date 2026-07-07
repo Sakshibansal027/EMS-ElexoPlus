@@ -3,10 +3,10 @@ import { BriefcaseBusiness } from "lucide-react";
 import FormInput from "../FormInput";
 import FormSelect from "../FormSelect";
 
-import { departments } from "../../../data/departments";
-import { roles } from "../../../data/roles";
-import { employmentTypes } from "../../../data/employmentTypes";
-import { employeeStatus } from "../../../data/employeeStatus";
+import { departments } from "../../../config/departments";
+import { roles } from "../../../config/roles";
+import { employmentTypes } from "../../../config/employmentTypes";
+import { employeeStatus } from "../../../config/employeeStatus";
 
 const EmploymentSection = ({
   formData,
