@@ -1,14 +1,8 @@
-import './App.css'
-import EmployeeMaster from "./features/employee-master/pages/EmployeeMaster";
-
+import "./App.css";
+import AppRoutes from "./routes/AppRoutes";
 
 function App() {
-
-    return (
-        <>
-        <EmployeeMaster/>
-        </>
-    )
+  return <AppRoutes />;
 }
 
-export default App
+export default App;
