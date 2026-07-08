@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import MOCK_USERS from "../mock/mockUsers";
+import ROLES from "../../../config/roles";
 import {
   Mail,
   Lock,
@@ -33,6 +35,11 @@ function LoginPage() {
   const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
+  const DEMO_USERS = MOCK_USERS.filter(
+    (user) =>
+      user.role !== ROLES.SALES_EXECUTIVE ||
+      user.email === "nisha@elexoplus.com",
+  );
 
   // const validateForm = () => {
   //     if (!email.trim()) {
@@ -142,6 +149,32 @@ function LoginPage() {
                 <p className="text-[11px] text-white/50">{f.value}</p>
               </div>
             ))}
+          </div>
+          <div className="mt-8 rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-5">
+            <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-amber-300">
+              Demo Login Credentials
+            </h3>
+
+            <div className="space-y-3">
+              {DEMO_USERS.map((user) => (
+                <div
+                  key={user.id}
+                  className="flex items-center justify-between border-b border-white/10 pb-2 last:border-none"
+                >
+                  <div>
+                    <p className="text-sm font-semibold text-white">
+                      {user.designation}
+                    </p>
+
+                    <p className="text-xs text-white/60">{user.email}</p>
+                  </div>
+
+                  <span className="text-xs font-bold text-amber-300">
+                    Elexo@123
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
         <div className="relative text-xs text-white/60 mt-6 text-left">
