@@ -1,13 +1,8 @@
-import './App.css'
-import LeaveManagement from './pages/admin/leaveManagement.jsx'
+import "./App.css";
+import AppRoutes from "./routes/AppRoutes";
 
 function App() {
-
-    return (
-        <>
-        <LeaveManagement />
-        </>
-    )
+  return <AppRoutes />;
 }
 
-export default App
+export default App;

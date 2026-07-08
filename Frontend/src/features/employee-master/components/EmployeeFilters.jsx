@@ -1,0 +1,93 @@
+import { departments } from "../config/departments";
+import { roles } from "../config/roles";
+import { statusOptions } from "../config/status";
+import { RotateCcw } from "lucide-react";
+import { ChevronDown } from "lucide-react";
+import CustomSelect from "../components/ui/CustomSelect";
+
+
+const EmployeeFilters = ({
+    department,
+    setDepartment,
+    role,
+    setRole,
+    status,
+    setStatus,
+    setSearch, }) => {
+
+    return (
+        <div className="flex flex-wrap items-center gap-4 ">
+            <div className="relative">
+                <CustomSelect
+                    placeholder="Department"
+                    options={departments}
+                    value={department}
+                    onValueChange={setDepartment}
+                />
+                <ChevronDown
+                    size={18}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--color-primary)]"
+                />
+            </div>
+
+            <div className="relative">
+                <CustomSelect
+                    placeholder="Role"
+                    options={roles}
+                    value={role}
+                    onValueChange={setRole}
+                />
+                <ChevronDown
+                    size={18}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--color-primary)]"
+                />
+            </div>
+
+
+
+
+            <div className="relative">
+                <CustomSelect
+                    placeholder="All Status"
+                    options={statusOptions}
+                    value={status}
+                    onValueChange={setStatus}
+                />
+                <ChevronDown
+                    size={18}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--color-primary)]"
+                />
+            </div>
+
+
+
+
+
+
+
+            <button
+
+                className="flex items-center gap-2 rounded-xl
+border border-[var(--color-border)]
+bg-[var(--color-secondary)]
+px-5 h-12
+transition-all duration-300
+hover:border-[var(--color-primary)]
+hover:text-[var(--color-primary)]"
+                onClick={() => {
+                    setDepartment("");
+                    setRole("");
+                    setStatus("");
+                     setSearch("");
+                }}
+            >
+                <RotateCcw size={16} className="text-[var(--color-primary)]" />
+                <span> Reset Filters</span>
+
+            </button>
+
+        </div>
+    );
+};
+
+export default EmployeeFilters;
