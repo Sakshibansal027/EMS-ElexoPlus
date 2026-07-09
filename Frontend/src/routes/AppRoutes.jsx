@@ -1,7 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
 import DashboardLayout from "../layouts/DashboardLayout";
-
+import Profile from "../features/profile/pages/Profile";
 import LoginPage from "../features/auth/pages/LoginPage";
 import ForgotPasswordPage from "../features/auth/pages/ForgotPasswordPage";
 import ProtectedRoute from "../features/auth/components/ProtectedRoute";
@@ -18,24 +18,15 @@ const AppRoutes = () => {
         {/* ============================
                 Default Route
         ============================ */}
-        <Route
-          path="/"
-          element={<Navigate to={ROUTES.LOGIN} replace />}
-        />
+        <Route path="/" element={<Navigate to={ROUTES.LOGIN} replace />} />
 
         {/* ============================
                 Public Routes
         ============================ */}
 
-        <Route
-          path={ROUTES.LOGIN}
-          element={<LoginPage />}
-        />
+        <Route path={ROUTES.LOGIN} element={<LoginPage />} />
 
-        <Route
-          path="/forgot-password"
-          element={<ForgotPasswordPage />}
-        />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
         {/* ============================
               Protected Routes
@@ -48,15 +39,11 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         >
-          <Route
-            path={ROUTES.DASHBOARD}
-            element={<Dashboard />}
-          />
+          <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
 
-          <Route
-            path={ROUTES.EMPLOYEE}
-            element={<EmployeeMaster />}
-          />
+          <Route path={ROUTES.PROFILE} element={<Profile />} />
+
+          <Route path={ROUTES.EMPLOYEE} element={<EmployeeMaster />} />
 
           <Route
             path={ROUTES.ATTENDANCE}
@@ -73,10 +60,7 @@ const AppRoutes = () => {
             element={<ComingSoon title="Payroll" />}
           />
 
-          <Route
-            path={ROUTES.SALES}
-            element={<ComingSoon title="Sales" />}
-          />
+          <Route path={ROUTES.SALES} element={<ComingSoon title="Sales" />} />
 
           <Route
             path={ROUTES.REPORTS}
@@ -93,10 +77,7 @@ const AppRoutes = () => {
                 Fallback Route
         ============================ */}
 
-        <Route
-          path="*"
-          element={<Navigate to={ROUTES.LOGIN} replace />}
-        />
+        <Route path="*" element={<Navigate to={ROUTES.LOGIN} replace />} />
       </Routes>
     </BrowserRouter>
   );

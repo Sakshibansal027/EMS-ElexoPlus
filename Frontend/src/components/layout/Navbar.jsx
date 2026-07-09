@@ -213,6 +213,10 @@ const Navbar = ({ role, user }) => {
 
               <div className="p-2">
                 <button
+                  onClick={() => {
+                    setIsProfileOpen(false);
+                    navigate(ROUTES.PROFILE);
+                  }}
                   className="
                     hover-lift
                     flex
@@ -232,7 +236,7 @@ const Navbar = ({ role, user }) => {
                 </button>
 
                 <button
-                onClick={handleLogout}
+                  onClick={handleLogout}
                   className="
                     hover-lift
                     mt-1
