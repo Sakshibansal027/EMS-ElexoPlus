@@ -721,3 +721,34 @@ svg:focus-visible {
 .dashboard-scrollbar::-webkit-scrollbar-thumb:hover {
   background: var(--color-primary);
 }
+
+
+
+/* ==========================================
+   Password Modal Scrollbar
+========================================== */
+
+.password-scroll{
+  overflow-y:auto;
+  max-height:58vh;
+
+  scrollbar-width:thin;
+  scrollbar-color:var(--color-primary) transparent;
+}
+
+.password-scroll::-webkit-scrollbar{
+  width:5px;
+}
+
+.password-scroll::-webkit-scrollbar-track{
+  background:transparent;
+}
+
+.password-scroll::-webkit-scrollbar-thumb{
+  background:var(--color-primary);
+  border-radius:999px;
+}
+
+.password-scroll::-webkit-scrollbar-thumb:hover{
+  background:var(--color-primary-hover);
+}
