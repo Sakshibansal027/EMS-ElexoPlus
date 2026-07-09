@@ -9,6 +9,7 @@ import ProtectedRoute from "../features/auth/components/ProtectedRoute";
 import Dashboard from "../features/dashboard/pages/Dashboard";
 import ComingSoon from "../components/common/ComingSoon";
 import EmployeeMaster from "../features/employee-master/pages/EmployeeMaster";
+import LeaveManagement from "../features/leave/pages/leaveManagement";
 import { ROUTES } from "./routes";
 
 const AppRoutes = () => {
@@ -52,7 +53,7 @@ const AppRoutes = () => {
 
           <Route
             path={ROUTES.LEAVE}
-            element={<ComingSoon title="Leave Management" />}
+            element={<LeaveManagement />}
           />
 
           <Route
