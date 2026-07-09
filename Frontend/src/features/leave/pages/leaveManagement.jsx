@@ -1,17 +1,17 @@
-import ApplyLeaveButton from "../../components/leave/applyLeaveButton.jsx";
-import LeaveCard from "../../components/leave/leaveCard.jsx";
-import LeaveFilters from "../../components/leave/leaveFilters.jsx";
-import LeaveApplicationRow from "../../components/leave/leaveApplicationRow.jsx";
-import Pagination from "../../components/leave/pagination.jsx";
-import ApplyLeaveModal from "../../components/leave/applyLeaveModel.jsx";
-import { leaveTypeOptions } from "../../data/leaveData.js"; 
+import ApplyLeaveButton from "../components/applyLeaveButton.jsx";
+import LeaveCard from "../components/leaveCard.jsx";
+import LeaveFilters from "../components/leaveFilters.jsx";
+import LeaveApplicationRow from "../components/leaveApplicationRow.jsx";
+import Pagination from "../components/pagination.jsx";
+import ApplyLeaveModal from "../components/applyLeaveModel.jsx";
+import { leaveTypeOptions } from "../mock/leaveData.js"; 
 import { useState } from "react";
 
 import {
     LeaveCardsData,
     LeaveApplicationsData,
     PaginationData,
-} from "../../data/leaveData.js";
+} from "../mock/leaveData.js";
 
 const LeaveManagement = () => {
     const recordsPerPage = 6;
