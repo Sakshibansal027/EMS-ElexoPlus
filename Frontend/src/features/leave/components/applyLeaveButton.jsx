@@ -11,7 +11,7 @@ const ApplyLeaveButton = ({
                 flex
                 items-center
                 gap-2
-                font-bold
+                font-semibold
                 hover:bg-[#c59c14]
             "
         >
