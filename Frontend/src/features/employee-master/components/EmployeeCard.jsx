@@ -8,7 +8,7 @@ import {
   Trash2,
 } from "lucide-react";
 
-const EmployeeCard = ({ employee,onView,onEdit}) => {
+const EmployeeCard = ({ employee, onView, onEdit }) => {
   return (
     <div
       className="
@@ -84,13 +84,18 @@ const EmployeeCard = ({ employee,onView,onEdit}) => {
 
         {/* Status */}
         <span
-          className={`rounded-full border px-3 py-1 text-xs font-semibold ${
-            employee.status === "Active"
-              ? "border-green-500/20 bg-green-500/10 text-green-400"
-              : "border-red-500/20 bg-red-500/10 text-red-400"
-          }`}
+          className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold whitespace-nowrap ${employee.status === "Active"
+            ? "border-green-500/20 bg-green-500/10 text-green-400"
+            : "border-red-500/20 bg-red-500/10 text-red-400"
+            }`}
         >
-          ● {employee.status}
+          <span
+            className={`h-2 w-2 rounded-full ${employee.status === "Active"
+              ? "bg-green-400"
+              : "bg-red-400"
+              }`}
+          />
+          {employee.status}
         </span>
       </div>
 
@@ -168,87 +173,93 @@ const EmployeeCard = ({ employee,onView,onEdit}) => {
       </div>
 
       {/* Divider */}
-
-      <div className="my-5 border-t border-[var(--color-border)]" />
+      <div
+        className="
+          my-5
+          h-px
+          bg-gradient-to-r
+          from-transparent
+          via-[var(--color-primary)]
+          to-transparent
+          opacity-40
+        "
+      />
 
       {/* Footer */}
 
-    {/* Footer */}
+      <div className="mt-3">
 
-<div className="mt-6 flex items-center justify-between border-t border-[var(--color-border)] pt-4">
+        {/* Joining Date */}
+        <div className="mb-4 flex items-center gap-2 text-sm text-[var(--color-muted-foreground)]">
+          <Calendar
+            size={16}
+            className="text-[var(--color-primary)]"
+          />
 
-  <span className="text-xs text-[var(--color-muted-foreground)]">
-    Joined: <span className="text-white">{employee.joiningDate}</span>
-  </span>
+          <span>
+            Joined on{" "}
+            <span className="font-medium text-white">
+              {employee.joiningDate}
+            </span>
+          </span>
+        </div>
 
-  <div className="flex gap-3">
+        {/* Action Buttons */}
+        <div className="flex items-center justify-start gap-3">
 
-    {/* View */}
-    <button
-      className="
-        flex
-        h-10
-        w-10
-        cursor-pointer
-        items-center
-        justify-center
-        rounded-full
+          <button
+            onClick={onView}
+            className="
+        flex items-center gap-2
+        rounded-xl
         bg-[var(--color-secondary)]
+        px-4 py-2
+        text-sm
         text-[var(--color-primary)]
-        transition-all
-        duration-300
+        transition-all duration-300
         hover:bg-[var(--color-primary)]
         hover:text-black
-      " onClick={onView}
-    >
-      <Eye size={18} />
-    </button>
+      "
+          >
+            <Eye size={16} />
+          </button>
 
-    {/* Edit */}
-    <button
-      className="
-        flex
-        h-10
-        w-10
-        cursor-pointer
-        items-center
-        justify-center
-        rounded-full
+          <button
+            onClick={() => onEdit(employee)}
+            className="
+        flex items-center gap-2
+        rounded-xl
         bg-[var(--color-secondary)]
+        px-4 py-2
+        text-sm
         text-[var(--color-primary)]
-        transition-all
-        duration-300
+        transition-all duration-300
         hover:bg-[var(--color-primary)]
         hover:text-black
-      " onClick={() => onEdit(employee)}
-    >
-      <Pencil size={18} />
-    </button>
+      "
+          >
+            <Pencil size={16} />
+          </button>
 
-    {/* Delete */}
-    <button
-      className="
-        flex
-        h-10
-        w-10
-        cursor-pointer
-        items-center
-        justify-center
-        rounded-full
+          <button
+            className="
+        flex items-center gap-2
+        rounded-xl
         bg-[var(--color-secondary)]
+        px-4 py-2
+        text-sm
         text-red-400
-        transition-all
-        duration-300
+        transition-all duration-300
         hover:bg-red-500
         hover:text-white
       "
-    >
-      <Trash2 size={18} />
-    </button>
+          >
+            <Trash2 size={16} />
+          </button>
 
-  </div>
+        </div>
 
-</div>
+      </div>
     </div>
   );
 };

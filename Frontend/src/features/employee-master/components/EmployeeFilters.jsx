@@ -16,7 +16,7 @@ const EmployeeFilters = ({
     setSearch, }) => {
 
     return (
-        <div className="flex flex-wrap items-center gap-4 ">
+        <div className="flex flex-wrap items-center gap-3 ">
             <div className="relative">
                 <CustomSelect
                     placeholder="Department"
@@ -28,6 +28,7 @@ const EmployeeFilters = ({
                     size={18}
                     className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--color-primary)]"
                 />
+
             </div>
 
             <div className="relative">
@@ -43,9 +44,6 @@ const EmployeeFilters = ({
                 />
             </div>
 
-
-
-
             <div className="relative">
                 <CustomSelect
                     placeholder="All Status"
@@ -59,26 +57,20 @@ const EmployeeFilters = ({
                 />
             </div>
 
-
-
-
-
-
-
             <button
 
                 className="flex items-center gap-2 rounded-xl
-border border-[var(--color-border)]
-bg-[var(--color-secondary)]
-px-5 h-12
-transition-all duration-300
-hover:border-[var(--color-primary)]
-hover:text-[var(--color-primary)]"
+                           border border-[var(--color-border)]
+                           bg-[var(--color-secondary)]
+                           px-5 h-12
+                           transition-all duration-300
+                           hover:border-[var(--color-primary)]
+                           hover:text-[var(--color-primary)]"
                 onClick={() => {
                     setDepartment("");
                     setRole("");
                     setStatus("");
-                     setSearch("");
+                    setSearch("");
                 }}
             >
                 <RotateCcw size={16} className="text-[var(--color-primary)]" />
