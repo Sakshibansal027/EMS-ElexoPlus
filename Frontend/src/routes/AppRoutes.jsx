@@ -1,5 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-
+import AttendanceRouter from "../features/attendance/pages/AttendanceRouter";
 import DashboardLayout from "../layouts/DashboardLayout";
 import Profile from "../features/profile/pages/Profile";
 import LoginPage from "../features/auth/pages/LoginPage";
@@ -45,11 +45,10 @@ const AppRoutes = () => {
           <Route path={ROUTES.PROFILE} element={<Profile />} />
 
           <Route path={ROUTES.EMPLOYEE} element={<EmployeeMaster />} />
-
-          <Route
-            path={ROUTES.ATTENDANCE}
-            element={<ComingSoon title="Attendance" />}
-          />
+<Route
+path={ROUTES.ATTENDANCE}
+element={<AttendanceRouter />}
+/>
 
           <Route
             path={ROUTES.LEAVE}
