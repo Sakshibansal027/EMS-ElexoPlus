@@ -74,7 +74,7 @@ const LeaveSection = ({ employee }) => {
                 {leave.title}
               </p>
 
-              <h2 className="mt-2 text-3xl font-bold text-white">
+              <h2 className="mt-2 text-3xl font-bold text-foreground">
                 {leave.value}
               </h2>
 

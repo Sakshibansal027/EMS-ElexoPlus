@@ -10,6 +10,7 @@ import Dashboard from "../features/dashboard/pages/Dashboard";
 import ComingSoon from "../components/common/ComingSoon";
 import EmployeeMaster from "../features/employee-master/pages/EmployeeMaster";
 import LeaveManagement from "../features/leave/pages/leaveManagement";
+import SettingsPage from "../features/settings/pages/SettingsPage";
 import { ROUTES } from "./routes";
 
 const AppRoutes = () => {
@@ -70,7 +71,7 @@ const AppRoutes = () => {
 
           <Route
             path={ROUTES.SETTINGS}
-            element={<ComingSoon title="Settings" />}
+            element={<SettingsPage />}
           />
         </Route>
 
