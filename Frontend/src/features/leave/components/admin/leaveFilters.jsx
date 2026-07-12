@@ -1,5 +1,5 @@
 import { RotateCcw } from "lucide-react";
-import CustomSelect from "../../employee-master/components/ui/CustomSelect";
+import CustomSelect from "../../../employee-master/components/ui/CustomSelect";
 
 const LeaveFilters = ({
     activeStatus,

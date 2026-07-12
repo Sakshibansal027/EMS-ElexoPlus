@@ -10,6 +10,7 @@ import Dashboard from "../features/dashboard/pages/Dashboard";
 import ComingSoon from "../components/common/ComingSoon";
 import EmployeeMaster from "../features/employee-master/pages/EmployeeMaster";
 import LeaveManagement from "../features/leave/pages/leaveManagement";
+import EmployeeLeaveDashboard from "../features/leave/pages/employeeLeaveDashboard";
 import { ROUTES } from "./routes";
 
 const AppRoutes = () => {
@@ -52,7 +53,7 @@ element={<AttendanceRouter />}
 
           <Route
             path={ROUTES.LEAVE}
-            element={<LeaveManagement />}
+            element={<EmployeeLeaveDashboard />}
           />
 
           <Route

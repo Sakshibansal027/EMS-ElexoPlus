@@ -1,8 +1,8 @@
 const LeaveCard = ({
     icon: Icon,
-    leaveType,
-    leaveCount,
-    leaveDescription,
+    title,
+    value,
+    description,
 }) => {
     return (
         <div
@@ -14,7 +14,7 @@ const LeaveCard = ({
                 items-center
                 justify-between
                 p-7
-                min-h-[170px]
+                min-h-42.5
                 transition-all
                 duration-300
                 hover:-translate-y-1
@@ -22,22 +22,20 @@ const LeaveCard = ({
                 hover:shadow-primary
             "
         >
-            {/* Content */}
             <div>
                 <p className="text-base font-medium text-muted-foreground">
-                    {leaveType}
+                    {title}
                 </p>
 
                 <h2 className="mt-3 text-4xl font-bold tracking-tight text-primary">
-                    {leaveCount}
+                    {value}
                 </h2>
 
                 <p className="mt-3 text-sm text-muted-foreground">
-                    {leaveDescription}
+                    {description}
                 </p>
             </div>
 
-            {/* Icon */}
             <div
                 className="
                     flex
@@ -54,14 +52,7 @@ const LeaveCard = ({
                     group-hover:rotate-6
                 "
             >
-                <Icon
-                    size={30}
-                    className="
-                        transition-transform
-                        duration-300
-                        group-hover:scale-110
-                    "
-                />
+                <Icon size={30} />
             </div>
         </div>
     );
