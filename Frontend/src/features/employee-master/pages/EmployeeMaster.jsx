@@ -6,6 +6,8 @@ import EmployeeSearch from "../components/EmployeeSearch";
 import EmployeeFilters from "../components/EmployeeFilters";
 import EmployeeGrid from "../components/EmployeeGrid";
 import employees from "../mock/employees";
+
+
 const EmployeeMaster = () => {
   const [openAddModal, setOpenAddModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
@@ -15,13 +17,14 @@ const EmployeeMaster = () => {
   const [status, setStatus] = useState("");
   const [search, setSearch] = useState("");
   const [employeeList, setEmployeeList] = useState(employees);
+
   const filteredEmployees = employeeList.filter((employee) => {
     const matchSearch =
       employee.name.toLowerCase().includes(search.toLowerCase()) ||
       employee.id.toLowerCase().includes(search.toLowerCase()) ||
       employee.email.toLowerCase().includes(search.toLowerCase());
-    const matchDepartment =
-      department === "" || employee.department === department;
+
+    const matchDepartment = department === "" || employee.department === department;
 
     const matchRole = role === "" || employee.role === role;
 
@@ -29,7 +32,9 @@ const EmployeeMaster = () => {
 
     return matchSearch && matchDepartment && matchRole && matchStatus;
   });
+
   const addEmployee = (newEmployee) => {
+
     setEmployeeList((prev) => {
       const lastEmployee = prev[prev.length - 1];
       const lastId = Number(lastEmployee.id.slice(3));
@@ -44,6 +49,7 @@ const EmployeeMaster = () => {
       ];
     });
   };
+
   const updateEmployee = (updatedEmployee) => {
     setEmployeeList((prev) =>
       prev.map((emp) =>
@@ -57,19 +63,18 @@ const EmployeeMaster = () => {
     setIsEditMode(true);
     setOpenAddModal(true);
   };
+
   return (
     <>
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="mb-10 flex items-start justify-between">
         {/* Left Content */}
         <div>
-          <h1 className="text-3xl font-bold">
-            Employee <span className="text-[var(--color-primary)]">Master</span>
-          </h1>
 
-          <p className="mt-2 text-sm text-[var(--color-muted-foreground)]">
+
+          <p className="page-description">
             Manage all{" "}
-            <span className="text-[var(--color-primary)] font-medium">
+            <span className="font-semibold text-primary">
               employees
             </span>{" "}
             in your organization.
