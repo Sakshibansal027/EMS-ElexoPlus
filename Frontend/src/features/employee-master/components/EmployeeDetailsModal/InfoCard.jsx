@@ -60,7 +60,7 @@ const InfoCard = ({
         mt-2
         text-base
         font-medium
-        text-white
+        text-foreground
         break-words
         "
       >

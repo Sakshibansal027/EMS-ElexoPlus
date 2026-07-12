@@ -6,7 +6,7 @@ const SectionTitle = ({ title }) => {
       <div className="h-7 w-1 rounded-full bg-[var(--color-primary)]"></div>
 
       {/* Heading */}
-      <h3 className="text-xl font-semibold text-white">
+      <h3 className="text-xl font-semibold text-foreground">
         {title}
       </h3>
 
