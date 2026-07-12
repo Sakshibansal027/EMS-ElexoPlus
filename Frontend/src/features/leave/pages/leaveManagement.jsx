@@ -1,4 +1,3 @@
-import ApplyLeaveButton from "../components/applyLeaveButton.jsx";
 import LeaveCard from "../components/leaveCard.jsx";
 import LeaveFilters from "../components/leaveFilters.jsx";
 import LeaveApplicationRow from "../components/leaveApplicationRow.jsx";
@@ -6,11 +5,11 @@ import Pagination from "../components/pagination.jsx";
 import ApplyLeaveModal from "../components/applyLeaveModel.jsx";
 import { leaveTypeOptions } from "../mock/leaveData.js";
 import { useState } from "react";
+import { Plus } from "lucide-react";
 
 import {
     LeaveCardsData,
     LeaveApplicationsData,
-    PaginationData,
 } from "../mock/leaveData.js";
 
 const LeaveManagement = () => {
@@ -76,7 +75,7 @@ const LeaveManagement = () => {
     return (
         <div className="max-w-[1600px] mx-auto px-8 ">
             {/* Header */}
-            <div className="flex items-start justify-between mb-10">
+            <div className="mb-10 flex items-start justify-between">
                 <div>
 
                     <p

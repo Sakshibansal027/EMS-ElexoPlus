@@ -1,3 +1,6 @@
+import { RotateCcw } from "lucide-react";
+import CustomSelect from "../../employee-master/components/ui/CustomSelect";
+
 const LeaveFilters = ({
     activeStatus,
     onStatusChange,
@@ -14,32 +17,41 @@ const LeaveFilters = ({
         "Rejected",
     ];
 
+    const leaveTypeOptions = [
+        { label: "All Leaves", value: "All" },
+        { label: "Casual Leave", value: "CL" },
+        { label: "Earned Leave", value: "EL" },
+        { label: "Sick Leave", value: "SL" },
+        { label: "Maternity Leave", value: "ML" },
+        { label: "Paternity Leave", value: "PL" },
+        { label: "Compensatory Off", value: "CO" },
+        { label: "Loss Of Pay", value: "LOP" },
+    ];
+
+    const dayTypeOptions = [
+        { label: "All", value: "All" },
+        { label: "Full Day", value: "Full Day" },
+        { label: "First Half", value: "First Half" },
+        { label: "Second Half", value: "Second Half" },
+    ];
+
     return (
-        <div
-            className="
-                flex
-                items-center
-                justify-between
-                mt-8
-                gap-6
-            "
-        >
+        <div className="space-y-6">
+
             {/* Status Tabs */}
-            <div className="flex items-center gap-8">
+            <div className="flex flex-wrap items-center gap-8 border-b border-border pb-4">
+
                 {statusTabs.map((status) => (
                     <button
                         key={status}
-                        onClick={() =>
-                            onStatusChange(status)
-                        }
+                        onClick={() => onStatusChange(status)}
                         className={`
                             relative
-                            pb-3
+                            pb-2
                             text-sm
                             font-medium
                             transition-all
                             duration-300
-                            ease-in-out
                             ${
                                 activeStatus === status
                                     ? "text-primary"
@@ -58,114 +70,68 @@ const LeaveFilters = ({
                                 bg-primary
                                 transition-all
                                 duration-300
-                                ease-in-out
                                 ${
                                     activeStatus === status
-                                        ? "w-full opacity-100"
-                                        : "w-0 opacity-0"
+                                        ? "w-full"
+                                        : "w-0"
                                 }
                             `}
                         />
                     </button>
                 ))}
+
             </div>
 
-            {/* Right Side Filters */}
-            <div className="flex items-center gap-3">
+            {/* Filters */}
 
-                {/* Day Type Filter */}
-                <select
+            <div className="flex flex-wrap items-center gap-4">
+
+                <CustomSelect
+                    placeholder="Day Type"
+                    options={dayTypeOptions}
                     value={selectedDayType}
-                    onChange={(event) =>
-                        onDayTypeChange(
-                            event.target.value
-                        )
-                    }
-                    className="
-                        input
-                        h-9
-                        px-3
-                        rounded-xl
-                        text-sm
-                        min-w-25
-                        bg-card
-                        border
-                        border-border
-                        focus:outline-none
-                    "
-                >
-                    <option value="All">
-                        All
-                    </option>
+                    onValueChange={onDayTypeChange}
+                />
 
-                    <option value="Full Day">
-                        Full Day
-                    </option>
-
-                    <option value="First Half">
-                        First Half
-                    </option>
-
-                    <option value="Second Half">
-                        Second Half
-                    </option>
-                </select>
-
-                {/* Leave Type Filter */}
-                <select
+                <CustomSelect
+                    placeholder="Leave Type"
+                    options={leaveTypeOptions}
                     value={selectedLeaveType}
-                    onChange={(event) =>
-                        onLeaveTypeChange(
-                            event.target.value
-                        )
-                    }
+                    onValueChange={onLeaveTypeChange}
+                />
+
+                <button
+                    onClick={() => {
+                        onLeaveTypeChange("All");
+                        onDayTypeChange("All");
+                        onStatusChange("All");
+                    }}
                     className="
-                        input
-                        h-9
-                        px-3
+                        flex
+                        items-center
+                        gap-2
                         rounded-xl
-                        text-sm
-                        min-w-35
-                        bg-card
                         border
                         border-border
-                        focus:outline-none
+                        bg-secondary
+                        px-5
+                        h-12
+                        transition-all
+                        duration-300
+                        hover:border-primary
+                        hover:text-primary
                     "
                 >
-                    <option value="All">
-                        All Leaves
-                    </option>
+                    <RotateCcw
+                        size={16}
+                        className="text-primary"
+                    />
 
-                    <option value="CL">
-                        Casual Leave
-                    </option>
-
-                    <option value="EL">
-                        Earned Leave
-                    </option>
-
-                    <option value="SL">
-                        Sick Leave
-                    </option>
-
-                    <option value="ML">
-                        Maternity Leave
-                    </option>
-
-                    <option value="PL">
-                        Paternity Leave
-                    </option>
-
-                    <option value="CO">
-                        Compensatory Off
-                    </option>
-
-                    <option value="LOP">
-                        Loss Of Pay
-                    </option>
-                </select>
+                    Reset Filters
+                </button>
 
             </div>
+
         </div>
     );
 };

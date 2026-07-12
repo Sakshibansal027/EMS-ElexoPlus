@@ -2,97 +2,67 @@ const LeaveCard = ({
     icon: Icon,
     leaveType,
     leaveCount,
-    leaveDescription
+    leaveDescription,
 }) => {
     return (
         <div
             className="
                 card
+                group
                 relative
                 flex
                 items-center
-                gap-5
-                p-6
-                overflow-hidden
-                min-h-35
+                justify-between
+                p-7
+                min-h-[170px]
+                transition-all
+                duration-300
+                hover:-translate-y-1
+                hover:border-primary
+                hover:shadow-primary
             "
         >
-            {/* Left Yellow Accent */}
-            <div
-                className="
-                    absolute
-                    left-0
-                    top-0
-                    h-full
-                    w-1
-                    bg-(--color-primary)
-                "
-            />
-
-            {/* Icon */}
-            <div
-                className="
-                    w-16
-                    h-16
-                    rounded-full
-                    bg-[rgba(244,194,28,0.12)]
-                    flex
-                    items-center
-                    justify-center
-                    shrink-0
-                "
-            >
-                <Icon
-                    size={28}
-                    className="text-(--color-primary)"
-                />
-            </div>
-
             {/* Content */}
-            <div className="flex-1">
-                <h3
-                    className="
-                        heading-primary
-                        text-sm
-                        text-foreground-muted
-                    "
-                >
+            <div>
+                <p className="text-base font-medium text-muted-foreground">
                     {leaveType}
-                </h3>
+                </p>
 
-                <h2
-                    className="
-                        heading-primary
-                        text-4xl
-                        text-(--color-primary)
-                        mt-1
-                    "
-                >
+                <h2 className="mt-3 text-4xl font-bold tracking-tight text-primary">
                     {leaveCount}
                 </h2>
 
-                <p
-                    className="
-                        text-body
-                        text-sm
-                        text-muted-foreground
-                        mt-1
-                    "
-                >
+                <p className="mt-3 text-sm text-muted-foreground">
                     {leaveDescription}
                 </p>
             </div>
 
-            {/* Three Dots */}
-            <button
+            {/* Icon */}
+            <div
                 className="
-                    text-muted-foreground
-                    text-xl
-                    self-start
+                    flex
+                    h-16
+                    w-16
+                    items-center
+                    justify-center
+                    rounded-2xl
+                    bg-primary/10
+                    text-primary
+                    transition-all
+                    duration-300
+                    group-hover:scale-110
+                    group-hover:rotate-6
                 "
             >
-                ⋯
-            </button>
+                <Icon
+                    size={30}
+                    className="
+                        transition-transform
+                        duration-300
+                        group-hover:scale-110
+                    "
+                />
+            </div>
         </div>
     );
 };
