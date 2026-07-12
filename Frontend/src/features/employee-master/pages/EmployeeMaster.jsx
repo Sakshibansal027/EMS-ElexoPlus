@@ -70,9 +70,7 @@ const EmployeeMaster = () => {
       <div className="mb-10 flex items-start justify-between">
         {/* Left Content */}
         <div>
-
-
-          <p className="page-description">
+          <p className="mt-2 text-lg text-foreground-muted">
             Manage all{" "}
             <span className="font-semibold text-primary">
               employees

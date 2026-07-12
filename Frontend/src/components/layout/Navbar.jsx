@@ -100,19 +100,8 @@ const Navbar = ({ role, user }) => {
       ====================================== */}
 
       <div>
-        <h1 className="text-4xl font-extrabold tracking-tight leading-none">
-          <span className="text-foreground">
-            {heading.white}
-          </span>
-
-          {heading.yellow && (
-            <>
-              {" "}
-              <span className="text-primary">
-                {heading.yellow}
-              </span>
-            </>
-          )}
+        <h1 className="text-3xl font-bold tracking-tight text-primary">
+          {currentPage.label}
         </h1>
 
         <div className="mt-2 flex items-center gap-2">

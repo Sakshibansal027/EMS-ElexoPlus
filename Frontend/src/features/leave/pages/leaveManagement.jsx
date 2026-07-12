@@ -3,6 +3,7 @@ import LeaveFilters from "../components/leaveFilters.jsx";
 import LeaveApplicationRow from "../components/leaveApplicationRow.jsx";
 import Pagination from "../components/pagination.jsx";
 import ApplyLeaveModal from "../components/applyLeaveModel.jsx";
+import { leaveTypeOptions } from "../mock/leaveData.js";
 import { useState } from "react";
 import { Plus } from "lucide-react";
 
@@ -72,41 +73,24 @@ const LeaveManagement = () => {
             startIndex + recordsPerPage
         );
     return (
-        <div className="w-full">
+        <div className="max-w-[1600px] mx-auto px-8 ">
             {/* Header */}
             <div className="mb-10 flex items-start justify-between">
                 <div>
 
-
-                    <p className="page-description">
-                        Manage{" "}
-                        <span className="font-semibold text-primary">
-                            leave policies
-                        </span>
-                        , balances and employee requests.
+                    <p
+                        className="
+                            mt-2 text-lg text-foreground-muted
+                        "
+                    >
+                        Manage {" "}
+                        <span className="text-[var(--color-primary)] font-medium">leave policies</span>{" "}, balances and employee requests.
                     </p>
                 </div>
 
-                <button
-                    onClick={() => setShowApplyLeaveModal(true)}
-                    className="
-        btn-primary
-        flex
-        items-center
-        gap-2
-        px-5
-        py-3
-        font-semibold
-        cursor-pointer
-        hover:scale-105
-        hover:shadow-lg
-        transition-all
-        duration-300
-    "
-                >
-                    <Plus size={18} />
-                    Apply For Leave
-                </button>
+                <ApplyLeaveButton onClick={() =>
+                    setShowApplyLeaveModal(true)
+                } />
             </div>
 
             {/* Leave Cards */}
@@ -129,7 +113,7 @@ const LeaveManagement = () => {
             </div>
 
             {/* Applications Section */}
-            <div className="mb-8">
+            <div className="mb-6">
                 <h2
                     className="
                             heading-primary
@@ -153,28 +137,32 @@ const LeaveManagement = () => {
 
             {/*Status Tabs */}
 
+            <LeaveFilters
+                activeStatus={activeStatus}
+                onStatusChange={(status) => {
+                    setActiveStatus(status);
+                    setCurrentPage(1);
+                }}
+                selectedLeaveType={selectedLeaveType}
+                onLeaveTypeChange={(type) => {
+                    setSelectedLeaveType(type);
+                    setCurrentPage(1);
+                }}
+                selectedDayType={selectedDayType}
+                onDayTypeChange={(type) => {
+                    setSelectedDayType(type);
+                    setCurrentPage(1);
+                }}
+            />
 
-            <div className="my-8">
-                <LeaveFilters
-                    activeStatus={activeStatus}
-                    onStatusChange={(status) => {
-                        setActiveStatus(status);
-                        setCurrentPage(1);
-                    }}
-                    selectedLeaveType={selectedLeaveType}
-                    onLeaveTypeChange={(type) => {
-                        setSelectedLeaveType(type);
-                        setCurrentPage(1);
-                    }}
-                    selectedDayType={selectedDayType}
-                    onDayTypeChange={(type) => {
-                        setSelectedDayType(type);
-                        setCurrentPage(1);
-                    }}
-                />
-            </div>
-
-
+            {/* Divider */}
+            <div
+                className="
+                        h-px
+                        bg-border
+                        my-6
+                    "
+            />
 
             {/* Leave Applications */}
             <div className="flex flex-col gap-4">
