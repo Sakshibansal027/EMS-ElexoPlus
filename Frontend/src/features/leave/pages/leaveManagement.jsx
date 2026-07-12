@@ -4,7 +4,7 @@ import LeaveFilters from "../components/leaveFilters.jsx";
 import LeaveApplicationRow from "../components/leaveApplicationRow.jsx";
 import Pagination from "../components/pagination.jsx";
 import ApplyLeaveModal from "../components/applyLeaveModel.jsx";
-import { leaveTypeOptions } from "../mock/leaveData.js"; 
+import { leaveTypeOptions } from "../mock/leaveData.js";
 import { useState } from "react";
 
 import {
@@ -22,44 +22,44 @@ const LeaveManagement = () => {
     const [selectedLeaveType, setSelectedLeaveType] = useState("All");
     const [selectedDayType, setSelectedDayType] = useState("All");
     const updateLeaveStatus = (
-    employeeId,
-    newStatus
-) => {
+        employeeId,
+        newStatus
+    ) => {
 
-    setLeaveApplications((previous) =>
-        previous.map((application) =>
-            application.employeeId === employeeId
-                ? {
-                    ...application,
-                    status: newStatus,
-                }
-                : application
-        )
-    );
-};
+        setLeaveApplications((previous) =>
+            previous.map((application) =>
+                application.employeeId === employeeId
+                    ? {
+                        ...application,
+                        status: newStatus,
+                    }
+                    : application
+            )
+        );
+    };
     const filteredLeaveApplications =
-    leaveApplications.filter(
-        (application) => {
+        leaveApplications.filter(
+            (application) => {
 
-            const matchesStatus =
-                activeStatus === "All" ||
-                application.status === activeStatus;
+                const matchesStatus =
+                    activeStatus === "All" ||
+                    application.status === activeStatus;
 
-            const matchesLeaveType =
-                selectedLeaveType === "All" ||
-                application.leaveType === selectedLeaveType;
+                const matchesLeaveType =
+                    selectedLeaveType === "All" ||
+                    application.leaveType === selectedLeaveType;
 
-            const matchesDayType =
-                selectedDayType === "All" ||
-                application.dayType === selectedDayType;
+                const matchesDayType =
+                    selectedDayType === "All" ||
+                    application.dayType === selectedDayType;
 
-            return (
-                matchesStatus &&
-                matchesLeaveType &&
-                matchesDayType
-            );
-        }
-    );
+                return (
+                    matchesStatus &&
+                    matchesLeaveType &&
+                    matchesDayType
+                );
+            }
+        );
     const totalPages = Math.ceil(
         filteredLeaveApplications.length /
         recordsPerPage
@@ -74,38 +74,22 @@ const LeaveManagement = () => {
             startIndex + recordsPerPage
         );
     return (
-       <div className="max-w-[1600px] mx-auto px-8 py-8">
+        <div className="max-w-[1600px] mx-auto px-8 ">
             {/* Header */}
             <div className="flex items-start justify-between mb-10">
                 <div>
-                <h1
-                className="
-                    heading-primary
-                    text-5xl
-                    tracking-tight
-                "
-            >
-                    <span
-                        className="
-                            text-primary
-                        "
-                    >
-                        Leave
-                    </span>{" "}
-                    Management
-                </h1>
 
                     <p
                         className="
-                            text-body
-                            text-foreground-muted
+                            mt-2 text-lg text-foreground-muted
                         "
                     >
-                        Manage leave policies, balances and employee requests.
+                        Manage {" "}
+                        <span className="text-[var(--color-primary)] font-medium">leave policies</span>{" "}, balances and employee requests.
                     </p>
                 </div>
 
-                <ApplyLeaveButton  onClick={() =>
+                <ApplyLeaveButton onClick={() =>
                     setShowApplyLeaveModal(true)
                 } />
             </div>
@@ -130,106 +114,106 @@ const LeaveManagement = () => {
             </div>
 
             {/* Applications Section */}
-                <div className="mb-6">
-                    <h2
-                        className="
+            <div className="mb-6">
+                <h2
+                    className="
                             heading-primary
                             text-2xl
                             mb-2
                         "
-                    >
-                        Leave Applications
-                    </h2>
+                >
+                    Leave Applications
+                </h2>
 
-                    <p
-                        className="
+                <p
+                    className="
                             text-body
                             text-sm
                             text-muted-foreground
                         "
-                    >
-                        Review and manage employee leave requests.
-                    </p>
-                </div>
+                >
+                    Review and manage employee leave requests.
+                </p>
+            </div>
 
-                {/*Status Tabs */}
-                
-                <LeaveFilters
-                    activeStatus={activeStatus}
-                    onStatusChange={(status) => {
-                        setActiveStatus(status);
-                        setCurrentPage(1);
-                    }}
-                    selectedLeaveType={selectedLeaveType}
-                    onLeaveTypeChange={(type) => {
-                        setSelectedLeaveType(type);
-                        setCurrentPage(1);
-                    }}
-                    selectedDayType={selectedDayType}
-                    onDayTypeChange={(type) => {
-                        setSelectedDayType(type);
-                        setCurrentPage(1);
-                    }}
-                />
+            {/*Status Tabs */}
 
-                {/* Divider */}
-                <div
-                    className="
+            <LeaveFilters
+                activeStatus={activeStatus}
+                onStatusChange={(status) => {
+                    setActiveStatus(status);
+                    setCurrentPage(1);
+                }}
+                selectedLeaveType={selectedLeaveType}
+                onLeaveTypeChange={(type) => {
+                    setSelectedLeaveType(type);
+                    setCurrentPage(1);
+                }}
+                selectedDayType={selectedDayType}
+                onDayTypeChange={(type) => {
+                    setSelectedDayType(type);
+                    setCurrentPage(1);
+                }}
+            />
+
+            {/* Divider */}
+            <div
+                className="
                         h-px
                         bg-border
                         my-6
                     "
-                />
+            />
 
-                {/* Leave Applications */}
-                <div className="flex flex-col gap-4">
-                    {currentRecords.length > 0 ? (
-                        currentRecords.map(
-                            (application) => (
-                                <LeaveApplicationRow
-                                    key={application.employeeId}
-                                    {...application}
-                                    onStatusChange={updateLeaveStatus}
-                                />
-                            )
+            {/* Leave Applications */}
+            <div className="flex flex-col gap-4">
+                {currentRecords.length > 0 ? (
+                    currentRecords.map(
+                        (application) => (
+                            <LeaveApplicationRow
+                                key={application.employeeId}
+                                {...application}
+                                onStatusChange={updateLeaveStatus}
+                            />
                         )
-                    ) : (
-                        <div className="card p-8 text-center">
-                            <p className="text-muted-foreground">
-                                No leave applications found.
-                            </p>
-                        </div>
-                    )}
-                </div>
-
-                {/* Pagination */}
-                <div className="mt-8">
-                    <Pagination
-                        currentPage={currentPage}
-                        totalPages={totalPages}
-                        totalEntries={
-                            filteredLeaveApplications.length
-                        }
-                        startEntry={
-                            filteredLeaveApplications.length === 0
-                                ? 0
-                                : startIndex + 1
-                        }
-                        endEntry={Math.min(
-                            startIndex + recordsPerPage,
-                            filteredLeaveApplications.length
-                        )}
-                        onPageChange={setCurrentPage}
-                    />
-                </div>
-                {showApplyLeaveModal && (
-                    <ApplyLeaveModal
-                        onClose={() =>
-                            setShowApplyLeaveModal(false)
-                        }
-                    />
+                    )
+                ) : (
+                    <div className="card p-8 text-center">
+                        <p className="text-muted-foreground">
+                            No leave applications found.
+                        </p>
+                    </div>
                 )}
             </div>
+
+            {/* Pagination */}
+            <div className="mt-8">
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalEntries={
+                        filteredLeaveApplications.length
+                    }
+                    startEntry={
+                        filteredLeaveApplications.length === 0
+                            ? 0
+                            : startIndex + 1
+                    }
+                    endEntry={Math.min(
+                        startIndex + recordsPerPage,
+                        filteredLeaveApplications.length
+                    )}
+                    onPageChange={setCurrentPage}
+                />
+            </div>
+            {showApplyLeaveModal && (
+                <ApplyLeaveModal
+                    onClose={() =>
+                        setShowApplyLeaveModal(false)
+                    }
+                />
+            )}
+        </div>
     );
 };
 

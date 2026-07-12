@@ -79,7 +79,7 @@ const Navbar = ({ role, user }) => {
       ====================================== */}
 
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">
+        <h1 className="text-3xl font-bold tracking-tight text-primary">
           {currentPage.label}
         </h1>
 

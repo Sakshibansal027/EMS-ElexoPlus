@@ -63,11 +63,7 @@ const EmployeeMaster = () => {
       <div className="flex items-center justify-between">
         {/* Left Content */}
         <div>
-          <h1 className="text-3xl font-bold">
-            Employee <span className="text-[var(--color-primary)]">Master</span>
-          </h1>
-
-          <p className="mt-2 text-sm text-[var(--color-muted-foreground)]">
+          <p className="mt-2 text-lg text-foreground-muted">
             Manage all{" "}
             <span className="text-[var(--color-primary)] font-medium">
               employees
