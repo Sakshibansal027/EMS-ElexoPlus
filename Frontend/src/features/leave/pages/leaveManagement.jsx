@@ -1,9 +1,8 @@
-import LeaveCard from "../components/leaveCard.jsx";
-import LeaveFilters from "../components/leaveFilters.jsx";
-import LeaveApplicationRow from "../components/leaveApplicationRow.jsx";
-import Pagination from "../components/pagination.jsx";
-import ApplyLeaveModal from "../components/applyLeaveModel.jsx";
-import { leaveTypeOptions } from "../mock/leaveData.js";
+import LeaveCard from "../components/admin/leaveCard.jsx";
+import LeaveFilters from "../components/admin/leaveFilters.jsx";
+import LeaveApplicationRow from "../components/admin/leaveApplicationRow.jsx";
+import Pagination from "../components/admin/pagination.jsx";
+import ApplyLeaveModal from "../components/admin/applyLeaveModel.jsx";
 import { useState } from "react";
 import { Plus } from "lucide-react";
 

@@ -7,21 +7,21 @@ import {
 export const LeaveCardsData = [
     {
         icon: Umbrella,
-        leaveType: "Casual Leave (CL)",
-        leaveCount: 8,
-        leaveDescription: "Accrued Monthly"
+        title: "Casual Leave (CL)",
+        value: 8,
+        description: "Accrued Monthly"
     },
     {
         icon: CalendarRange,
-        leaveType: "Earned Leave (EL)",
-        leaveCount: 15,
-        leaveDescription: "Carry Forward Allowed"
+        title: "Earned Leave (EL)",
+        value: 15,
+        description: "Carry Forward Allowed"
     },
     {
         icon: HeartPulse,
-        leaveType: "Sick Leave (SL)",
-        leaveCount: 10,
-        leaveDescription: "Medical Leave"
+        title: "Sick Leave (SL)",
+        value: 10,
+        description: "Medical Leave"
     }
 ];
 
