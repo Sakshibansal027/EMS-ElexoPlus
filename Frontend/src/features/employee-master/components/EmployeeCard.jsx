@@ -165,7 +165,7 @@ const EmployeeCard = ({ employee, onView, onEdit }) => {
           />
           <span>
             Manager :
-            <strong className="ml-1 text-white">
+            <strong className="ml-1 text-foreground">
               {employee.manager}
             </strong>
           </span>
@@ -203,6 +203,7 @@ const EmployeeCard = ({ employee, onView, onEdit }) => {
             </span>
           </span>
         </div>
+  
 
         {/* Action Buttons */}
         <div className="flex items-center justify-start gap-3">

@@ -1,5 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-
+import AttendanceRouter from "../features/attendance/pages/AttendanceRouter";
 import DashboardLayout from "../layouts/DashboardLayout";
 import Profile from "../features/profile/pages/Profile";
 import LoginPage from "../features/auth/pages/LoginPage";
@@ -10,6 +10,8 @@ import Dashboard from "../features/dashboard/pages/Dashboard";
 import ComingSoon from "../components/common/ComingSoon";
 import EmployeeMaster from "../features/employee-master/pages/EmployeeMaster";
 import LeaveManagement from "../features/leave/pages/leaveManagement";
+import EmployeeLeaveDashboard from "../features/leave/pages/employeeLeaveDashboard";
+import SettingsPage from "../features/settings/pages/SettingsPage";
 import { ROUTES } from "./routes";
 
 const AppRoutes = () => {
@@ -45,15 +47,14 @@ const AppRoutes = () => {
           <Route path={ROUTES.PROFILE} element={<Profile />} />
 
           <Route path={ROUTES.EMPLOYEE} element={<EmployeeMaster />} />
-
-          <Route
-            path={ROUTES.ATTENDANCE}
-            element={<ComingSoon title="Attendance" />}
-          />
+<Route
+path={ROUTES.ATTENDANCE}
+element={<AttendanceRouter />}
+/>
 
           <Route
             path={ROUTES.LEAVE}
-            element={<LeaveManagement />}
+            element={<EmployeeLeaveDashboard />}
           />
 
           <Route
@@ -70,7 +71,7 @@ const AppRoutes = () => {
 
           <Route
             path={ROUTES.SETTINGS}
-            element={<ComingSoon title="Settings" />}
+            element={<SettingsPage />}
           />
         </Route>
 

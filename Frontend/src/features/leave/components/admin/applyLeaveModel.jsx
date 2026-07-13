@@ -3,7 +3,7 @@ import Select from "react-select";
 
 import {
     leaveTypeOptions,
-} from "../mock/leaveData.js";
+} from "../../mock/leaveData.js";
 
 const selectStyles = {
     control: (base) => ({
