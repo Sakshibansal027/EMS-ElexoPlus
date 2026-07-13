@@ -9,9 +9,7 @@ import ProtectedRoute from "../features/auth/components/ProtectedRoute";
 import Dashboard from "../features/dashboard/pages/Dashboard";
 import ComingSoon from "../components/common/ComingSoon";
 import EmployeeMaster from "../features/employee-master/pages/EmployeeMaster";
-import LeaveManagement from "../features/leave/pages/leaveManagement";
-import EmployeeLeaveDashboard from "../features/leave/pages/employeeLeaveDashboard";
-import SettingsPage from "../features/settings/pages/SettingsPage";
+import Sales from "../features/sales/pages/SalesPage";
 import { ROUTES } from "./routes";
 
 const AppRoutes = () => {
@@ -62,7 +60,10 @@ element={<AttendanceRouter />}
             element={<ComingSoon title="Payroll" />}
           />
 
-          <Route path={ROUTES.SALES} element={<ComingSoon title="Sales" />} />
+          <Route
+            path={ROUTES.SALES}
+            element={<Sales/>}
+          />
 
           <Route
             path={ROUTES.REPORTS}
