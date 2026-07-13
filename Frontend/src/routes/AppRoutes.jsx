@@ -12,6 +12,7 @@ import EmployeeMaster from "../features/employee-master/pages/EmployeeMaster";
 import LeaveManagement from "../features/leave/pages/leaveManagement";
 import EmployeeLeaveDashboard from "../features/leave/pages/employeeLeaveDashboard";
 import SettingsPage from "../features/settings/pages/SettingsPage";
+import EmployeePayrollDashboard from "../features/payroll/pages/employeePayrollDashboard";
 import { ROUTES } from "./routes";
 
 const AppRoutes = () => {
@@ -59,7 +60,7 @@ element={<AttendanceRouter />}
 
           <Route
             path={ROUTES.PAYROLL}
-            element={<ComingSoon title="Payroll" />}
+            element={<EmployeePayrollDashboard />}
           />
 
           <Route path={ROUTES.SALES} element={<ComingSoon title="Sales" />} />
