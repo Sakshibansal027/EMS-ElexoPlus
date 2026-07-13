@@ -8,6 +8,22 @@ import { ROUTES } from "../../routes/routes";
 
 import MENUS from "../../config/navigation/menu";
 
+const formatHeading = (title) => {
+  const words = title.split(" ");
+
+  if (words.length === 1) {
+    return {
+      white: title,
+      yellow: "",
+    };
+  }
+
+  return {
+    white: words.slice(0, -1).join(" "),
+    yellow: words[words.length - 1],
+  };
+};
+
 const Navbar = ({ role, user }) => {
   const location = useLocation();
 
@@ -26,6 +42,11 @@ const Navbar = ({ role, user }) => {
       }
     );
   }, [location.pathname, role]);
+
+  const heading = useMemo(
+    () => formatHeading(currentPage.label),
+    [currentPage.label]
+  );
 
   const handleLogout = () => {
     logout();
@@ -79,7 +100,7 @@ const Navbar = ({ role, user }) => {
       ====================================== */}
 
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">
+        <h1 className="text-3xl font-bold tracking-tight text-primary">
           {currentPage.label}
         </h1>
 
@@ -213,6 +234,10 @@ const Navbar = ({ role, user }) => {
 
               <div className="p-2">
                 <button
+                  onClick={() => {
+                    setIsProfileOpen(false);
+                    navigate(ROUTES.PROFILE);
+                  }}
                   className="
                     hover-lift
                     flex
@@ -232,7 +257,7 @@ const Navbar = ({ role, user }) => {
                 </button>
 
                 <button
-                onClick={handleLogout}
+                  onClick={handleLogout}
                   className="
                     hover-lift
                     mt-1
