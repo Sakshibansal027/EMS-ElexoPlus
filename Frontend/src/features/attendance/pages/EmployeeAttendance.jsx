@@ -9,7 +9,6 @@ import {
   Percent,
 } from "lucide-react";
 
-import PageHeader from "../components/PageHeader";
 import AttendanceStatCard from "../components/AttendanceStatCard";
 import LiveClockCard from "../components/LiveClockCard";
 import CheckInPanel from "../components/CheckInPanel";
@@ -104,24 +103,15 @@ const EmployeeAttendance = () => {
 
   return (
     <div className="page-enter">
-      <PageHeader
-        title="My Attendance"
-        description={
-          <>
-            Track your{" "}
-            <span className="font-semibold text-primary">daily attendance</span>,
-            working hours and correction requests.
-          </>
-        }
-        action={
-          <button
-            onClick={() => setShowCorrection(true)}
-            className="btn-primary flex items-center gap-2 px-5 py-3 font-semibold transition-all hover:scale-105 hover:shadow-lg"
-          >
-            <Plus size={18} /> Request Correction
-          </button>
-        }
-      />
+      <div className="mb-6 flex justify-end">
+        <button
+          onClick={() => setShowCorrection(true)}
+          className="btn-primary flex items-center gap-2 px-5 py-3 font-semibold transition-all hover:scale-105 hover:shadow-lg"
+        >
+          <Plus size={18} /> Request Correction
+        </button>
+      </div>
+
 
       <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
         <LiveClockCard />
