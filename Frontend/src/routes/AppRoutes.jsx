@@ -5,11 +5,12 @@ import Profile from "../features/profile/pages/Profile";
 import LoginPage from "../features/auth/pages/LoginPage";
 import ForgotPasswordPage from "../features/auth/pages/ForgotPasswordPage";
 import ProtectedRoute from "../features/auth/components/ProtectedRoute";
-
+import SettingsPage from "../features/settings/pages/SettingsPage";
 import Dashboard from "../features/dashboard/pages/Dashboard";
 import ComingSoon from "../components/common/ComingSoon";
 import EmployeeMaster from "../features/employee-master/pages/EmployeeMaster";
 import Sales from "../features/sales/pages/SalesPage";
+import EmployeeLeaveDashboard from "../features/leave/pages/employeeLeaveDashboard";
 import { ROUTES } from "./routes";
 
 const AppRoutes = () => {

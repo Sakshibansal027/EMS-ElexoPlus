@@ -5,58 +5,32 @@ import AddEmployeeModal from "../components/AddEmployeeModal/AddEmployeeModal";
 import EmployeeSearch from "../components/EmployeeSearch";
 import EmployeeFilters from "../components/EmployeeFilters";
 import EmployeeGrid from "../components/EmployeeGrid";
-import employees from "../mock/employees";
 
+
+import useEmployees from "../hooks/useEmployees";
 
 const EmployeeMaster = () => {
   const [openAddModal, setOpenAddModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [department, setDepartment] = useState("");
-  const [role, setRole] = useState("");
-  const [status, setStatus] = useState("");
-  const [search, setSearch] = useState("");
-  const [employeeList, setEmployeeList] = useState(employees);
 
-  const filteredEmployees = employeeList.filter((employee) => {
-    const matchSearch =
-      employee.name.toLowerCase().includes(search.toLowerCase()) ||
-      employee.id.toLowerCase().includes(search.toLowerCase()) ||
-      employee.email.toLowerCase().includes(search.toLowerCase());
+  const {
+    filteredEmployees,
+    stats,
+    search,
+    setSearch,
+    department,
+    setDepartment,
+    role,
+    setRole,
+    status,
+    setStatus,
+    addEmployee,
+    editEmployee,
+    deleteEmployee,
+    resetFilters
+  } = useEmployees();
 
-    const matchDepartment = department === "" || employee.department === department;
-
-    const matchRole = role === "" || employee.role === role;
-
-    const matchStatus = status === "" || employee.status === status;
-
-    return matchSearch && matchDepartment && matchRole && matchStatus;
-  });
-
-  const addEmployee = (newEmployee) => {
-
-    setEmployeeList((prev) => {
-      const lastEmployee = prev[prev.length - 1];
-      const lastId = Number(lastEmployee.id.slice(3));
-      const nextId = `EMP${String(lastId + 1).padStart(3, "0")}`;
-
-      return [
-        ...prev,
-        {
-          ...newEmployee,
-          id: nextId,
-        },
-      ];
-    });
-  };
-
-  const updateEmployee = (updatedEmployee) => {
-    setEmployeeList((prev) =>
-      prev.map((emp) =>
-        emp.id === updatedEmployee.id ? { ...emp, ...updatedEmployee } : emp,
-      ),
-    );
-  };
 
   const handleEdit = (employee) => {
     setSelectedEmployee(employee);
@@ -95,7 +69,7 @@ const EmployeeMaster = () => {
       </div>
       {/* Employee Statistics */}
       <div className="mt-8">
-        <EmployeeStats />
+        <EmployeeStats stats={stats} />
       </div>
       {/* Search & Filters */}
 
@@ -113,17 +87,18 @@ const EmployeeMaster = () => {
               setRole={setRole}
               status={status}
               setStatus={setStatus}
-              setSearch={setSearch}
+              resetFilters={resetFilters}
+
             />
           </div>
         </div>
-        <EmployeeGrid employees={filteredEmployees} onEdit={handleEdit} />
+        <EmployeeGrid employees={filteredEmployees} onEdit={handleEdit} onDelete={deleteEmployee} />
       </div>
 
       {openAddModal && (
         <AddEmployeeModal
           addEmployee={addEmployee}
-          updateEmployee={updateEmployee}
+          updateEmployee={editEmployee}
           employee={selectedEmployee}
           isEditMode={isEditMode}
           onClose={() => setOpenAddModal(false)}

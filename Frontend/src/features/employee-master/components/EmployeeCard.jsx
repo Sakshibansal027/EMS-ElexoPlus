@@ -8,7 +8,7 @@ import {
   Trash2,
 } from "lucide-react";
 
-const EmployeeCard = ({ employee, onView, onEdit }) => {
+const EmployeeCard = ({ employee, onView, onEdit, onDelete }) => {
   return (
     <div
       className="
@@ -203,7 +203,7 @@ const EmployeeCard = ({ employee, onView, onEdit }) => {
             </span>
           </span>
         </div>
-  
+
 
         {/* Action Buttons */}
         <div className="flex items-center justify-start gap-3">
@@ -243,6 +243,7 @@ const EmployeeCard = ({ employee, onView, onEdit }) => {
           </button>
 
           <button
+            onClick={() => onDelete(employee.id)}
             className="
         flex items-center gap-2
         rounded-xl

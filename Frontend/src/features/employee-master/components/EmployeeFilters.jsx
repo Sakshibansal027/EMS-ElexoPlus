@@ -13,7 +13,7 @@ const EmployeeFilters = ({
     setRole,
     status,
     setStatus,
-    setSearch, }) => {
+    resetFilters, }) => {
 
     return (
         <div className="flex flex-wrap items-center gap-3 ">
@@ -66,12 +66,9 @@ const EmployeeFilters = ({
                            transition-all duration-300
                            hover:border-[var(--color-primary)]
                            hover:text-[var(--color-primary)]"
-                onClick={() => {
-                    setDepartment("");
-                    setRole("");
-                    setStatus("");
-                    setSearch("");
-                }}
+                onClick={() => 
+                    resetFilters()
+                }
             >
                 <RotateCcw size={16} className="text-[var(--color-primary)]" />
                 <span> Reset Filters</span>
