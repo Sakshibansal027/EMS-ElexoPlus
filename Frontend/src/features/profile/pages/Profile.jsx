@@ -1,8 +1,4 @@
 import { useState } from "react";
-
-// import useAuth from "../../auth/hooks/useAuth";
-
-// import PROFILE_DATA from "../config/profileData";
 import useProfile from "../hook/useProfile";
 import ProfileHeader from "../components/ProfileHeader";
 import InfoCard from "../components/InfoCard";
@@ -10,11 +6,6 @@ import ChangePasswordModal from "../components/ChangePasswordModal";
 
 const Profile = () => {
   const [openPasswordModal, setOpenPasswordModal] = useState(false);
-
-  // const { user } = useAuth();
-
-  // const profile = PROFILE_DATA[user.role];
-
   const { user, profile, permissions } = useProfile();
 
   return (
