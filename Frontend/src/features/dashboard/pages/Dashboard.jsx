@@ -1,31 +1,63 @@
 import { useOutletContext } from "react-router-dom";
 import HeroBanner from "../components/HeroBanner";
-import HERO_DATA from "../config/heroData";
-
-import KPI_DATA from "../config/kpiData";
 import KPISection from "../widgets/KPISection";
-
+import useDashboard from "../hooks/useDashboard";
 import AnalyticsSection from "../widgets/AnalyticsSection";
-import ANALYTICS_DATA from "../config/analyticsData";
+import { useNavigate } from "react-router-dom";
 import TaskActivitySection from "../widgets/TaskActivitySection";
 import QuickActionSection from "../widgets/QuickActionSection";
 
 const Dashboard = () => {
   const { role, user } = useOutletContext();
-  const heroData = HERO_DATA[role];
+
+  const dashboard = useDashboard(role);
+  const navigate = useNavigate();
+
+  const handleHeroAction = (action) => {
+
+    if (action.route) {
+      navigate(action.route);
+      return;
+    }
+
+    if (action.icon === "refresh") {
+      window.location.reload();
+    }
+
+  };
 
   return (
     <div className="dashboard-bg">
       <div className="space-y-10">
-        <HeroBanner user={user} heroData={heroData} />
+        <HeroBanner
+          user={user}
+          heroData={dashboard.hero}
+          onAction={handleHeroAction}
+        />
+        {dashboard.permissions.showKpis && (
+          <KPISection
+            data={dashboard.kpis}
+          />
+        )}
 
-        <KPISection data={KPI_DATA[role]} />
+        {dashboard.permissions.showAnalytics && (
+          <AnalyticsSection
+            data={dashboard.analytics}
+          />
+        )}
 
-        <AnalyticsSection data={ANALYTICS_DATA[role]} />
+        {dashboard.permissions.showTasks && (
+          <TaskActivitySection
+            pending={dashboard.pending}
+            activity={dashboard.activity}
+          />
+        )}
 
-        <TaskActivitySection role={role}/>
-
-        <QuickActionSection role={role}/>
+        {dashboard.permissions.showQuickActions && (
+          <QuickActionSection
+            actions={dashboard.actions}
+          />
+        )}
       </div>
     </div>
   );

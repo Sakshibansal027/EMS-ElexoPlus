@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import { useNavigate } from "react-router-dom";
 
 import {
   ArrowRight,
@@ -17,8 +16,7 @@ import {
   HelpCircle
 } from "lucide-react";
 
-const HeroBanner = ({ user, heroData }) => {
-  const navigate = useNavigate();
+const HeroBanner = ({ user, heroData, onAction }) => {
 
   /* =========================================
                 Greeting
@@ -64,21 +62,7 @@ const HeroBanner = ({ user, heroData }) => {
     route: Target,
   };
 
-  /* =========================================
-                Navigation
-  ========================================= */
-
-  const handleAction = (item) => {
-    if (item.route) {
-      navigate(item.route);
-
-      return;
-    }
-
-    if (item.icon === "refresh") {
-      window.location.reload();
-    }
-  };
+  
 
   return (
     <section className="hero-card glow-primary p-8 lg:p-10">
@@ -155,7 +139,8 @@ const HeroBanner = ({ user, heroData }) => {
           return (
             <button
               key={item.id}
-              onClick={() => handleAction(item)}
+              
+              onClick={() => onAction(item)}
               className="
                 hero-action
                 group

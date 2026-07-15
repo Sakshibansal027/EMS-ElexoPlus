@@ -1,10 +1,5 @@
 import { useNavigate } from "react-router-dom";
 
-import ROLES from "../../../config/roles";
-
-import PENDING_TASK_DATA from "../config/pendingTaskData";
-import RECENT_ACTIVITY_DATA from "../config/recentActivityData";
-
 const PRIORITY_STYLES = {
   high: {
     dot: "bg-red-500",
@@ -31,11 +26,8 @@ const STATUS_STYLES = {
   warning: "bg-amber-500",
 };
 
-const TaskActivitySection = ({ role = ROLES.ADMIN }) => {
+const TaskActivitySection = ({ pending = [], activity = [] }) => {
   const navigate = useNavigate();
-
-  const pending = PENDING_TASK_DATA[role] ?? [];
-  const activity = RECENT_ACTIVITY_DATA[role] ?? [];
 
   return (
     <section className="dashboard-section mt-8">
@@ -178,7 +170,7 @@ const TaskActivitySection = ({ role = ROLES.ADMIN }) => {
 
         </div>
 
-                {/* =====================================================
+        {/* =====================================================
                       Recent Activity
         ===================================================== */}
 
@@ -254,9 +246,8 @@ const TaskActivitySection = ({ role = ROLES.ADMIN }) => {
                     <div className="flex gap-4">
 
                       <span
-                        className={`mt-2 h-3 w-3 rounded-full ${
-                          STATUS_STYLES[item.status]
-                        }`}
+                        className={`mt-2 h-3 w-3 rounded-full ${STATUS_STYLES[item.status]
+                          }`}
                       />
 
                       <div>
