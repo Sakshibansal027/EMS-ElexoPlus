@@ -1,9 +1,9 @@
 import { useState } from "react";
 
-import useAuth from "../../auth/hooks/useAuth";
+// import useAuth from "../../auth/hooks/useAuth";
 
-import PROFILE_DATA from "../config/profileData";
-
+// import PROFILE_DATA from "../config/profileData";
+import useProfile from "../hook/useProfile";
 import ProfileHeader from "../components/ProfileHeader";
 import InfoCard from "../components/InfoCard";
 import ChangePasswordModal from "../components/ChangePasswordModal";
@@ -11,9 +11,11 @@ import ChangePasswordModal from "../components/ChangePasswordModal";
 const Profile = () => {
   const [openPasswordModal, setOpenPasswordModal] = useState(false);
 
-  const { user } = useAuth();
+  // const { user } = useAuth();
 
-const profile = PROFILE_DATA[user.role];
+  // const profile = PROFILE_DATA[user.role];
+
+  const { user, profile, permissions } = useProfile();
 
   return (
     <section className="space-y-8">
@@ -25,7 +27,10 @@ const profile = PROFILE_DATA[user.role];
       <ProfileHeader
         user={user}
         profile={profile}
-        onChangePassword={() => setOpenPasswordModal(true)}
+        canChangePassword={permissions.canChangePassword}
+        onChangePassword={() =>
+          setOpenPasswordModal(true)
+        }
       />
 
       {/* ==========================================
@@ -60,48 +65,45 @@ const profile = PROFILE_DATA[user.role];
                     Bank Details
       ========================================== */}
 
-      <InfoCard
-        title="Bank Details"
-        data={profile.bank}
-      />
+      {permissions.showBank && (
+        <InfoCard
+          title="Bank Details"
+          data={profile.bank}
+        />
+      )}
 
       {/* ==========================================
                       Documents
       ========================================== */}
 
-      <div className="dashboard-card p-8">
+      {permissions.showDocuments && (
 
-        <h2 className="text-xl font-bold text-foreground">
+        <div className="dashboard-card p-8">
 
-          Documents
+          <h2 className="text-xl font-bold text-foreground">
+            Documents
+          </h2>
 
-        </h2>
+          <div className="mt-8 flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-16">
 
-        <div className="mt-8 flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-16">
+            <div className="mb-4 text-5xl">
+              📄
+            </div>
 
-          <div className="mb-4 text-5xl">
+            <h3 className="text-lg font-semibold text-foreground">
+              Coming Soon
+            </h3>
 
-            📄
+            <p className="mt-2 text-center text-sm text-foreground-muted">
+              Employee documents will be available here
+              after backend integration.
+            </p>
 
           </div>
 
-          <h3 className="text-lg font-semibold text-foreground">
-
-            Coming Soon
-
-          </h3>
-
-          <p className="mt-2 text-center text-sm text-foreground-muted">
-
-            Employee documents will be available here
-            after backend integration.
-
-          </p>
-
         </div>
 
-      </div>
-
+      )}
       {/* ==========================================
                 Change Password Modal
       ========================================== */}
