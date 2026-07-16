@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
   colPhone: { width: '15%', fontSize: 10, color: '#a1a1aa' },
   colValue: { width: '20%', fontSize: 10, color: '#FFC107', fontWeight: 'bold' },
   colStatus: { width: '15%', fontSize: 10, textAlign: 'right' },
-  
+
   headerText: {
     fontSize: 10,
     fontWeight: 'bold',
@@ -94,4 +94,4 @@ export const LeadsPDFDocument = ({ filteredLeads }) => (
       </View>
     </Page>
   </Document>
-);
+)
