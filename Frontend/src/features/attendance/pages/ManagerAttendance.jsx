@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { Users, UserCheck, Clock, UserX } from "lucide-react";
 
-import PageHeader from "../components/PageHeader";
 import AttendanceStatCard from "../components/AttendanceStatCard";
 import AttendanceFilters from "../components/AttendanceFilters";
 import AttendanceTable from "../components/AttendanceTable";
@@ -76,16 +75,6 @@ const ManagerAttendance = () => {
 
   return (
     <div className="page-enter">
-      <PageHeader
-        title="Team Attendance"
-        description={
-          <>
-            Monitor{" "}
-            <span className="font-semibold text-primary">{managerBranch}</span>{" "}
-            team attendance, approvals and late arrivals.
-          </>
-        }
-      />
 
       <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
         <AttendanceStatCard

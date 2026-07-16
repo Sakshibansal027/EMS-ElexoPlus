@@ -10,7 +10,6 @@ import {
   Plane,
 } from "lucide-react";
 
-import PageHeader from "../components/PageHeader";
 import AttendanceStatCard from "../components/AttendanceStatCard";
 import AttendanceFilters from "../components/AttendanceFilters";
 import AttendanceTable from "../components/AttendanceTable";
@@ -124,20 +123,6 @@ const AdminAttendance = ({ title = "Attendance Management", description }) => {
 
   return (
     <div className="page-enter">
-      <PageHeader
-        title={title}
-        description={
-          description || (
-            <>
-              Monitor{" "}
-              <span className="font-semibold text-primary">
-                organization-wide attendance
-              </span>
-              , approvals and analytics.
-            </>
-          )
-        }
-      />
 
       <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-8">
         <AttendanceStatCard

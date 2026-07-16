@@ -5,11 +5,11 @@ import Profile from "../features/profile/pages/Profile";
 import LoginPage from "../features/auth/pages/LoginPage";
 import ForgotPasswordPage from "../features/auth/pages/ForgotPasswordPage";
 import ProtectedRoute from "../features/auth/components/ProtectedRoute";
-
+import SettingsPage from "../features/settings/pages/SettingsPage";
 import Dashboard from "../features/dashboard/pages/Dashboard";
 import ComingSoon from "../components/common/ComingSoon";
 import EmployeeMaster from "../features/employee-master/pages/EmployeeMaster";
-import LeaveManagement from "../features/leave/pages/leaveManagement";
+import Sales from "../features/sales/pages/SalesPage";
 import EmployeeLeaveDashboard from "../features/leave/pages/employeeLeaveDashboard";
 import SettingsPage from "../features/settings/pages/SettingsPage";
 import EmployeePayrollDashboard from "../features/payroll/pages/employeePayrollDashboard";
@@ -63,7 +63,10 @@ element={<AttendanceRouter />}
             element={<EmployeePayrollDashboard />}
           />
 
-          <Route path={ROUTES.SALES} element={<ComingSoon title="Sales" />} />
+          <Route
+            path={ROUTES.SALES}
+            element={<Sales/>}
+          />
 
           <Route
             path={ROUTES.REPORTS}
