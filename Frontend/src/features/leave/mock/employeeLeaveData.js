@@ -1,0 +1,185 @@
+import {
+    CalendarDays,
+    Clock3,
+    BadgeCheck,
+    XCircle,
+    Briefcase,
+    HeartPulse,
+    Plane,
+} from "lucide-react";
+
+export const summaryCards = [
+    {
+        title: "Available Leaves",
+        value: 12,
+        description: "Total remaining leaves",
+        icon: CalendarDays,
+    },
+    {
+        title: "Pending Requests",
+        value: 2,
+        description: "Awaiting approval",
+        icon: Clock3,
+    },
+    {
+        title: "Approved This Year",
+        value: 8,
+        description: "Till now this year",
+        icon: BadgeCheck,
+    },
+    {
+        title: "Rejected",
+        value: 1,
+        description: "Till now this year",
+        icon: XCircle,
+    },
+];
+
+export const leaveBalanceData = [
+    {
+        title: "Casual Leave (CL)",
+        available: 5,
+        total: 12,
+        color: "bg-lime-500",
+        icon: Briefcase,
+    },
+    {
+        title: "Sick Leave (SL)",
+        available: 3,
+        total: 8,
+        color: "bg-amber-500",
+        icon: HeartPulse,
+    },
+    {
+        title: "Earned Leave (EL)",
+        available: 8,
+        total: 15,
+        color: "bg-blue-500",
+        icon: Plane,
+    },
+];
+
+export const leaveHistory = [
+    {
+        id: 1,
+        date: "2026-07-15",
+        leaveType: "Casual Leave (CL)",
+        fromDate: "2026-07-15",
+        toDate: "2026-07-15",
+        duration: "1 Day",
+        dayType: "Full Day",
+        reason: "Family Function",
+        status: "Approved",
+    },
+    {
+        id: 2,
+        date: "2026-07-02",
+        leaveType: "Sick Leave (SL)",
+        fromDate: "2026-07-02",
+        toDate: "2026-07-03",
+        duration: "2 Days",
+        dayType: "Full Day",
+        reason: "Fever",
+        status: "Approved",
+    },
+    {
+        id: 3,
+        date: "2026-06-18",
+        leaveType: "Earned Leave (EL)",
+        fromDate: "2026-06-18",
+        toDate: "2026-06-22",
+        duration: "5 Days",
+        dayType: "Full Day",
+        reason: "Vacation",
+        status: "Approved",
+    },
+    {
+        id: 4,
+        date: "2026-06-05",
+        leaveType: "Casual Leave (CL)",
+        fromDate: "2026-06-05",
+        toDate: "2026-06-05",
+        duration: "1 Day",
+        dayType: "Half Day",
+        reason: "Personal Work",
+        status: "Rejected",
+    },
+    {
+        id: 5,
+        date: "2026-05-20",
+        leaveType: "Sick Leave (SL)",
+        fromDate: "2026-05-20",
+        toDate: "2026-05-20",
+        duration: "1 Day",
+        dayType: "Full Day",
+        reason: "Cold & Cough",
+        status: "Pending",
+    },
+    {
+        id: 6,
+        date: "2026-12-20",
+        leaveType: "Casual Leave (CL)",
+        fromDate: "2026-12-20",
+        toDate: "2026-12-22",
+        duration: "3 Days",
+        dayType: "Full Day",
+        reason: "Trip",
+        status: "Approved",
+    },
+    {
+        id: 7,
+        date: "2026-11-20",
+        leaveType: "Sick Leave (SL)",
+        fromDate: "2026-11-20",
+        toDate: "2026-11-20",
+        duration: "1 Day",
+        dayType: "Full Day",
+        reason: "Medical Checkup",
+        status: "Pending",
+    },
+    {
+        id: 8,
+        date: "2026-11-20",
+        leaveType: "Sick Leave (SL)",
+        fromDate: "2026-11-20",
+        toDate: "2026-11-20",
+        duration: "1 Day",
+        dayType: "Full Day",
+        reason: "Medical Checkup",
+        status: "Pending",
+    },
+];
+
+export const statusOptions = [
+    {
+        value: "all",
+        label: "All Status",
+    },
+    {
+        value: "approved",
+        label: "Approved",
+    },
+    {
+        value: "pending",
+        label: "Pending",
+    },
+    {
+        value: "rejected",
+        label: "Rejected",
+    },
+];
+
+export const periodOptions = [
+    {
+        value: "thisMonth",
+        label: "This Month",
+    },
+    {
+        value: "last3Months",
+        label: "Last 3 Months",
+    },
+    {
+        value: "thisYear",
+        label: "This Year",
+    },
+];

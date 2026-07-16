@@ -160,7 +160,7 @@ const EmployeeCard = ({ employee,onView,onEdit}) => {
           />
           <span>
             Manager :
-            <strong className="ml-1 text-white">
+            <strong className="ml-1 text-foreground">
               {employee.manager}
             </strong>
           </span>
@@ -178,7 +178,7 @@ const EmployeeCard = ({ employee,onView,onEdit}) => {
 <div className="mt-6 flex items-center justify-between border-t border-[var(--color-border)] pt-4">
 
   <span className="text-xs text-[var(--color-muted-foreground)]">
-    Joined: <span className="text-white">{employee.joiningDate}</span>
+    Joined: <span className="text-foreground">{employee.joiningDate}</span>
   </span>
 
   <div className="flex gap-3">

@@ -105,22 +105,22 @@ const SalaryRow = ({ label, value, highlight }) => {
   return (
     <div className="flex items-center justify-between">
 
-      <span
-        className={`${
-          highlight
-            ? "font-semibold text-white"
-            : "text-[var(--color-muted-foreground)]"
-        }`}
-      >
-        {label}
-      </span>
+          <span
+            className={`${
+              highlight
+                ? "font-semibold text-foreground"
+                : "text-[var(--color-muted-foreground)]"
+            }`}
+          >
+            {label}
+          </span>
 
-      <span
-        className={`${
-          highlight
-            ? "font-bold text-[var(--color-primary)]"
-            : "text-white"
-        }`}
+          <span
+            className={`${
+              highlight
+                ? "font-bold text-[var(--color-primary)]"
+                : "text-foreground"
+            }`}
       >
         {value}
       </span>
