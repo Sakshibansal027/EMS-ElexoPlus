@@ -11,79 +11,88 @@ import ComingSoon from "../components/common/ComingSoon";
 import EmployeeMaster from "../features/employee-master/pages/EmployeeMaster";
 import Sales from "../features/sales/pages/SalesPage";
 import { ROUTES } from "./routes";
+import EmployeeLeaveDashboard from "../features/leave/pages/EmployeeLeaveDashboard";
+import SettingsPage from "../features/settings/pages/SettingsPage";
+import NotificationsPage from "../features/notifications/pages/NotificationsPage";
+
 
 const AppRoutes = () => {
-  return (
-    <BrowserRouter>
-      <Routes>
-        {/* ============================
+    return (
+        <BrowserRouter>
+            <Routes>
+                {/* ============================
                 Default Route
         ============================ */}
-        <Route path="/" element={<Navigate to={ROUTES.LOGIN} replace />} />
+                <Route path="/" element={<Navigate to={ROUTES.LOGIN} replace />} />
 
-        {/* ============================
+                {/* ============================
                 Public Routes
         ============================ */}
 
-        <Route path={ROUTES.LOGIN} element={<LoginPage />} />
+                <Route path={ROUTES.LOGIN} element={<LoginPage />} />
 
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
-        {/* ============================
+                {/* ============================
               Protected Routes
         ============================ */}
 
-        <Route
-          element={
-            <ProtectedRoute>
-              <DashboardLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
+                <Route
+                    element={
+                        <ProtectedRoute>
+                            <DashboardLayout />
+                        </ProtectedRoute>
+                    }
+                >
+                    <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
 
-          <Route path={ROUTES.PROFILE} element={<Profile />} />
+                    <Route path={ROUTES.PROFILE} element={<Profile />} />
 
-          <Route path={ROUTES.EMPLOYEE} element={<EmployeeMaster />} />
-<Route
-path={ROUTES.ATTENDANCE}
-element={<AttendanceRouter />}
-/>
+                    <Route path={ROUTES.EMPLOYEE} element={<EmployeeMaster />} />
+                    <Route
+                        path={ROUTES.ATTENDANCE}
+                        element={<AttendanceRouter />}
+                    />
 
-          <Route
-            path={ROUTES.LEAVE}
-            element={<EmployeeLeaveDashboard />}
-          />
+                    <Route
+                        path={ROUTES.LEAVE}
+                        element={<EmployeeLeaveDashboard />}
+                    />
 
-          <Route
-            path={ROUTES.PAYROLL}
-            element={<ComingSoon title="Payroll" />}
-          />
+                    <Route
+                        path={ROUTES.PAYROLL}
+                        element={<ComingSoon title="Payroll" />}
+                    />
 
-          <Route
-            path={ROUTES.SALES}
-            element={<Sales/>}
-          />
+                    <Route
+                        path={ROUTES.SALES}
+                        element={<Sales />}
+                    />
 
-          <Route
-            path={ROUTES.REPORTS}
-            element={<ComingSoon title="Reports" />}
-          />
+                    <Route
+                        path={ROUTES.REPORTS}
+                        element={<ComingSoon title="Reports" />}
+                    />
 
-          <Route
-            path={ROUTES.SETTINGS}
-            element={<SettingsPage />}
-          />
-        </Route>
+                    <Route
+                        path={ROUTES.SETTINGS}
+                        element={<SettingsPage />}
+                    />
 
-        {/* ============================
+                    <Route
+                        path={ROUTES.NOTIFICATIONS}
+                        element={<NotificationsPage />}
+                    />
+                </Route>
+
+                {/* ============================
                 Fallback Route
         ============================ */}
 
-        <Route path="*" element={<Navigate to={ROUTES.LOGIN} replace />} />
-      </Routes>
-    </BrowserRouter>
-  );
+                <Route path="*" element={<Navigate to={ROUTES.LOGIN} replace />} />
+            </Routes>
+        </BrowserRouter>
+    );
 };
 
 export default AppRoutes;
