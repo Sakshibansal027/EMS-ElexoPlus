@@ -1,5 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import AttendanceRouter from "../features/attendance/pages/AttendanceRouter";
+import AttendancePage from "../features/attendance/pages/AttendancePage";
 import DashboardLayout from "../layouts/DashboardLayout";
 import Profile from "../features/profile/pages/Profile";
 import LoginPage from "../features/auth/pages/LoginPage";
@@ -11,88 +11,71 @@ import ComingSoon from "../components/common/ComingSoon";
 import EmployeeMaster from "../features/employee-master/pages/EmployeeMaster";
 import Sales from "../features/sales/pages/SalesPage";
 import EmployeeLeaveDashboard from "../features/leave/pages/employeeLeaveDashboard";
-import EmployeePayrollDashboard from "../features/payroll/pages/employeePayrollDashboard";
 import { ROUTES } from "./routes";
 import NotificationsPage from "../features/notifications/pages/NotificationsPage";
 
-
 const AppRoutes = () => {
-    return (
-        <BrowserRouter>
-            <Routes>
-                {/* ============================
-                Default Route
-        ============================ */}
-                <Route path="/" element={<Navigate to={ROUTES.LOGIN} replace />} />
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Navigate to={ROUTES.LOGIN} replace />} />
 
-                {/* ============================
-                Public Routes
-        ============================ */}
+        <Route path={ROUTES.LOGIN} element={<LoginPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
-                <Route path={ROUTES.LOGIN} element={<LoginPage />} />
+        <Route
+          element={
+            <ProtectedRoute>
+              <DashboardLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
 
-                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path={ROUTES.PROFILE} element={<Profile />} />
 
-                {/* ============================
-              Protected Routes
-        ============================ */}
+          <Route path={ROUTES.EMPLOYEE} element={<EmployeeMaster />} />
 
-                <Route
-                    element={
-                        <ProtectedRoute>
-                            <DashboardLayout />
-                        </ProtectedRoute>
-                    }
-                >
-                    <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
+          <Route
+            path={ROUTES.ATTENDANCE}
+            element={<AttendancePage />}
+          />
 
-                    <Route path={ROUTES.PROFILE} element={<Profile />} />
+          <Route
+            path={ROUTES.LEAVE}
+            element={<EmployeeLeaveDashboard />}
+          />
 
-                    <Route path={ROUTES.EMPLOYEE} element={<EmployeeMaster />} />
-                    <Route
-                        path={ROUTES.ATTENDANCE}
-                        element={<AttendanceRouter />}
-                    />
+          <Route
+            path={ROUTES.PAYROLL}
+            element={<ComingSoon title="Payroll" />}
+          />
 
-                    <Route
-                        path={ROUTES.LEAVE}
-                        element={<EmployeeLeaveDashboard />}
-                    />
+          <Route
+            path={ROUTES.SALES}
+            element={<Sales />}
+          />
 
-                    <Route
-                        path={ROUTES.PAYROLL}
-                        element={<ComingSoon title="Payroll" />}
-                    />
+          <Route
+            path={ROUTES.REPORTS}
+            element={<ComingSoon title="Reports" />}
+          />
 
-                    <Route
-                        path={ROUTES.SALES}
-                        element={<Sales />}
-                    />
+          <Route
+            path={ROUTES.SETTINGS}
+            element={<SettingsPage />}
+          />
 
-                    <Route
-                        path={ROUTES.REPORTS}
-                        element={<ComingSoon title="Reports" />}
-                    />
+          <Route
+            path={ROUTES.NOTIFICATIONS}
+            element={<NotificationsPage />}
+          />
+        </Route>
 
-                    <Route
-                        path={ROUTES.SETTINGS}
-                        element={<SettingsPage />}
-                    />
-
-                    <Route
-                        path={ROUTES.NOTIFICATIONS}
-                        element={<NotificationsPage />}
-                    />
-                </Route>
-
-                {/* ============================
-                Fallback Route
-        ============================ */}
-
-                <Route path="*" element={<Navigate to={ROUTES.LOGIN} replace />} />
-            </Routes>
-        </BrowserRouter>
-    );
+        <Route path="*" element={<Navigate to={ROUTES.LOGIN} replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
 };
 
 export default AppRoutes;
