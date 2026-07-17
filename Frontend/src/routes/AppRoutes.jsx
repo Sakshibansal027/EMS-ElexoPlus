@@ -11,29 +11,17 @@ import ComingSoon from "../components/common/ComingSoon";
 import EmployeeMaster from "../features/employee-master/pages/EmployeeMaster";
 import Sales from "../features/sales/pages/SalesPage";
 import EmployeeLeaveDashboard from "../features/leave/pages/employeeLeaveDashboard";
-import EmployeePayrollDashboard from "../features/payroll/pages/employeePayrollDashboard";
 import { ROUTES } from "./routes";
+import NotificationsPage from "../features/notifications/pages/NotificationsPage";
 
 const AppRoutes = () => {
   return (
     <BrowserRouter>
       <Routes>
-        {/* ============================
-                Default Route
-        ============================ */}
         <Route path="/" element={<Navigate to={ROUTES.LOGIN} replace />} />
 
-        {/* ============================
-                Public Routes
-        ============================ */}
-
         <Route path={ROUTES.LOGIN} element={<LoginPage />} />
-
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-
-        {/* ============================
-              Protected Routes
-        ============================ */}
 
         <Route
           element={
@@ -47,8 +35,9 @@ const AppRoutes = () => {
           <Route path={ROUTES.PROFILE} element={<Profile />} />
 
           <Route path={ROUTES.EMPLOYEE} element={<EmployeeMaster />} />
+
           <Route
-            path="/attendance"
+            path={ROUTES.ATTENDANCE}
             element={<AttendancePage />}
           />
 
@@ -59,7 +48,7 @@ const AppRoutes = () => {
 
           <Route
             path={ROUTES.PAYROLL}
-            element={<EmployeePayrollDashboard />}
+            element={<ComingSoon title="Payroll" />}
           />
 
           <Route
@@ -76,11 +65,12 @@ const AppRoutes = () => {
             path={ROUTES.SETTINGS}
             element={<SettingsPage />}
           />
-        </Route>
 
-        {/* ============================
-                Fallback Route
-        ============================ */}
+          <Route
+            path={ROUTES.NOTIFICATIONS}
+            element={<NotificationsPage />}
+          />
+        </Route>
 
         <Route path="*" element={<Navigate to={ROUTES.LOGIN} replace />} />
       </Routes>
