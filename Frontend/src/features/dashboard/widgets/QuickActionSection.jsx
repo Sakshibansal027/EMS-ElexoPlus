@@ -1,12 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 
-import QUICK_ACTION_DATA from "../config/quickActionData";
-
-const QuickActionSection = ({ role }) => {
+const QuickActionSection = ({ actions = [] }) => {
   const navigate = useNavigate();
-
-  const actions = QUICK_ACTION_DATA[role] || [];
 
   return (
     <section className="space-y-6">
@@ -14,7 +10,6 @@ const QuickActionSection = ({ role }) => {
       {/* Heading */}
 
       <div>
-
         <h2 className="text-3xl font-bold text-foreground">
           Quick Actions
         </h2>
@@ -22,7 +17,6 @@ const QuickActionSection = ({ role }) => {
         <p className="text-foreground-muted mt-1">
           Jump directly to frequently used modules.
         </p>
-
       </div>
 
       {/* Cards */}

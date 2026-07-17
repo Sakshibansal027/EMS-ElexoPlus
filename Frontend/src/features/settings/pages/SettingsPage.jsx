@@ -1,12 +1,13 @@
-import { useState } from "react";
-import { SETTINGS_TABS } from "../config/settingsTabs";
-import useAuth from "../../auth/hooks/useAuth";
+// import { useState } from "react";
+// import { SETTINGS_TABS } from "../config/settingsTabs";
+// import useAuth from "../../auth/hooks/useAuth";
 import CompanySettings from "./CompanySettings";
 import DepartmentSettings from "./DepartmentSettings";
 import DesignationSettings from "./DesignationSettings";
 import EmploymentTypeSettings from "./EmploymentTypeSettings";
 import EmployeeStatusSettings from "./EmployeeStatusSettings";
 import AppPreferences from "./AppPreferences";
+import useSettings from "../hooks/useSettings";
 
 const COMPONENT_MAP = {
     company: CompanySettings,
@@ -18,20 +19,33 @@ const COMPONENT_MAP = {
 };
 
 const SettingsPage = () => {
-    const { user } = useAuth();
-    const userRole = user?.role;
+    // const { user } = useAuth();
+    // const userRole = user?.role;
 
-    const allowedTabs = SETTINGS_TABS.filter(
-        (tab) => tab.roles.includes(userRole),
-    );
+    // const allowedTabs = SETTINGS_TABS.filter(
+    //     (tab) => tab.roles.includes(userRole),
+    // );
 
-    const firstTab = allowedTabs.length > 0 ? allowedTabs[0].id : null;
-    const [activeTab, setActiveTab] = useState(firstTab);
+    // const firstTab = allowedTabs.length > 0 ? allowedTabs[0].id : null;
+    // const [activeTab, setActiveTab] = useState(firstTab);
 
-    const adminTabs = allowedTabs.filter((t) => t.section === "admin");
-    const preferenceTabs = allowedTabs.filter((t) => t.section === "preferences");
+    // const adminTabs = allowedTabs.filter((t) => t.section === "admin");
+    // const preferenceTabs = allowedTabs.filter((t) => t.section === "preferences");
+
+    const {
+        activeTab,
+        setActiveTab,
+        adminTabs,
+        preferenceTabs,
+    } = useSettings();
 
     const ActiveComponent = COMPONENT_MAP[activeTab];
+    const tabs = [
+        ...adminTabs,
+        ...preferenceTabs,
+    ];
+
+
 
     return (
         <div className="page-enter">
@@ -41,78 +55,52 @@ const SettingsPage = () => {
                 </p>
             </div>
 
-            <div className="flex gap-8">
-                <nav className="w-72 shrink-0 space-y-1" aria-label="Settings navigation">
-                    {adminTabs.length > 0 && (
-                        <>
-                            <p className="mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                                Administration
-                            </p>
-                            {adminTabs.map((tab) => {
-                                const Icon = tab.icon;
-                                const isActive = activeTab === tab.id;
-                                return (
-                                    <button
-                                        key={tab.id}
-                                        onClick={() => setActiveTab(tab.id)}
-                                        className={`w-full flex items-start gap-4 rounded-2xl px-4 py-4 text-left transition-all duration-300 cursor-pointer ${isActive
-                                                ? "bg-primary text-primary-foreground shadow-[var(--shadow-primary)]"
-                                                : "text-foreground-muted hover:bg-card hover:text-primary"
-                                            }`}
-                                    >
-                                        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${isActive ? "bg-black/10" : "bg-muted"
-                                            }`}>
-                                            <Icon size={20} />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-semibold truncate">{tab.label}</p>
-                                            <p className={`text-xs mt-0.5 truncate ${isActive ? "text-primary-foreground/70" : "text-muted-foreground"
-                                                }`}>
-                                                {tab.description}
-                                            </p>
-                                        </div>
-                                    </button>
-                                );
-                            })}
-                        </>
-                    )}
 
-                    {adminTabs.length > 0 && preferenceTabs.length > 0 && (
-                        <div className="my-4 border-t border-border" />
-                    )}
+            <div className="space-y-5">
 
-                    {preferenceTabs.map((tab) => {
-                        const Icon = tab.icon;
-                        const isActive = activeTab === tab.id;
-                        return (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`w-full flex items-start gap-4 rounded-2xl px-4 py-4 text-left transition-all duration-300 cursor-pointer ${isActive
-                                        ? "bg-primary text-primary-foreground shadow-[var(--shadow-primary)]"
-                                        : "text-foreground-muted hover:bg-card hover:text-primary"
-                                    }`}
-                            >
-                                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${isActive ? "bg-black/10" : "bg-muted"
-                                    }`}>
-                                    <Icon size={20} />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-semibold truncate">{tab.label}</p>
-                                    <p className={`text-xs mt-0.5 truncate ${isActive ? "text-primary-foreground/70" : "text-muted-foreground"
-                                        }`}>
-                                        {tab.description}
-                                    </p>
-                                </div>
-                            </button>
-                        );
-                    })}
-                </nav>
+                {/* Top Navigation */}
 
-                <div className="flex-1 min-w-0">
+                {/* Top Navigation - Updated UI */}
+                <div className="dashboard-card sticky top-4 z-10 p-2 backdrop-blur-md overflow-x-auto scrollbar-hide">
+                    <div className="flex items-center gap-1"> {/* gap kam kiya taki compact rahe */}
+                        {tabs.map((tab) => {
+                            const Icon = tab.icon;
+                            const isActive = activeTab === tab.id;
+
+                            return (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id)}
+                                    className={`
+                        flex items-center gap-2 shrink-0 rounded-lg px-4 py-2.5
+                        text-sm font-medium transition-all duration-200 cursor-pointer
+                        ${isActive
+                                            ? "bg-primary text-black shadow-sm"
+                                            : "text-foreground-muted hover:bg-secondary/50 hover:text-primary"
+                                        }
+                    `}
+                                >
+                                    <Icon size={16} />
+                                    <span className="whitespace-nowrap">{tab.label}</span>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                <div className="h-2"/>
+
+                {/* Content */}
+
+                <div
+                    key={activeTab}
+                    className="page-enter animate-in fade-in duration-300" >
                     <ActiveComponent />
                 </div>
+
             </div>
+
+
         </div>
     );
 };
