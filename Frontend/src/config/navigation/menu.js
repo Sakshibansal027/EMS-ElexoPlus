@@ -2,6 +2,7 @@ import ROLES from "../roles";
 import { ROUTES } from "../../routes/routes";
 import {
   LayoutDashboard,
+  Bell,
   Users,
   CalendarDays,
   Plane,
@@ -26,6 +27,17 @@ export const MENUS = {
     },
     {
       id: 2,
+      label: "Notifications",
+      path: ROUTES.NOTIFICATIONS,
+      icon: Bell,
+      visible: true,
+      disabled: false,
+      badge: null,
+      permission: null,
+      children: [],
+    },
+    {
+      id: 3,
       label: "Employee Master",
       path: ROUTES.EMPLOYEE,
       icon: Users,
@@ -36,7 +48,7 @@ export const MENUS = {
       children: [],
     },
     {
-      id: 3,
+      id: 4,
       label: "Attendance",
       path: ROUTES.ATTENDANCE,
       icon: CalendarDays,
@@ -47,7 +59,7 @@ export const MENUS = {
       children: [],
     },
     {
-      id: 4,
+      id: 5,
       label: "Leave Management",
       path: ROUTES.LEAVE,
       icon: Plane,
@@ -58,7 +70,7 @@ export const MENUS = {
       children: [],
     },
     {
-      id: 5,
+      id: 6,
       label: "Payroll",
       path: ROUTES.PAYROLL,
       icon: Wallet,
@@ -69,7 +81,7 @@ export const MENUS = {
       children: [],
     },
     {
-      id: 6,
+      id: 7,
       label: "Sales",
       path: ROUTES.SALES,
       icon: ChartColumn,
@@ -80,7 +92,7 @@ export const MENUS = {
       children: [],
     },
     {
-      id: 7,
+      id: 8,
       label: "Reports",
       path: ROUTES.REPORTS,
       icon: FileText,
@@ -91,7 +103,7 @@ export const MENUS = {
       children: [],
     },
     {
-      id: 8,
+      id: 9,
       label: "Settings",
       path: ROUTES.SETTINGS,
       icon: Settings,
@@ -103,7 +115,6 @@ export const MENUS = {
     },
   ],
 
-  
   [ROLES.HR]: [
     {
       id: 1,
@@ -118,6 +129,17 @@ export const MENUS = {
     },
     {
       id: 2,
+      label: "Notifications",
+      path: ROUTES.NOTIFICATIONS,
+      icon: Bell,
+      visible: true,
+      disabled: false,
+      badge: null,
+      permission: null,
+      children: [],
+    },
+    {
+      id: 3,
       label: "Employee Master",
       path: ROUTES.EMPLOYEE,
       icon: Users,
@@ -128,7 +150,7 @@ export const MENUS = {
       children: [],
     },
     {
-      id: 3,
+      id: 4,
       label: "Attendance",
       path: ROUTES.ATTENDANCE,
       icon: CalendarDays,
@@ -139,7 +161,7 @@ export const MENUS = {
       children: [],
     },
     {
-      id: 4,
+      id: 5,
       label: "Leave Management",
       path: ROUTES.LEAVE,
       icon: Plane,
@@ -150,7 +172,7 @@ export const MENUS = {
       children: [],
     },
     {
-      id: 5,
+      id: 6,
       label: "Reports",
       path: ROUTES.REPORTS,
       icon: FileText,
@@ -161,7 +183,7 @@ export const MENUS = {
       children: [],
     },
     {
-      id: 6,
+      id: 7,
       label: "Settings",
       path: ROUTES.SETTINGS,
       icon: Settings,
@@ -187,6 +209,17 @@ export const MENUS = {
     },
     {
       id: 2,
+      label: "Notifications",
+      path: ROUTES.NOTIFICATIONS,
+      icon: Bell,
+      visible: true,
+      disabled: false,
+      badge: null,
+      permission: null,
+      children: [],
+    },
+    {
+      id: 3,
       label: "Sales",
       path: ROUTES.SALES,
       icon: ChartColumn,
@@ -197,7 +230,7 @@ export const MENUS = {
       children: [],
     },
     {
-      id: 3,
+      id: 4,
       label: "Attendance",
       path: ROUTES.ATTENDANCE,
       icon: CalendarDays,
@@ -208,7 +241,7 @@ export const MENUS = {
       children: [],
     },
     {
-      id: 4,
+      id: 5,
       label: "Leave Management",
       path: ROUTES.LEAVE,
       icon: Plane,
@@ -219,7 +252,7 @@ export const MENUS = {
       children: [],
     },
     {
-      id: 5,
+      id: 6,
       label: "Reports",
       path: ROUTES.REPORTS,
       icon: FileText,
@@ -230,7 +263,7 @@ export const MENUS = {
       children: [],
     },
     {
-      id: 6,
+      id: 7,
       label: "Settings",
       path: ROUTES.SETTINGS,
       icon: Settings,
@@ -256,6 +289,17 @@ export const MENUS = {
     },
     {
       id: 2,
+      label: "Notifications",
+      path: ROUTES.NOTIFICATIONS,
+      icon: Bell,
+      visible: true,
+      disabled: false,
+      badge: null,
+      permission: null,
+      children: [],
+    },
+    {
+      id: 3,
       label: "Attendance",
       path: ROUTES.ATTENDANCE,
       icon: CalendarDays,
@@ -266,7 +310,7 @@ export const MENUS = {
       children: [],
     },
     {
-      id: 3,
+      id: 4,
       label: "Leave Management",
       path: ROUTES.LEAVE,
       icon: Plane,
@@ -277,7 +321,7 @@ export const MENUS = {
       children: [],
     },
     {
-      id: 4,
+      id: 5,
       label: "Sales",
       path: ROUTES.SALES,
       icon: ChartColumn,
@@ -288,7 +332,7 @@ export const MENUS = {
       children: [],
     },
     {
-      id: 5,
+      id: 6,
       label: "Settings",
       path: ROUTES.SETTINGS,
       icon: Settings,
