@@ -3,7 +3,7 @@ import LeaveCard from "../components/admin/leaveCard.jsx";
 import ApplyLeaveSection from "../components/employee/applyLeaveSection.jsx";
 import LeaveBalanceCard from "../components/employee/LeaveBalanceCard.jsx";
 import ApplyLeaveModal from "../components/admin/applyLeaveModel.jsx";
-import LeaveHistorySection from "../components/employee/LeaveHistorySection";
+import LeaveHistorySection from "../components/employee/LeaveHistorySection.jsx";
 import EmployeeLeaveFilters from "../components/employee/employeeLeaveFilters.jsx";
 import UpcomingLeavesCard from "../components/employee/upcominLeavesCard.jsx";
 import LeaveAnalyticsCard from "../components/employee/leaveAnalyticsCard.jsx"
