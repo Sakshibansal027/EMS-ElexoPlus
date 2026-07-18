@@ -2,6 +2,7 @@ import { Navigate, Outlet } from "react-router-dom";
 
 import Sidebar from "../components/layout/Sidebar";
 import Navbar from "../components/layout/Navbar";
+import ToastContainer from "../components/ui/ToastContainer";
 
 import useAuth from "../features/auth/hooks/useAuth";
 
@@ -21,6 +22,8 @@ const DashboardLayout = () => {
 
   return (
     <div className="flex h-screen bg-background text-foreground">
+      <ToastContainer />
+
       {/* Sidebar */}
 
       <Sidebar {...DASHBOARD_STATE} />

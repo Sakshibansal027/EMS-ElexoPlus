@@ -1,4 +1,12 @@
-const AttendanceStatCard = ({ label, value, icon: Icon, tone = "default", hint }) => {
+
+
+const AttendanceStatCard = ({
+  label,
+  value,
+  icon: Icon,
+  tone = "default",
+  hint,
+}) => {
   const tones = {
     default: "text-foreground",
     primary: "text-primary",
@@ -7,20 +15,63 @@ const AttendanceStatCard = ({ label, value, icon: Icon, tone = "default", hint }
     danger: "text-[#e74c3c]",
     info: "text-[#4dabf7]",
   };
+
   return (
-    <div className="card hover-lift p-6">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="caption uppercase tracking-wider">{label}</p>
-          <p className={`mt-3 text-3xl font-extrabold ${tones[tone]}`}>{value}</p>
-          {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
-        </div>
-        {Icon && (
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-border bg-background-elevated">
-            <Icon size={20} className={tones[tone]} />
-          </div>
+    <div
+      className="
+      card
+      group
+      relative
+      flex
+      items-center
+      justify-between
+      p-7
+      min-h-[170px]
+      transition-all
+      duration-300
+      hover:-translate-y-1
+      hover:border-primary
+      hover:shadow-primary
+    "
+    >
+      <div>
+        <p className="text-base font-medium text-muted-foreground">
+          {label}
+        </p>
+
+        <h2 className={`mt-3 text-4xl font-bold tracking-tight ${tones[tone]}`}>
+          {value}
+        </h2>
+
+        {hint && (
+          <p className="mt-2 text-sm text-muted-foreground">
+            {hint}
+          </p>
         )}
       </div>
+
+      {Icon && (
+        <div
+          className="
+          flex
+          h-16
+          w-16
+          items-center
+          justify-center
+          rounded-2xl
+          bg-primary/10
+          transition-all
+          duration-300
+          group-hover:scale-110
+          group-hover:rotate-6
+        "
+        >
+          <Icon
+            size={30}
+            className={`${tones[tone]} transition-transform duration-300 group-hover:scale-110`}
+          />
+        </div>
+      )}
     </div>
   );
 };
