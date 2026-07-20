@@ -11,7 +11,6 @@ const LeaveHistorySection = ({
     startEntry,
     endEntry,
     onPageChange,
-    setCurrentPage,
     onViewLeave
 }) => {
     return (

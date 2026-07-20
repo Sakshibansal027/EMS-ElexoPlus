@@ -376,7 +376,7 @@ const ApplyLeaveModal = ({ employee, onClose, form }) => {
                                     ${
                                         errors.document
                                             ? "border-red-500"
-                                            : "border-\[\#303030\]"
+                                            : "border-[#303030]"
                                     }
                                 `}
                             >

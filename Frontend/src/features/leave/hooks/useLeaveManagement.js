@@ -37,7 +37,6 @@ export const useLeaveManagement = () => {
         leaveBalanceData: [],
         leaveHistory: [],
     });
-    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [teamPage, setTeamPage] = useState(1);
     const [historyPage, setHistoryPage] = useState(1);
@@ -56,12 +55,24 @@ export const useLeaveManagement = () => {
     );
 
     useEffect(() => {
-        setLoading(true);
+        let isCurrentRequest = true;
 
         getLeaveDashboard({ role, userId, asmId })
-            .then(setData)
-            .catch(setError)
-            .finally(() => setLoading(false));
+            .then((dashboard) => {
+                if (isCurrentRequest) {
+                    setData(dashboard);
+                    setError(null);
+                }
+            })
+            .catch((requestError) => {
+                if (isCurrentRequest) {
+                    setError(requestError);
+                }
+            });
+
+        return () => {
+            isCurrentRequest = false;
+        };
     }, [role, userId, asmId]);
 
     const filteredTeamLeaves = useMemo(
@@ -109,12 +120,12 @@ export const useLeaveManagement = () => {
         setHistoryPeriod(value);
         setHistoryPage(1);
     };
-    const changeStatus = async (employeeId, status) => {
-        await updateLeaveApplicationStatus(employeeId, status);
+    const changeStatus = async (leaveId, status) => {
+        await updateLeaveApplicationStatus(leaveId, status);
         setData((current) => ({
             ...current,
             teamLeaves: current.teamLeaves.map((item) =>
-                item.employeeId === employeeId ? { ...item, status } : item
+                item.id === leaveId ? { ...item, status } : item
             ),
         }));
     };
@@ -131,7 +142,6 @@ export const useLeaveManagement = () => {
     };
 
     return {
-        loading,
         error,
         permissions,
         user: {

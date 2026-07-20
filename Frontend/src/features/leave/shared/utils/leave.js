@@ -13,8 +13,15 @@ export const filterEmployeeLeaves = (applications, status, period, today = new D
 });
 
 export const paginate = (items, page, perPage) => {
-    const startIndex = (page - 1) * perPage;
-    return { records: items.slice(startIndex, startIndex + perPage), startIndex, totalPages: Math.ceil(items.length / perPage) };
+    const totalPages = Math.max(1, Math.ceil(items.length / perPage));
+    const currentPage = Math.min(Math.max(page, 1), totalPages);
+    const startIndex = (currentPage - 1) * perPage;
+
+    return {
+        records: items.slice(startIndex, startIndex + perPage),
+        startIndex,
+        totalPages,
+    };
 };
 
 export const getLeaveAnalytics = (balance) => {
