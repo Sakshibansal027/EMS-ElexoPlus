@@ -148,7 +148,7 @@ const LeaveManagement = () => {
                         {teamRecords.length ? (
                             teamRecords.map((application) => (
                                 <LeaveApplicationRow
-                                    key={application.employeeId}
+                                    key={application.id}
                                     {...application}
                                     onStatusChange={teamLeaves.changeStatus}
                                 />

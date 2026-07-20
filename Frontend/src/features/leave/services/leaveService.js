@@ -45,5 +45,5 @@ export const getLeaveDashboard = async ({ role, userId, asmId }) => ({
 });
 
 export const submitLeaveApplication = async (application) => application;
-export const updateLeaveApplicationStatus = async (employeeId, status) => ({ employeeId, status });
+export const updateLeaveApplicationStatus = async (leaveId, status) => ({ leaveId, status });
 export const cancelLeaveApplication = async (leaveId) => leaveId;

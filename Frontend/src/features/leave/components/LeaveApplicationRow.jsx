@@ -4,6 +4,7 @@ import {
 } from "../config/leaveStyles.js";
 
 const LeaveApplicationRow = ({
+    id,
     employeeName,
     employeeId,
     designation,
@@ -176,7 +177,7 @@ const LeaveApplicationRow = ({
                             <button
                             onClick={() =>
                                 onStatusChange(
-                                    employeeId,
+                                    id,
                                     "Approved"
                                 )
                             }
@@ -193,7 +194,7 @@ const LeaveApplicationRow = ({
                         <button
                         onClick={() =>
                             onStatusChange(
-                                employeeId,
+                                id,
                                 "Rejected"
                             )
                         }
