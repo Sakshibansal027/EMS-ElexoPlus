@@ -666,3 +666,142 @@ svg:focus-visible {
 .password-scroll::-webkit-scrollbar-thumb:hover {
   background: var(--color-primary-hover);
 }
+
+/* ==========================================================
+   LIGHT THEME
+   ========================================================== */
+
+[data-theme="light"] {
+  --color-background: #f8f8fa;
+  --color-background-secondary: #f0f0f2;
+  --color-background-elevated: #ffffff;
+
+  --color-foreground: #111113;
+  --color-foreground-muted: #555557;
+
+  --color-card: #ffffff;
+  --color-card-hover: #f5f5f7;
+
+  --color-primary: #d4a800;
+  --color-primary-hover: #c09a00;
+  --color-primary-light: #e8c840;
+
+  --color-primary-foreground: #ffffff;
+
+  --color-secondary: #e8e8ea;
+  --color-secondary-hover: #dcdcdf;
+
+  --color-secondary-foreground: #111113;
+
+  --color-border: #e0e0e2;
+  --color-border-light: #ccccce;
+
+  --color-input: #ffffff;
+
+  --color-muted: #ececed;
+  --color-muted-foreground: #888;
+
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 14px 40px rgba(0, 0, 0, 0.1);
+  --shadow-primary: 0 0 20px rgba(212, 168, 0, 0.2);
+
+  --gradient-primary: linear-gradient(135deg, #d4a800, #c09a00);
+  --gradient-dark: linear-gradient(180deg, #f0f0f2, #f8f8fa);
+  --gradient-glow: radial-gradient(
+    circle at top right,
+    rgba(212, 168, 0, 0.12),
+    transparent 80%
+  );
+}
+
+[data-theme="light"] body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+}
+
+[data-theme="light"] .dashboard-bg {
+  background:
+    radial-gradient(circle at 8% 8%, rgba(212, 168, 0, 0.08), transparent 28%),
+    radial-gradient(
+      circle at 92% 92%,
+      rgba(212, 168, 0, 0.05),
+      transparent 32%
+    ),
+    radial-gradient(circle at 50% 0%, rgba(212, 168, 0, 0.03), transparent 45%),
+    var(--color-background);
+}
+
+[data-theme="light"] .dashboard-bg::before {
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.025) 1px, transparent 1px);
+}
+
+[data-theme="light"] .glass {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+[data-theme="light"] .hero-card {
+  background: linear-gradient(
+    135deg,
+    rgba(212, 168, 0, 0.06),
+    rgba(0, 0, 0, 0.01)
+  );
+}
+
+[data-theme="light"] .hero-action {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+[data-theme="light"] .btn-primary {
+  color: var(--color-primary-foreground);
+}
+
+[data-theme="light"] .avatar {
+  color: var(--color-primary-foreground);
+}
+
+/* ==========================================================
+   FONT SIZE SCALING
+   ========================================================== */
+
+[data-font-size="small"] {
+  font-size: 13px;
+}
+
+[data-font-size="medium"] {
+  font-size: 15px;
+}
+
+[data-font-size="large"] {
+  font-size: 17px;
+}
+
+[data-font-size="small"] .heading-primary {
+  font-size: 1.25em;
+}
+
+[data-font-size="large"] .heading-primary {
+  font-size: 1.75em;
+}
+
+/* ==========================================================
+   REDUCED MOTION
+   ========================================================== */
+
+[data-reduced-motion="true"] *,
+[data-reduced-motion="true"] *::before,
+[data-reduced-motion="true"] *::after {
+  animation-duration: 0.01ms !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* Custom utility for clean scrollbar */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
