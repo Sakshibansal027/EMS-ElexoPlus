@@ -1,6 +1,7 @@
 import { Eye } from "lucide-react";
-import Pagination from "../admin/pagination.jsx";
-import CustomSelect from "../../../employee-master/components/ui/CustomSelect";
+import Pagination from "./Pagination.jsx";
+import { statusStyles } from "../config/leaveStyles.js";
+import { formatShortDate } from "../shared/utils/date.js";
 
 const LeaveHistorySection = ({
     leaveHistory,
@@ -13,23 +14,6 @@ const LeaveHistorySection = ({
     setCurrentPage,
     onViewLeave
 }) => {
-    const statusStyles = {
-        Approved:
-            "bg-[#1d3326] text-[#6ecf8d]",
-        Pending:
-            "bg-[#2d2610] text-[#d4b24c]",
-        Rejected:
-            "bg-[#331f1f] text-[#d87a7a]",
-    };
-    const formatDate = (date) =>
-        new Date(date).toLocaleDateString(
-            "en-GB",
-            {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-            }
-        );
     return (
         <div className="card p-6">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
@@ -93,7 +77,7 @@ const LeaveHistorySection = ({
                                     "
                                 >
                                     <td className="py-5 text-sm">
-                                        {formatDate(leave.date)}
+                                        {formatShortDate(leave.date)}
                                     </td>
 
                                     <td className="text-sm">
@@ -101,11 +85,11 @@ const LeaveHistorySection = ({
                                     </td>
 
                                     <td className="text-sm">
-                                        {formatDate(leave.fromDate)}
+                                        {formatShortDate(leave.fromDate)}
                                     </td>
 
                                     <td className="text-sm">
-                                        {formatDate(leave.toDate)}
+                                        {formatShortDate(leave.toDate)}
                                     </td>
 
                                     <td className="text-sm">
