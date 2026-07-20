@@ -23,7 +23,7 @@ import CorrectionModal from "../components/CorrectionModal";
 import { AttendanceTrendChart } from "../components/AttendanceCharts";
 import { AttendanceLoading } from "../components/AttendanceStates";
 
-import attendanceService from "../services/attendanceService";
+import { attendanceService } from "../services/attendanceService";
 import { ATTENDANCE_STATUS } from "../config/attendanceStatus";
 
 const WEEK_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];

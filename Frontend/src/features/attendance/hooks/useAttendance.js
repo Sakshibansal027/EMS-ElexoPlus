@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import useAuth from "../../auth/hooks/useAuth";
 import ROLES from "../../../config/roles";
 import attendancePermissions from "../config/attendancePermissions";
-import attendanceService from "../services/attendanceService";
+import { attendanceService } from "../services/attendanceService";
 import { ATTENDANCE_STATUS } from "../config/attendanceStatus";
 import {
   Users,

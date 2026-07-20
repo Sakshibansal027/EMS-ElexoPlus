@@ -21,12 +21,11 @@ import {
 import { CORRECTION_REQUESTS } from "../mock/corrections";
 import { ATTENDANCE_NOTIFICATIONS } from "../mock/notifications";
 import { CORRECTION_STATUS } from "../config/attendanceStatus";
-
 // Simulated network latency so pages exercise their loading state.
 // When wiring the real backend, remove `wait` and return the API promise.
 const LATENCY_MS = 150;
 const wait = (data, ms = LATENCY_MS) =>
-  new Promise((resolve) => setTimeout(() => resolve(data), ms));
+  data;
 
 // In-memory stores. Cloned from seed data so runtime mutations
 // (approve/reject/submit) don't leak back into the seed arrays.
@@ -118,7 +117,7 @@ const updateCorrectionStatus = (id, status) => {
 // ---------- Notifications ----------
 const fetchNotifications = () => wait(_notifications.map((n) => ({ ...n })));
 
-const AttendanceDataProvider = {
+export const AttendanceDataProvider = {
   fetchEmployees,
   fetchEmployeeById,
   fetchEmployeeByName,
@@ -135,4 +134,3 @@ const AttendanceDataProvider = {
   fetchNotifications,
 };
 
-export default AttendanceDataProvider;
