@@ -9,10 +9,18 @@ import ProtectedRoute from "../features/auth/components/ProtectedRoute";
 import Dashboard from "../features/dashboard/pages/Dashboard";
 import ComingSoon from "../components/common/ComingSoon";
 import EmployeeMaster from "../features/employee-master/pages/EmployeeMaster";
+<<<<<<< Updated upstream
 import LeaveManagement from "../features/leave/pages/leaveManagement";
 import EmployeeLeaveDashboard from "../features/leave/pages/employeeLeaveDashboard";
 import SettingsPage from "../features/settings/pages/SettingsPage";
 import { ROUTES } from "./routes";
+=======
+import Sales from "../features/sales/pages/SalesPage";
+import { ROUTES } from "./routes";
+import NotificationsPage from "../features/notifications/pages/NotificationsPage";
+import EmployeePayrollDashboard from "../features/payroll/pages/employeePayrollDashboard";
+import LeaveManagement from "../features/leave/pages/leaveManagement";
+>>>>>>> Stashed changes
 
 const AppRoutes = () => {
   return (
@@ -54,12 +62,12 @@ element={<AttendanceRouter />}
 
           <Route
             path={ROUTES.LEAVE}
-            element={<EmployeeLeaveDashboard />}
+            element={<LeaveManagement />}
           />
 
           <Route
             path={ROUTES.PAYROLL}
-            element={<ComingSoon title="Payroll" />}
+            element={<EmployeePayrollDashboard />}
           />
 
           <Route path={ROUTES.SALES} element={<ComingSoon title="Sales" />} />

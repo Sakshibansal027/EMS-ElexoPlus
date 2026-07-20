@@ -1,60 +1,15 @@
-import { useState } from "react";
 import { X } from "lucide-react";
 
-const formatDate = (date) =>
-    new Date(date).toLocaleDateString(
-        "en-GB",
-        {
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-        }
-    );
+import { upcomingStatusStyles } from "../config/leaveStyles.js";
+import { formatShortDate } from "../shared/utils/date.js";
 
 const UpcomingLeavesCard = ({
-    leaveHistory = [],
+    showAll,
+    upcomingLeaves = [],
+    visibleLeaves = [],
+    onShowAllChange,
+    onCancelLeave,
 }) => {
-    const [showAll, setShowAll] =
-        useState(false);
-
-    const [leaves, setLeaves] =
-        useState(leaveHistory);
-
-    const today = new Date();
-
-    const upcomingLeaves = leaves
-        .filter(
-            (leave) =>
-                new Date(leave.fromDate) >
-                today
-        )
-        .sort(
-            (a, b) =>
-                new Date(a.fromDate) -
-                new Date(b.fromDate)
-        );
-
-    const visibleLeaves =
-        upcomingLeaves.slice(0, 3);
-
-    const handleCancelLeave = (
-        leaveId
-    ) => {
-        const confirmed =
-            window.confirm(
-                "Are you sure you want to cancel this leave?"
-            );
-
-        if (!confirmed) return;
-
-        setLeaves((prev) =>
-            prev.filter(
-                (leave) =>
-                    leave.id !== leaveId
-            )
-        );
-    };
-
     return (
         <>
             <div className="card p-5 h-full">
@@ -104,13 +59,13 @@ const UpcomingLeavesCard = ({
                                             </h4>
 
                                             <p className="text-xs text-muted-foreground">
-                                                {formatDate(
+                                                {formatShortDate(
                                                     leave.fromDate
                                                 )}
 
                                                 {leave.toDate !==
                                                     leave.fromDate &&
-                                                    ` - ${formatDate(
+                                                    ` - ${formatShortDate(
                                                         leave.toDate
                                                     )}`}
                                             </p>
@@ -130,10 +85,7 @@ const UpcomingLeavesCard = ({
                                                     rounded-full
                                                     text-[10px]
                                                     ${
-                                                        leave.status ===
-                                                        "Pending"
-                                                            ? "bg-yellow-500/10 text-yellow-400"
-                                                            : "bg-green-500/10 text-green-400"
+                                                        upcomingStatusStyles[leave.status]
                                                     }
                                                 `}
                                             >
@@ -146,7 +98,7 @@ const UpcomingLeavesCard = ({
                                                 "Pending" && (
                                                 <button
                                                     onClick={() =>
-                                                        handleCancelLeave(
+                                                        onCancelLeave(
                                                             leave.id
                                                         )
                                                     }
@@ -175,7 +127,7 @@ const UpcomingLeavesCard = ({
                             3 && (
                             <button
                                 onClick={() =>
-                                    setShowAll(
+                                    onShowAllChange(
                                         true
                                     )
                                 }
@@ -228,7 +180,7 @@ const UpcomingLeavesCard = ({
 
                             <button
                                 onClick={() =>
-                                    setShowAll(
+                                    onShowAllChange(
                                         false
                                     )
                                 }
@@ -277,13 +229,13 @@ const UpcomingLeavesCard = ({
                                             </h4>
 
                                             <p className="text-sm text-muted-foreground">
-                                                {formatDate(
+                                                {formatShortDate(
                                                     leave.fromDate
                                                 )}
 
                                                 {leave.toDate !==
                                                     leave.fromDate &&
-                                                    ` - ${formatDate(
+                                                    ` - ${formatShortDate(
                                                         leave.toDate
                                                     )}`}
                                             </p>
@@ -303,10 +255,7 @@ const UpcomingLeavesCard = ({
                                                     rounded-full
                                                     text-xs
                                                     ${
-                                                        leave.status ===
-                                                        "Pending"
-                                                            ? "bg-yellow-500/10 text-yellow-400"
-                                                            : "bg-green-500/10 text-green-400"
+                                                        upcomingStatusStyles[leave.status]
                                                     }
                                                 `}
                                             >
@@ -319,7 +268,7 @@ const UpcomingLeavesCard = ({
                                                 "Pending" && (
                                                 <button
                                                     onClick={() =>
-                                                        handleCancelLeave(
+                                                        onCancelLeave(
                                                             leave.id
                                                         )
                                                     }

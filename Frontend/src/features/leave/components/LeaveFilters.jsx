@@ -1,5 +1,5 @@
 import { RotateCcw } from "lucide-react";
-import CustomSelect from "../../../employee-master/components/ui/CustomSelect";
+import CustomSelect from "../../employee-master/components/ui/CustomSelect";
 
 const LeaveFilters = ({
     activeStatus,
@@ -8,32 +8,10 @@ const LeaveFilters = ({
     onLeaveTypeChange,
     selectedDayType,
     onDayTypeChange,
+    statusTabs,
+    leaveTypeOptions,
+    dayTypeOptions,
 }) => {
-
-    const statusTabs = [
-        "All",
-        "Pending",
-        "Approved",
-        "Rejected",
-    ];
-
-    const leaveTypeOptions = [
-        { label: "All Leaves", value: "All" },
-        { label: "Casual Leave", value: "CL" },
-        { label: "Earned Leave", value: "EL" },
-        { label: "Sick Leave", value: "SL" },
-        { label: "Maternity Leave", value: "ML" },
-        { label: "Paternity Leave", value: "PL" },
-        { label: "Compensatory Off", value: "CO" },
-        { label: "Loss Of Pay", value: "LOP" },
-    ];
-
-    const dayTypeOptions = [
-        { label: "All", value: "All" },
-        { label: "Full Day", value: "Full Day" },
-        { label: "First Half", value: "First Half" },
-        { label: "Second Half", value: "Second Half" },
-    ];
 
     return (
         <div className="space-y-6">

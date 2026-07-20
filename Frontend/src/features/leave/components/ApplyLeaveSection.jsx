@@ -1,5 +1,5 @@
 import { CalendarSearch } from "lucide-react";
-import ApplyLeaveButton from "../admin/applyLeaveButton.jsx";
+import ApplyLeaveButton from "./ApplyLeaveButton.jsx";
 
 const ApplyLeaveSection = ({
     setShowApplyLeaveModal,
