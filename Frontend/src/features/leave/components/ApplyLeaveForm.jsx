@@ -1,138 +1,39 @@
-import { useState } from "react";
 import Select from "react-select";
 
 import {
+    applyLeaveMessages,
+    leaveDurationOptions,
+} from "../config/applyLeaveForm.js";
+import {
     leaveTypeOptions,
-} from "../../mock/leaveData.js";
+} from "../config/leaveOptions.js";
+import { selectStyles } from "../config/leaveStyles.js";
 
-const selectStyles = {
-    control: (base) => ({
-        ...base,
-        backgroundColor: "#1d1d1d",
-        borderColor: "#303030",
-        minHeight: "50px",
-        boxShadow: "none",
-        borderRadius: "12px",
-        color: "#f8f8f8",
-    }),
-
-    menu: (base) => ({
-        ...base,
-        backgroundColor: "#1b1b1b",
-        border: "1px solid #303030",
-        borderRadius: "12px",
-    }),
-
-    option: (base, state) => ({
-        ...base,
-        backgroundColor: state.isFocused
-            ? "#232323"
-            : "#1b1b1b",
-        color: "#f8f8f8",
-        cursor: "pointer",
-    }),
-
-    singleValue: (base) => ({
-        ...base,
-        color: "#f8f8f8",
-    }),
-
-    placeholder: (base) => ({
-        ...base,
-        color: "#909090",
-    }),
-
-    input: (base) => ({
-        ...base,
-        color: "#f8f8f8",
-    }),
-
-    indicatorSeparator: () => ({
-        display: "none",
-    }),
-};
-
-const ApplyLeaveModal = ({ onClose }) => {
-
-    const [leaveType, setLeaveType] = useState(null);
-
-    const [dayType, setDayType] = useState("Full Day");
-    const [fromDate, setFromDate] = useState("");
-
-    const [toDate, setToDate] = useState("");
-
-    const [reason, setReason] = useState("");
-
-    const [
+const ApplyLeaveModal = ({ employee, onClose, form }) => {
+    const {
+        leaveType,
+        dayType,
+        fromDate,
+        toDate,
+        reason,
         emergencyContact,
-        setEmergencyContact,
-    ] = useState("");
-
-    const [document, setDocument] = useState(null);
-
-    const [errors, setErrors] = useState({});
-
-    const [
+        document,
+        errors,
         showValidationError,
-        setShowValidationError,
-    ] = useState(false);
-
-    const today = new Date().toISOString().split("T")[0];
-
-    const handleSubmit = () => {
-
-        const newErrors = {
-            leaveType: !leaveType,
-            fromDate: !fromDate,
-            toDate: !toDate,
-            reason: !reason.trim(),
-            emergencyContact:
-                !/^[0-9]{10}$/.test(
-                    emergencyContact
-                ),
-        };
-
-        if (
-            fromDate &&
-            toDate &&
-            new Date(toDate) <
-                new Date(fromDate)
-        ) {
-            newErrors.toDate = true;
-        }
-
-        if (
-            dayType === "Half Day" &&
-            fromDate !== toDate
-        ) {
-            newErrors.dayType = true;
-        }
-        setErrors(newErrors);
-
-        const hasErrors =
-            Object.values(newErrors)
-                .some(Boolean);
-
-        if (hasErrors) {
-            setShowValidationError(true);
-            return;
-        }
-
-        setShowValidationError(false);
-
-        if (
-            leaveType?.value === "SL" &&
-            !document
-        ) {
-            newErrors.document = true;
-        }
-
-        alert(
-            "Leave submitted successfully"
-        );
-
-        onClose();
-    };
+        today,
+        requiresMedicalDocument,
+        isHalfDayDisabled,
+        showHalfDayUnavailable,
+        setDayType,
+        setReason,
+        updateLeaveType,
+        updateFromDate,
+        updateToDate,
+        updateEmergencyContact,
+        updateDocument,
+        clearError,
+        submit,
+    } = form;
 
     return (
         <div
@@ -219,7 +120,7 @@ const ApplyLeaveModal = ({ onClose }) => {
                                 text-red-300
                             "
                         >
-                            Please fill all required fields correctly.
+                            {applyLeaveMessages.validation}
                         </div>
                     )}
 
@@ -240,7 +141,7 @@ const ApplyLeaveModal = ({ onClose }) => {
                                     text-lg
                                 "
                             >
-                                Rahul Sharma
+                                {employee.name}
                             </h3>
 
                             <p
@@ -250,7 +151,7 @@ const ApplyLeaveModal = ({ onClose }) => {
                                     mt-1
                                 "
                             >
-                                Admin
+                                {employee.designation ?? employee.role}
                             </p>
                         </div>
 
@@ -266,7 +167,7 @@ const ApplyLeaveModal = ({ onClose }) => {
                                 border-[rgba(244,194,28,.2)]
                             "
                         >
-                            EMP001
+                            {employee.employeeId}
                         </span>
                     </div>
 
@@ -281,22 +182,7 @@ const ApplyLeaveModal = ({ onClose }) => {
                         <Select
                             options={leaveTypeOptions}
                             value={leaveType}
-                            onChange={(selected) => {
-
-                                setLeaveType(selected);
-
-                                if (
-                                    selected?.value !== "SL"
-                                ) {
-                                    setDocument(null);
-                                }
-
-                                setErrors((prev) => ({
-                                    ...prev,
-                                    leaveType: false,
-                                    document: false,
-                                }));
-                            }}
+                            onChange={updateLeaveType}
                             placeholder="Select leave type..."
                             styles={{
                                 ...selectStyles,
@@ -316,20 +202,7 @@ const ApplyLeaveModal = ({ onClose }) => {
                             min={today}
                             onChange={(event) => {
 
-                                const value = event.target.value;
-                                setFromDate(value);
-
-                                if (
-                                    toDate &&
-                                    value !== toDate
-                                ) {
-                                    setDayType("Full Day");
-                                }
-
-                                setErrors((prev) => ({
-                                    ...prev,
-                                    fromDate: false,
-                                }));
+                                updateFromDate(event.target.value);
                             }}
                             className={`
                                 input
@@ -351,22 +224,7 @@ const ApplyLeaveModal = ({ onClose }) => {
                             min={fromDate || today}
                             onChange={(event) => {
 
-                                const value =
-                                    event.target.value;
-
-                                setToDate(value);
-
-                                if (
-                                    fromDate &&
-                                    value !== fromDate
-                                ) {
-                                    setDayType("Full Day");
-                                }
-
-                                setErrors((prev) => ({
-                                    ...prev,
-                                    toDate: false,
-                                }));
+                                updateToDate(event.target.value);
                             }}
                             className={`
                                 input
@@ -403,11 +261,7 @@ const ApplyLeaveModal = ({ onClose }) => {
                                 event.target.value
                             )
                         }
-                        disabled={
-                            fromDate &&
-                            toDate &&
-                            fromDate !== toDate
-                        }
+                        disabled={isHalfDayDisabled}
                         className="
                             input
                             w-full
@@ -416,22 +270,18 @@ const ApplyLeaveModal = ({ onClose }) => {
                             rounded-lg
                         "
                     >
-                        <option value="Full Day">
-                            Full Day
-                        </option>
-
-                        <option value="Half Day">
-                            Half Day
-                        </option>
+                        {leaveDurationOptions.map((option) => (
+                            <option key={option} value={option}>
+                                {option}
+                            </option>
+                        ))}
                     </select>
                         {errors.dayType && (
                             <p className="text-red-400 text-xs mt-2">
-                                Half Day leave is only allowed for a single day.
+                                {applyLeaveMessages.halfDay}
                             </p>
                         )}
-                    {fromDate &&
-                        toDate &&
-                        fromDate !== toDate && (
+                    {showHalfDayUnavailable && (
                             <p
                                 className="
                                     text-xs
@@ -439,8 +289,7 @@ const ApplyLeaveModal = ({ onClose }) => {
                                     mt-2
                                 "
                             >
-                                Half Day leave is only
-                                available for a single day.
+                                {applyLeaveMessages.halfDayUnavailable}
                             </p>
                         )}
                 </div>
@@ -450,14 +299,8 @@ const ApplyLeaveModal = ({ onClose }) => {
                         value={reason}
                         onChange={(event) => {
 
-                            setReason(
-                                event.target.value
-                            );
-
-                            setErrors((prev) => ({
-                                ...prev,
-                                reason: false,
-                            }));
+                            setReason(event.target.value);
+                            clearError("reason");
                         }}
                         placeholder="Enter leave reason..."
                         className={`
@@ -482,18 +325,7 @@ const ApplyLeaveModal = ({ onClose }) => {
                         value={emergencyContact}
                         onChange={(event) => {
 
-                            const value =
-                                event.target.value.replace(
-                                    /\D/g,
-                                    ""
-                                );
-
-                            setEmergencyContact(value);
-
-                            setErrors((prev) => ({
-                                ...prev,
-                                emergencyContact: false,
-                            }));
+                            updateEmergencyContact(event.target.value);
                         }}
                         placeholder="Emergency Contact Number"
                         className={`
@@ -512,12 +344,12 @@ const ApplyLeaveModal = ({ onClose }) => {
 
                     {errors.emergencyContact && (
                         <p className="text-red-400 text-xs">
-                            Enter a valid 10-digit emergency contact number.
+                            {applyLeaveMessages.invalidContact}
                         </p>
                     )}
 
                     {/* Sick Leave Document */}
-                    {(leaveType?.value === "SL" || leaveType?.value === "ML" ||leaveType?.value === "PL") && (
+                    {requiresMedicalDocument && (
                         <div>
                             <label
                                 className="
@@ -544,7 +376,7 @@ const ApplyLeaveModal = ({ onClose }) => {
                                     ${
                                         errors.document
                                             ? "border-red-500"
-                                            : "border-\[\#303030\]"
+                                            : "border-[#303030]"
                                     }
                                 `}
                             >
@@ -579,14 +411,7 @@ const ApplyLeaveModal = ({ onClose }) => {
                                     accept=".pdf,.jpg,.jpeg,.png"
                                     className="hidden"
                                     onChange={(event) => {
-                                        setDocument(
-                                            event.target.files?.[0]
-                                        );
-
-                                        setErrors((prev) => ({
-                                            ...prev,
-                                            document: false,
-                                        }));
+                                        updateDocument(event.target.files?.[0]);
                                     }}
                                 />
                             </label>
@@ -598,8 +423,7 @@ const ApplyLeaveModal = ({ onClose }) => {
                                     mt-2
                                 "
                             >
-                                Medical certificate is required
-                                for Medical Leave.
+                                {applyLeaveMessages.medicalCertificateHint}
                             </p>
 
                             {errors.document && (
@@ -610,8 +434,7 @@ const ApplyLeaveModal = ({ onClose }) => {
                                         mt-2
                                     "
                                 >
-                                    Medical certificate is
-                                    required.
+                                    {applyLeaveMessages.medicalCertificateRequired}
                                 </p>
                             )}
                         </div>
@@ -639,7 +462,7 @@ const ApplyLeaveModal = ({ onClose }) => {
                         </button>
 
                         <button
-                            onClick={handleSubmit}
+                            onClick={submit}
                             className="
                                 btn-primary
                                 px-6

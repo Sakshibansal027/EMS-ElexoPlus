@@ -11,7 +11,7 @@ export const LeaveCardsData = [
         value: 8,
         description: "Accrued Monthly"
     },
-    {
+    { 
         icon: CalendarRange,
         title: "Earned Leave (EL)",
         value: 15,
@@ -164,68 +164,3 @@ export const LeaveApplicationsData = [
     },
 ];
 
-export const PaginationData = {
-    currentPage: 1,
-    totalPages: 5,
-    totalEntries: 20,
-    startEntry: 1,
-    endEntry: 4
-};
-
-export const employeeOptions = [
-    {
-        value: "EMP001",
-        label: "Rahul Sharma (EMP001)",
-    },
-    {
-        value: "EMP002",
-        label: "Priya Patel (EMP002)",
-    },
-    {
-        value: "EMP003",
-        label: "Rahul Sharma (EMP003)",
-    },
-    {
-        value: "EMP004",
-        label: "Aman Kumar (EMP004)",
-    },
-    {
-        value: "EMP005",
-        label: "Sneha Gupta (EMP005)",
-    },
-    {
-        value: "EMP006",
-        label: "Vikas Yadav (EMP006)",
-    },
-];
-
-export const leaveTypeOptions = [
-    {
-        value: "CL",
-        label: "Casual Leave",
-    },
-    {
-        value: "EL",
-        label: "Earned Leave",
-    },
-    {
-        value: "SL",
-        label: "Sick Leave",
-    },
-    {
-        value: "ML",
-        label: "Maternity Leave",
-    },
-    {
-        value: "PL",
-        label: "Paternity Leave",
-    },
-    {
-        value: "CO",
-        label: "Compensatory Off",
-    },
-    {
-        value: "LOP",
-        label: "Loss of Pay",
-    }
-];

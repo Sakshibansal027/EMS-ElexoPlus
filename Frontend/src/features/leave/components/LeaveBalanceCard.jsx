@@ -1,7 +1,4 @@
 const LeaveBalanceCard = ({ leave }) => {
-    const percentage =
-        (leave.available / leave.total) * 100;
-
     return (
         <div
             className="
@@ -57,7 +54,7 @@ const LeaveBalanceCard = ({ leave }) => {
                 </span>
 
                 <span className="text-primary">
-                    {Math.round(percentage)}%
+                    {leave.percentage}%
                 </span>
             </div>
 
@@ -73,7 +70,7 @@ const LeaveBalanceCard = ({ leave }) => {
                 <div
                     className={`${leave.color} h-full rounded-full transition-all duration-500`}
                     style={{
-                        width: `${percentage}%`,
+                        width: `${leave.percentage}%`,
                     }}
                 />
             </div>

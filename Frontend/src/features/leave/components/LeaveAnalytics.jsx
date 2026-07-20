@@ -7,29 +7,10 @@ import {
 } from "recharts";
 
 const LeaveAnalyticsCard = ({
-    leaveBalanceData = [],
+    chartData = [],
+    totalDaysTaken = 0,
+    colors = ["#84cc16", "#f59e0b", "#3b82f6"],
 }) => {
-    const chartData = leaveBalanceData.map(
-        (item) => ({
-            name: item.title,
-            value:
-                item.total -
-                item.available,
-        })
-    );
-
-    const totalDaysTaken =
-        chartData.reduce(
-            (sum, item) =>
-                sum + item.value,
-            0
-        );
-
-    const COLORS = [
-        "#84cc16",
-        "#f59e0b",
-        "#3b82f6",
-    ];
 
     return (
         <div className="card p-5">
@@ -70,7 +51,7 @@ const LeaveAnalyticsCard = ({
                                                 index
                                             }
                                             fill={
-                                                COLORS[
+                                                colors[
                                                     index
                                                 ]
                                             }
@@ -103,7 +84,7 @@ const LeaveAnalyticsCard = ({
                                         className="w-3 h-3 rounded-full"
                                         style={{
                                             backgroundColor:
-                                                COLORS[
+                                                colors[
                                                     index
                                                 ],
                                         }}

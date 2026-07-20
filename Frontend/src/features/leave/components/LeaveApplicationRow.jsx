@@ -1,4 +1,10 @@
+import {
+    borderedStatusStyles,
+    leaveTypeStyles,
+} from "../config/leaveStyles.js";
+
 const LeaveApplicationRow = ({
+    id,
     employeeName,
     employeeId,
     designation,
@@ -14,29 +20,6 @@ const LeaveApplicationRow = ({
     status,
     onStatusChange,
 }) => {
-
-    const statusStyles = {
-        Pending:
-            "bg-[#2d2610] text-[#d4b24c] border border-[#453915]",
-
-        Approved:
-            "bg-[#1d3326] text-[#6ecf8d] border border-[#284734]",
-
-        Rejected:
-            "bg-[#331f1f] text-[#d87a7a] border border-[#4a2c2c]",
-    };
-
-    const leaveTypeStyles = {
-        CL:
-            "bg-[#2d2610] text-[#d4b24c] border border-[#453915]",
-
-        EL:
-            "bg-[#142c3d] text-[#72b8f8] border border-[#1f4058]",
-
-        SL:
-            "bg-[#2a1d33] text-[#c78af0] border border-[#3d2b4a]",
-    };
-
     return (
         <div
             className="
@@ -183,7 +166,7 @@ const LeaveApplicationRow = ({
                             rounded-md
                             text-xs
                             border
-                            ${statusStyles[status]}
+                            ${borderedStatusStyles[status]}
                         `}
                     >
                         {status}
@@ -194,7 +177,7 @@ const LeaveApplicationRow = ({
                             <button
                             onClick={() =>
                                 onStatusChange(
-                                    employeeId,
+                                    id,
                                     "Approved"
                                 )
                             }
@@ -211,7 +194,7 @@ const LeaveApplicationRow = ({
                         <button
                         onClick={() =>
                             onStatusChange(
-                                employeeId,
+                                id,
                                 "Rejected"
                             )
                         }

@@ -9,10 +9,11 @@ import SettingsPage from "../features/settings/pages/SettingsPage";
 import Dashboard from "../features/dashboard/pages/Dashboard";
 import ComingSoon from "../components/common/ComingSoon";
 import EmployeeMaster from "../features/employee-master/pages/EmployeeMaster";
+import LeaveManagement from "../features/leave/pages/LeaveManagement";
 import Sales from "../features/sales/pages/SalesPage";
-import EmployeeLeaveDashboard from "../features/leave/pages/employeeLeaveDashboard";
 import { ROUTES } from "./routes";
 import NotificationsPage from "../features/notifications/pages/NotificationsPage";
+import EmployeePayrollDashboard from "../features/payroll/pages/employeePayrollDashboard";
 
 const AppRoutes = () => {
   return (
@@ -43,12 +44,12 @@ const AppRoutes = () => {
 
           <Route
             path={ROUTES.LEAVE}
-            element={<EmployeeLeaveDashboard />}
+            element={<LeaveManagement />}
           />
 
           <Route
             path={ROUTES.PAYROLL}
-            element={<ComingSoon title="Payroll" />}
+            element={<EmployeePayrollDashboard />}
           />
 
           <Route
