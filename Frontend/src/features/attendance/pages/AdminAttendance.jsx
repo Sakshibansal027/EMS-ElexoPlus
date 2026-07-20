@@ -21,7 +21,7 @@ import {
 } from "../components/AttendanceCharts";
 import { AttendanceLoading } from "../components/AttendanceStates";
 
-import attendanceService from "../services/attendanceService";
+import { attendanceService } from "../services/attendanceService";
 import { ATTENDANCE_STATUS } from "../config/attendanceStatus";
 
 const TABS = ["Overview", "All Records", "Corrections", "Reports"];

@@ -9,7 +9,7 @@ import { AttendanceTrendChart } from "../components/AttendanceCharts";
 import AttendanceTimeline from "../components/AttendanceTimeline";
 import { AttendanceLoading } from "../components/AttendanceStates";
 
-import attendanceService from "../services/attendanceService";
+import { attendanceService } from "../services/attendanceService";
 import { ATTENDANCE_STATUS } from "../config/attendanceStatus";
 
 const FILTER_ALL = "All";
