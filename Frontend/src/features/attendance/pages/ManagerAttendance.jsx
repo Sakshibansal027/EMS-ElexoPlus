@@ -1,116 +1,112 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { Users, UserCheck, Clock, UserX } from "lucide-react";
 
-import PageHeader from "../components/PageHeader";
 import AttendanceStatCard from "../components/AttendanceStatCard";
 import AttendanceFilters from "../components/AttendanceFilters";
 import AttendanceTable from "../components/AttendanceTable";
 import { AttendanceTrendChart } from "../components/AttendanceCharts";
 import AttendanceTimeline from "../components/AttendanceTimeline";
-import {
-  ATTENDANCE_RECORDS,
-  ATTENDANCE_EMPLOYEES,
-} from "../mock/attendanceRecords";
+import { AttendanceLoading } from "../components/AttendanceStates";
+
+import attendanceService from "../services/attendanceService";
 import { ATTENDANCE_STATUS } from "../config/attendanceStatus";
+
+const FILTER_ALL = "All";
+const WEEK_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const DEFAULT_MANAGER_BRANCH = "Delhi";
+const EXCLUDED_TEAM_ROLES = ["Area Sales Manager"];
 
 const ManagerAttendance = () => {
   const ctx = useOutletContext() || {};
-  const managerBranch =
-    ATTENDANCE_EMPLOYEES.find((e) => e.name === ctx.user?.name)?.branch ||
-    "Delhi";
 
-  const team = useMemo(
-    () =>
-      ATTENDANCE_EMPLOYEES.filter(
-        (e) =>
-          e.branch === managerBranch && e.role !== "Area Sales Manager",
-      ),
-    [managerBranch],
-  );
-
-  const teamIds = team.map((t) => t.id);
-  const teamRecords = ATTENDANCE_RECORDS.filter((r) =>
-    teamIds.includes(r.employeeId),
-  );
+  const [loading, setLoading] = useState(true);
+  const [team, setTeam] = useState([]);
+  const [teamRecords, setTeamRecords] = useState([]);
 
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("All");
-  const [department, setDepartment] = useState("All");
+  const [status, setStatus] = useState(FILTER_ALL);
+  const [department, setDepartment] = useState(FILTER_ALL);
 
-  const filtered = teamRecords.filter((r) => {
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    (async () => {
+      const employees = await attendanceService.getEmployees();
+      const me = employees.find((e) => e.name === ctx.user?.name);
+      const branch = me?.branch || DEFAULT_MANAGER_BRANCH;
+      const teamMembers = employees.filter(
+        (e) => e.branch === branch && !EXCLUDED_TEAM_ROLES.includes(e.role),
+      );
+      const teamIds = teamMembers.map((t) => t.id);
+      const records = await attendanceService.getRecordsForTeam(teamIds);
+      if (cancelled) return;
+      setTeam(teamMembers);
+      setTeamRecords(records);
+      setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [ctx.user?.name]);
+
+  const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (
-      q &&
-      !r.employeeName.toLowerCase().includes(q) &&
-      !r.employeeId.toLowerCase().includes(q)
-    )
-      return false;
-    if (status !== "All" && r.status !== status) return false;
-    if (department !== "All" && r.department !== department) return false;
-    return true;
-  });
+    return teamRecords.filter((r) => {
+      if (
+        q &&
+        !r.employeeName.toLowerCase().includes(q) &&
+        !r.employeeId.toLowerCase().includes(q)
+      )
+        return false;
+      if (status !== FILTER_ALL && r.status !== status) return false;
+      if (department !== FILTER_ALL && r.department !== department) return false;
+      return true;
+    });
+  }, [teamRecords, search, status, department]);
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const todays = teamRecords.filter((r) => {
-    const d = new Date(r.date);
-    d.setHours(0, 0, 0, 0);
-    return d.getTime() === today.getTime();
-  });
+  const totals = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todays = teamRecords.filter((r) => {
+      const d = new Date(r.date);
+      d.setHours(0, 0, 0, 0);
+      return d.getTime() === today.getTime();
+    });
+    const count = (s) => todays.filter((r) => r.status === s).length;
+    return {
+      total: team.length,
+      present: count(ATTENDANCE_STATUS.PRESENT),
+      late: count(ATTENDANCE_STATUS.LATE),
+      absent: count(ATTENDANCE_STATUS.ABSENT),
+    };
+  }, [teamRecords, team]);
 
-  const count = (s) => todays.filter((r) => r.status === s).length;
-  const totals = {
-    total: team.length,
-    present: count(ATTENDANCE_STATUS.PRESENT),
-    late: count(ATTENDANCE_STATUS.LATE),
-    absent: count(ATTENDANCE_STATUS.ABSENT),
-  };
+  const trend = useMemo(
+    () =>
+      WEEK_LABELS.map((d, i) => ({
+        day: d,
+        present: Math.max(0, team.length - ((i * 2) % (team.length || 1))),
+        late: (i * 2) % 2,
+        absent: i >= 5 ? 0 : i % 2,
+      })),
+    [team.length],
+  );
 
-  const trend = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d, i) => ({
-    day: d,
-    present: Math.max(0, team.length - ((i * 2) % team.length || 0)),
-    late: (i * 2) % 2,
-    absent: i >= 5 ? 0 : i % 2,
-  }));
+  const departments = useMemo(
+    () => [...new Set(team.map((t) => t.department))],
+    [team],
+  );
+
+  if (loading) return <AttendanceLoading label="Loading team attendance…" />;
 
   return (
     <div className="page-enter">
-      <PageHeader
-        title="Team Attendance"
-        description={
-          <>
-            Monitor{" "}
-            <span className="font-semibold text-primary">{managerBranch}</span>{" "}
-            team attendance, approvals and late arrivals.
-          </>
-        }
-      />
-
       <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
-        <AttendanceStatCard
-          label="Team Size"
-          value={totals.total}
-          icon={Users}
-        />
-        <AttendanceStatCard
-          label="Present"
-          value={totals.present}
-          icon={UserCheck}
-          tone="success"
-        />
-        <AttendanceStatCard
-          label="Late"
-          value={totals.late}
-          icon={Clock}
-          tone="warning"
-        />
-        <AttendanceStatCard
-          label="Absent"
-          value={totals.absent}
-          icon={UserX}
-          tone="danger"
-        />
+        <AttendanceStatCard label="Team Size" value={totals.total} icon={Users} />
+        <AttendanceStatCard label="Present" value={totals.present} icon={UserCheck} tone="success" />
+        <AttendanceStatCard label="Late" value={totals.late} icon={Clock} tone="warning" />
+        <AttendanceStatCard label="Absent" value={totals.absent} icon={UserX} tone="danger" />
       </div>
 
       <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -128,8 +124,8 @@ const ManagerAttendance = () => {
           onStatusChange={setStatus}
           department={department}
           onDepartmentChange={setDepartment}
-          departments={[...new Set(team.map((t) => t.department))]}
-          branch="All"
+          departments={departments}
+          branch={FILTER_ALL}
           onBranchChange={() => {}}
           branches={[]}
         />

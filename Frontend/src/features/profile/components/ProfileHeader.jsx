@@ -14,7 +14,7 @@ const ROLE_BADGES = {
     "bg-purple-500/10 text-purple-500 border-purple-500/20",
 };
 
-const ProfileHeader = ({ user, profile, onChangePassword }) => {
+const ProfileHeader = ({ user, profile, onChangePassword, canChangePassword }) => {
   const initials = user.name
     .split(" ")
     .map((word) => word[0])
@@ -149,31 +149,35 @@ const ProfileHeader = ({ user, profile, onChangePassword }) => {
 
           </div>
 
-          <button
-            onClick={onChangePassword}
-            className="
-              mt-2
-              inline-flex
-              items-center
-              justify-center
-              gap-2
-              rounded-xl
-              bg-primary
-              px-5
-              py-3
-              font-semibold
-              text-black
-              transition-all
-              duration-300
-              hover:scale-[1.02]
-              hover:shadow-[var(--shadow-primary)]
-            "
-          >
-            <KeyRound size={18} />
+          {canChangePassword && (
 
-            Change Password
+            <button
+              onClick={onChangePassword}
+              className="
+            mt-2
+            inline-flex
+            items-center
+            justify-center
+            gap-2
+            rounded-xl
+            bg-primary
+            px-5
+            py-3
+            font-semibold
+            text-black
+            transition-all
+            duration-300
+            hover:scale-[1.02]
+            hover:shadow-[var(--shadow-primary)]
+        "
+            >
+              <KeyRound size={18} />
 
-          </button>
+              Change Password
+
+            </button>
+
+          )}
 
         </div>
 
