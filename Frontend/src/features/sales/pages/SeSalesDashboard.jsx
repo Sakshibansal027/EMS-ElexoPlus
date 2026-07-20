@@ -7,5 +7,4 @@ function SeSalesDashboard() {
     </div>
   )
 }
-
 export default SeSalesDashboard
