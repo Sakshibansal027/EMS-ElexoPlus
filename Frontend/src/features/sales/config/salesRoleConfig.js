@@ -1,5 +1,3 @@
-// src/features/sales/config/salesRoleConfig.js
-
 export const SALES_ROLES = {
   ADMIN: "ADMIN",
   HR: "HR",
