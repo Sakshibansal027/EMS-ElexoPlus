@@ -1,19 +1,31 @@
-import AdminSalesDashboard from "./AdminSalesDashboard.jsx";
-import HrSalesDashboard from "./HrSalesDashboard.jsx";
-import AsmSalesDashboard from "./AsmSalesDashboard.jsx";
-import SeSalesDashboard from "./SeSalesDashboard.jsx";
+import { useOutletContext } from "react-router-dom";
+
+import AdminSalesDashboard from "../pages/AdminSalesDashboard.jsx";
+import HrSalesDashboard from "../pages/HrSalesDashboard.jsx";
+import AsmSalesDashboard from "../pages/AsmSalesDashboard.jsx";
+import SeSalesDashboard from "../pages/SeSalesDashboard.jsx";
+
+import ROLES from "../../../config/roles";
+
 const SalesPage = () => {
-  const role = "ASM"; // later auth se aayega
+  const { role } = useOutletContext();
 
-  return (
-    <>
-      {role === "ADMIN" && <AdminSalesDashboard />}
-      {role === "HR" && <HrSalesDashboard />}
-      {role === "ASM" && <AsmSalesDashboard />}
-      {role === "SE" && <SeSalesDashboard />}
+  switch (role) {
+    case ROLES.ADMIN:
+      return <AdminSalesDashboard />;
 
-    </>
-  );
+    case ROLES.HR:
+      return <HrSalesDashboard />;
+
+    case ROLES.ASM:
+      return <AsmSalesDashboard />;
+
+    case ROLES.SALES_EXECUTIVE:
+      return <SeSalesDashboard />;
+
+    default:
+      return null;
+  }
 };
 
 export default SalesPage;
