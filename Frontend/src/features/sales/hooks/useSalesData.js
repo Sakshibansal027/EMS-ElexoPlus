@@ -1,11 +1,12 @@
+// src/features/sales/hooks/useSalesData.js
 import { useState, useEffect, useMemo } from 'react';
 import { salesService } from '../services/salesService';
 
-// Temporary Mock/Auth user fetcher
+// Temporary Mock/Auth user fetcher (Change role to test: 'SE' | 'ASM' | 'HR' | 'ADMIN')
 const useUser = () => {
   return {
-    role: "ASM", // change: ADMIN | HR | ASM | SE
-    id: "ASM-992", // Real backend me login user ki ID yahan se milegi
+    role: "SE", 
+    id: "SE001", 
   };
 };
 
@@ -45,16 +46,25 @@ export const useSalesData = () => {
     }
   }, [role]);
 
-  // 3. Fetch Data from Service Layer based on User ID
+  // 3. Fetch Data Dynamically from Service Layer Based on Role & User ID
   useEffect(() => {
     const fetchDashboardDetails = async () => {
       try {
         setLoading(true);
-        const result = await salesService.getAsmDashboardData(userId);
+        let result = null;
+
+        if (role === 'SE') {
+          result = await salesService.getSeDashboardData(userId);
+        } else if (role === 'ASM') {
+          result = await salesService.getAsmDashboardData(userId);
+        } else {
+          result = await salesService.getAsmDashboardData(userId);
+        }
+
         setData(result);
       } catch (err) {
         setError('Failed to fetch sales performance data');
-      } finally {
+      } finally { // <--- Fixed line 69 here (flex -> finally)
         setLoading(false);
       }
     };
@@ -62,14 +72,16 @@ export const useSalesData = () => {
     if (userId) {
       fetchDashboardDetails();
     }
-  }, [userId]);
+  }, [userId, role]);
 
-  // 4. Return Everything cleanly to the UI Page Component
+  // 4. Return Everything Cleanly to UI
   return {
     role,
     cards: config.cards,
     permissions: config.permissions,
     data,
+    summary: data?.mockSummaryData || null,
+    visits: data?.visitsData || [],
     loading,
     error
   };
