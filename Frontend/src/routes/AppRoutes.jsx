@@ -11,8 +11,9 @@ import ComingSoon from "../components/common/ComingSoon";
 import EmployeeMaster from "../features/employee-master/pages/EmployeeMaster";
 import Sales from "../features/sales/pages/SalesPage";
 import EmployeeLeaveDashboard from "../features/leave/pages/employeeLeaveDashboard";
-import SettingsPage from "../features/settings/pages/SettingsPage";
 import EmployeePayrollDashboard from "../features/payroll/pages/employeePayrollDashboard";
+import PayrollDashboard from "../features/payroll/pages/PayrollDashboard";
+import HRPayrollDashboard from "../features/payroll/pages/HRPayrollDashboard"
 import { ROUTES } from "./routes";
 
 const AppRoutes = () => {
@@ -60,7 +61,7 @@ element={<AttendanceRouter />}
 
           <Route
             path={ROUTES.PAYROLL}
-            element={<EmployeePayrollDashboard />}
+            element={<PayrollDashboard />}
           />
 
           <Route
