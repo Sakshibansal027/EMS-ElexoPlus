@@ -4,8 +4,9 @@ import {
 } from "lucide-react";
 
 const PayrollHistoryModal = ({
-    history,
+    history = [],
     onClose,
+    onDownload,
 }) => {
     return (
         <div
@@ -131,6 +132,8 @@ const PayrollHistoryModal = ({
                                 </span>
 
                                 <button
+                                    type="button"
+                                    onClick={() => onDownload?.(item)}
                                     className="
                                         text-muted-foreground
                                         hover:text-yellow-500
