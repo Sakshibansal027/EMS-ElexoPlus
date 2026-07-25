@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import {
   ClipboardList,
@@ -21,27 +21,51 @@ import AttendanceTable from "../components/AttendanceTable";
 import CorrectionsTable from "../components/CorrectionsTable";
 import CorrectionModal from "../components/CorrectionModal";
 import { AttendanceTrendChart } from "../components/AttendanceCharts";
+import { AttendanceLoading } from "../components/AttendanceStates";
 
-import { ATTENDANCE_RECORDS, ATTENDANCE_EMPLOYEES } from "../mock/attendanceRecords";
-import { CORRECTION_REQUESTS } from "../mock/corrections";
-import { ATTENDANCE_STATUS, CORRECTION_STATUS } from "../config/attendanceStatus";
+import { attendanceService } from "../services/attendanceService";
+import { ATTENDANCE_STATUS } from "../config/attendanceStatus";
+
+const WEEK_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const FALLBACK_EMPLOYEE_ID = "EMP004"; // demo fallback used only when no matching user
 
 const EmployeeAttendance = () => {
   const ctx = useOutletContext() || {};
-  // Bind mock records to the logged-in user, falling back to a demo employee
-  const empId =
-    ATTENDANCE_EMPLOYEES.find((e) => e.name === ctx.user?.name)?.id || "EMP004";
-  const employee = ATTENDANCE_EMPLOYEES.find((e) => e.id === empId);
 
-  const myRecords = useMemo(
-    () => ATTENDANCE_RECORDS.filter((r) => r.employeeId === empId),
-    [empId],
-  );
-
+  const [loading, setLoading] = useState(true);
+  const [employee, setEmployee] = useState(null);
+  const [myRecords, setMyRecords] = useState([]);
+  const [corrections, setCorrections] = useState([]);
+  const [notifications, setNotifications] = useState([]);
   const [showCorrection, setShowCorrection] = useState(false);
-  const [corrections, setCorrections] = useState(
-    CORRECTION_REQUESTS.filter((c) => c.employeeId === empId),
-  );
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    (async () => {
+      const employees = await attendanceService.getEmployees();
+      const emp =
+        employees.find((e) => e.name === ctx.user?.name) ||
+        employees.find((e) => e.id === FALLBACK_EMPLOYEE_ID) ||
+        null;
+
+      const [records, corrs, notifs] = await Promise.all([
+        emp ? attendanceService.getRecordsForEmployee(emp.id) : Promise.resolve([]),
+        emp ? attendanceService.getCorrectionsForEmployee(emp.id) : Promise.resolve([]),
+        attendanceService.getNotifications(),
+      ]);
+
+      if (cancelled) return;
+      setEmployee(emp);
+      setMyRecords(records);
+      setCorrections(corrs);
+      setNotifications(notifs);
+      setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [ctx.user?.name]);
 
   const monthly = useMemo(() => {
     const now = new Date();
@@ -51,20 +75,19 @@ const EmployeeAttendance = () => {
         d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
       );
     });
-    const present = thisMonth.filter((r) =>
+    const isPresentish = (s) =>
       [
         ATTENDANCE_STATUS.PRESENT,
         ATTENDANCE_STATUS.LATE,
         ATTENDANCE_STATUS.WFH,
-      ].includes(r.status),
-    ).length;
+      ].includes(s);
+
+    const present = thisMonth.filter((r) => isPresentish(r.status)).length;
     const workingDays = thisMonth.filter(
       (r) => r.status !== ATTENDANCE_STATUS.WEEKEND,
     ).length;
-    const late = thisMonth.filter((r) => r.status === ATTENDANCE_STATUS.LATE)
-      .length;
-    const absent = thisMonth.filter((r) => r.status === ATTENDANCE_STATUS.ABSENT)
-      .length;
+    const late = thisMonth.filter((r) => r.status === ATTENDANCE_STATUS.LATE).length;
+    const absent = thisMonth.filter((r) => r.status === ATTENDANCE_STATUS.ABSENT).length;
     const totalHours = thisMonth.reduce((s, r) => s + (r.workingHours || 0), 0);
     const overtime = thisMonth.reduce((s, r) => s + (r.overtime || 0), 0);
     const percentage = workingDays
@@ -73,33 +96,23 @@ const EmployeeAttendance = () => {
     return { present, workingDays, late, absent, totalHours, overtime, percentage };
   }, [myRecords]);
 
-  const trend = useMemo(() => {
-    const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-    return days.map((d, i) => ({
-      day: d,
-      present: 5 + ((i * 7) % 3),
-      late: (i * 3) % 2,
-      absent: i === 5 || i === 6 ? 0 : (i * 2) % 2,
-    }));
-  }, []);
+  const trend = useMemo(
+    () =>
+      WEEK_LABELS.map((d, i) => ({
+        day: d,
+        present: 5 + ((i * 7) % 3),
+        late: (i * 3) % 2,
+        absent: i === 5 || i === 6 ? 0 : (i * 2) % 2,
+      })),
+    [],
+  );
 
-  const submitCorrection = (form) => {
-    setCorrections((prev) => [
-      {
-        id: `COR-${Math.floor(Math.random() * 9000) + 1000}`,
-        employeeId: empId,
-        employeeName: employee?.name || "You",
-        department: employee?.department || "—",
-        date: form.date,
-        requestedCheckIn: form.checkIn,
-        requestedCheckOut: form.checkOut,
-        reason: form.reason,
-        status: CORRECTION_STATUS.PENDING,
-        submittedOn: new Date().toISOString().slice(0, 10),
-      },
-      ...prev,
-    ]);
+  const submitCorrection = async (form) => {
+    const created = await attendanceService.submitCorrection({ employee, form });
+    setCorrections((prev) => [created, ...prev]);
   };
+
+  if (loading) return <AttendanceLoading label="Loading your attendance…" />;
 
   return (
     <div className="page-enter">
@@ -111,7 +124,6 @@ const EmployeeAttendance = () => {
           <Plus size={18} /> Request Correction
         </button>
       </div>
-
 
       <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
         <LiveClockCard />
@@ -127,24 +139,9 @@ const EmployeeAttendance = () => {
           tone="primary"
           hint="This month"
         />
-        <AttendanceStatCard
-          label="Present"
-          value={monthly.present}
-          icon={ClipboardList}
-          tone="success"
-        />
-        <AttendanceStatCard
-          label="Late"
-          value={monthly.late}
-          icon={Clock}
-          tone="warning"
-        />
-        <AttendanceStatCard
-          label="Absent"
-          value={monthly.absent}
-          icon={ClipboardList}
-          tone="danger"
-        />
+        <AttendanceStatCard label="Present" value={monthly.present} icon={ClipboardList} tone="success" />
+        <AttendanceStatCard label="Late" value={monthly.late} icon={Clock} tone="warning" />
+        <AttendanceStatCard label="Absent" value={monthly.absent} icon={ClipboardList} tone="danger" />
         <AttendanceStatCard
           label="Total Hours"
           value={monthly.totalHours.toFixed(1)}
@@ -165,7 +162,7 @@ const EmployeeAttendance = () => {
         </div>
         <div className="flex flex-col gap-6">
           <QuickActions />
-          <NotificationsList />
+          <NotificationsList notifications={notifications} />
         </div>
       </div>
 

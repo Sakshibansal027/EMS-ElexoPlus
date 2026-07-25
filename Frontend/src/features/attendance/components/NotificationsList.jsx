@@ -1,5 +1,9 @@
 import { Bell } from "lucide-react";
-import { ATTENDANCE_NOTIFICATIONS } from "../mock/notifications";
+import { AttendanceEmpty } from "./AttendanceStates";
+
+// Presentational only — data is provided by the parent page via the
+// `notifications` prop (fed from attendanceService). Never import mock data
+// directly inside components.
 
 const TONE = {
   success: "text-[#2ecc71]",
@@ -7,7 +11,7 @@ const TONE = {
   info: "text-[#4dabf7]",
 };
 
-const NotificationsList = () => (
+const NotificationsList = ({ notifications = [] }) => (
   <div className="card p-6">
     <div className="mb-4 flex items-center justify-between">
       <div>
@@ -16,22 +20,36 @@ const NotificationsList = () => (
       </div>
       <Bell size={18} className="text-primary" />
     </div>
-    <ul className="space-y-3">
-      {ATTENDANCE_NOTIFICATIONS.map((n) => (
-        <li
-          key={n.id}
-          className="rounded-lg border border-border bg-background-elevated p-3 transition-all hover:border-primary"
-        >
-          <div className="flex items-center justify-between">
-            <p className={`text-sm font-semibold ${TONE[n.type] || "text-foreground"}`}>
-              {n.title}
-            </p>
-            <span className="text-[11px] text-muted-foreground">{n.time}</span>
-          </div>
-          <p className="mt-1 text-xs text-muted-foreground">{n.message}</p>
-        </li>
-      ))}
-    </ul>
+
+    {notifications.length === 0 ? (
+      <AttendanceEmpty
+        title="You're all caught up"
+        description="No new attendance notifications right now."
+      />
+    ) : (
+      <ul className="space-y-3">
+        {notifications.map((n) => (
+          <li
+            key={n.id}
+            className="rounded-lg border border-border bg-background-elevated p-3 transition-all hover:border-primary hover:shadow-sm"
+          >
+            <div className="flex items-center justify-between gap-2">
+              <p
+                className={`text-sm font-semibold ${
+                  TONE[n.type] || "text-foreground"
+                }`}
+              >
+                {n.title}
+              </p>
+              <span className="shrink-0 text-[11px] text-muted-foreground">
+                {n.time}
+              </span>
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">{n.message}</p>
+          </li>
+        ))}
+      </ul>
+    )}
   </div>
 );
 

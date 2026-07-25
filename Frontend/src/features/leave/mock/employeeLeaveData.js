@@ -62,6 +62,7 @@ export const leaveBalanceData = [
 export const leaveHistory = [
     {
         id: 1,
+        employeeId: "EMP004",
         date: "2026-07-15",
         leaveType: "Casual Leave (CL)",
         fromDate: "2026-07-15",
@@ -73,6 +74,7 @@ export const leaveHistory = [
     },
     {
         id: 2,
+        employeeId: "EMP004",
         date: "2026-07-02",
         leaveType: "Sick Leave (SL)",
         fromDate: "2026-07-02",
@@ -84,6 +86,7 @@ export const leaveHistory = [
     },
     {
         id: 3,
+        employeeId: "EMP004",
         date: "2026-06-18",
         leaveType: "Earned Leave (EL)",
         fromDate: "2026-06-18",
@@ -95,6 +98,7 @@ export const leaveHistory = [
     },
     {
         id: 4,
+        employeeId: "EMP004",
         date: "2026-06-05",
         leaveType: "Casual Leave (CL)",
         fromDate: "2026-06-05",
@@ -106,6 +110,7 @@ export const leaveHistory = [
     },
     {
         id: 5,
+        employeeId: "EMP004",
         date: "2026-05-20",
         leaveType: "Sick Leave (SL)",
         fromDate: "2026-05-20",
@@ -117,6 +122,7 @@ export const leaveHistory = [
     },
     {
         id: 6,
+        employeeId: "EMP004",
         date: "2026-12-20",
         leaveType: "Casual Leave (CL)",
         fromDate: "2026-12-20",
@@ -128,6 +134,7 @@ export const leaveHistory = [
     },
     {
         id: 7,
+        employeeId: "EMP004",
         date: "2026-11-20",
         leaveType: "Sick Leave (SL)",
         fromDate: "2026-11-20",
@@ -139,6 +146,7 @@ export const leaveHistory = [
     },
     {
         id: 8,
+        employeeId: "EMP004",
         date: "2026-11-20",
         leaveType: "Sick Leave (SL)",
         fromDate: "2026-11-20",
@@ -150,36 +158,3 @@ export const leaveHistory = [
     },
 ];
 
-export const statusOptions = [
-    {
-        value: "all",
-        label: "All Status",
-    },
-    {
-        value: "approved",
-        label: "Approved",
-    },
-    {
-        value: "pending",
-        label: "Pending",
-    },
-    {
-        value: "rejected",
-        label: "Rejected",
-    },
-];
-
-export const periodOptions = [
-    {
-        value: "thisMonth",
-        label: "This Month",
-    },
-    {
-        value: "last3Months",
-        label: "Last 3 Months",
-    },
-    {
-        value: "thisYear",
-        label: "This Year",
-    },
-];

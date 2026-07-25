@@ -1,11 +1,66 @@
-import React from 'react'
+// src/features/sales/components/SESalesDashboard.jsx
+import React from 'react';
+import { Calendar } from 'lucide-react';
+import { useSEDashboardData } from '../hooks/useSEDashboardData';
+import SETopMetrics from '../components/SETopMetrics';
+import SETargetChart from '../components/SETargetChart';
+import QuickActions from '../components/QuickActions';
+import TodaysSummary from '../components/TodaysSummary';
+import SEPerformanceWidgets from '../components/SEPerformanceWidgets';
+import SEMyLeadsTable from '../components/SEMyLeadsTable';
+import SEMyOrdersTable from '../components/SEMyOrdersTable';
+import SETodaySummaryAndVisits from '../components/SETodaySummaryAndVisits';
+const SESalesDashboard = ({ executiveId = 'SE001' }) => {
+  const { data, isLoading, error } = useSEDashboardData(executiveId);
 
-function SeSalesDashboard() {
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#070707] flex items-center justify-center text-xs text-gray-500 font-medium animate-pulse">
+        Syncing executive workspace & metrics...
+      </div>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <div className="min-h-screen bg-[#070707] flex items-center justify-center text-xs text-red-500 font-medium">
+        {error || 'Data initialization failed'}
+      </div>
+    );
+  }
+
   return (
-    <div>
-      
-    </div>
-  )
-}
+    <div className="min-h-screen p-6 text-gray-200 antialiased space-y-6 select-none">
 
-export default SeSalesDashboard
+
+      {/* 1. Top KPI Metrics */}
+      <SETopMetrics metrics={data.topMetrics} />
+
+      {/* 2. Target Chart  */}
+      <div className="flex flex-col lg:flex-row items-stretch gap-4">
+        {/* 75% Width - Target Chart */}
+        <div className="w-full lg:w-[75%]">
+          <SETargetChart chartData={data.targetTrend} />
+        </div>
+
+        {/* 25% Width - Performance Widgets */}
+        <div className="w-full lg:w-[25%]">
+          <SEPerformanceWidgets
+            darLogs={data.darLogs}
+            expenses={data.expenses}
+            performance={data.performanceGauge}
+          />
+        </div>
+      </div>
+      <SEMyLeadsTable leads={data.myLeads} />
+      <SEMyOrdersTable/>
+     <SETodaySummaryAndVisits/>
+
+      {/* 3. Performance, Expenses & DAR Ledger */}
+
+
+    </div>
+  );
+};
+
+export default SESalesDashboard;

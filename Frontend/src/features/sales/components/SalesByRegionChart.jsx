@@ -4,7 +4,7 @@ import {
   Cell,
   ResponsiveContainer,
 } from "recharts";
-import salesByRegionData from "../mock/SalesRegionData";
+import salesByRegionData from "../mock/salesRegionData";
 
 const COLORS = ["#facc15", "#eab308", "#ca8a04", "#a16207", "#713f12"];
 

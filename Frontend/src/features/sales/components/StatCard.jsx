@@ -10,10 +10,6 @@ const iconMap = {
 
 const StatsCard = ({ title, value, change, icon = "users" }) => {
   return (
-
-
-
-    
     <div className="relative bg-[#111111] border border-[#2a2a2a] 
                     rounded-2xl p-5 flex items-center justify-between
                     overflow-hidden group
@@ -38,7 +34,7 @@ const StatsCard = ({ title, value, change, icon = "users" }) => {
             {value}
           </h2>
 
-         
+
         </div>
       </div>
 
