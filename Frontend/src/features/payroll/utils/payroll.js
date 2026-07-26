@@ -2,31 +2,54 @@ import { PAYROLL_DATE_LOCALE } from "../constants/payroll";
 
 export const getCurrentPayrollMonth = () => new Date().toLocaleDateString(PAYROLL_DATE_LOCALE, { month: "long", year: "numeric" });
 
-export const calculatePayrollTotals = ({ salaryBreakup, deductions }, { includeIncentive = true } = {}) => {
+export const calculatePayrollTotals = ({ salaryBreakup = {}, deductions = {} } = {}, { includeIncentive = true } = {}) => {
   const earnings = includeIncentive ? salaryBreakup : Object.fromEntries(Object.entries(salaryBreakup).filter(([key]) => key !== "incentive"));
-  const grossEarnings = Object.values(earnings).reduce((total, value) => total + value, 0);
-  const totalDeductions = Object.values(deductions).reduce((total, value) => total + value, 0);
+  const grossEarnings = Object.values(earnings || {}).reduce((total, value) => total + (Number(value) || 0), 0);
+  const totalDeductions = typeof deductions === "number"
+    ? deductions
+    : Object.values(deductions || {}).reduce((total, value) => total + (Number(value) || 0), 0);
   return { grossEarnings, totalDeductions, netPay: grossEarnings - totalDeductions };
 };
 
-export const createPayrollView = (payroll, options) => {
+export const createPayrollView = (payroll = {}, options) => {
+  const totals = calculatePayrollTotals(payroll.payroll || {}, options);
   const payrollData = {
     ...payroll.payroll,
-    ...calculatePayrollTotals(payroll.payroll, options),
+    ...totals,
   };
+
+  const synchronizedStats = (payroll.payroll?.stats || []).map((stat) => {
+    if (stat.title === "CURRENT MONTH NET PAY") {
+      return { ...stat, value: formatCurrency(totals.netPay) };
+    }
+    if (stat.title === "TOTAL DEDUCTIONS") {
+      return { ...stat, value: formatCurrency(totals.totalDeductions) };
+    }
+    return stat;
+  });
+
+  const synchronizedPayslip = payroll.latestPayslip ? {
+    ...payroll.latestPayslip,
+    basicSalary: payroll.latestPayslip.basicSalary ?? payrollData.salaryBreakup?.basicSalary,
+    hra: payroll.latestPayslip.hra ?? payrollData.salaryBreakup?.hra,
+    allowances: payroll.latestPayslip.allowances ?? payrollData.salaryBreakup?.allowances,
+    incentive: payroll.latestPayslip.incentive ?? payroll.latestPayslip.incentives ?? payrollData.salaryBreakup?.incentive,
+    incentives: payroll.latestPayslip.incentives ?? payroll.latestPayslip.incentive ?? payrollData.salaryBreakup?.incentive,
+    salaryBreakup: payrollData.salaryBreakup,
+    deductions: payrollData.deductions,
+    grossEarnings: totals.grossEarnings,
+    netPay: totals.netPay,
+  } : null;
 
   return {
     ...payroll,
     currentMonth: getCurrentPayrollMonth(),
-    stats: payroll.payroll?.stats || [],
+    stats: synchronizedStats,
     payrollData,
     payrollHistory: payroll.history || [],
     salaryRevisions: payroll.revisions || [],
-    payslipData: payroll.latestPayslip && {
-      ...payroll.latestPayslip,
-      salaryBreakup: payrollData.salaryBreakup,
-      deductions: payrollData.deductions,
-    },
+    latestPayslip: synchronizedPayslip,
+    payslipData: synchronizedPayslip,
   };
 };
 

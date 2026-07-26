@@ -3,7 +3,7 @@ export const EmployeepayrollData = {
         {
             id: 1,
             title: "CURRENT MONTH NET PAY",
-            value: "₹90,900",
+            value: "₹89,900",
             subtitle: "Paid on 31 Jul 2026",
             icon: "Wallet",
             color: "yellow",
@@ -100,7 +100,7 @@ export const payrollHistory = [
     },
     {
         month: "Jul 2026",
-        netPay: 89800,
+        netPay: 89900,
         status: "Processed",
         payslipId: "PSLIP-2026-07",
         deductions: 9600,
@@ -150,33 +150,30 @@ export const payrollHistory = [
 ];
 
 export const latestPayslip = {
-    id: "PSLIP-2026-07",
-    month: "July 2026",
-    creditedOn: "31 Jul 2026",
-    status: "Paid",
-
-    employeeName: "Harshit Goel",
+    id: "EMP001",
     employeeId: "EMP001",
+    employeeName: "Harshit Goel",
+    role: "Sales Executive",
     designation: "Sales Executive",
     department: "Sales",
-
-    netPay: 90400,
-
-    salaryBreakup: {
-        basicSalary: 45000,
-        hra: 18000,
-        allowances: 12000,
-        incentive: 24500,
-    },
-
+    month: "July 2026",
+    payPeriod: "July 2026",
+    
+    basicSalary: 45000,
+    hra: 18000,
+    allowances: 12000,
+    incentives: 24500,
+    incentive: 24500,
     deductions: {
         pf: 5400,
         professionalTax: 200,
         tds: 3600,
         other: 400,
     },
-
-    pdfUrl: "/mock/payslips/july-2026.pdf",
+    
+    netPay: 89900,
+    status: "Paid",
+    creditedOn: "31 Jul 2026"
 };
 
 export const salaryRevisions = [

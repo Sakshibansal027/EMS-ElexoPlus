@@ -16,7 +16,7 @@ import HRPayrollDashboard from "../features/payroll/pages/HRPayrollDashboard"
 import { ROUTES } from "./routes";
 import NotificationsPage from "../features/notifications/pages/NotificationsPage";
 import EmployeePayrollDashboard from "../features/payroll/pages/employeePayrollDashboard";
-
+import AdminPayrollDashboard from "../features/payroll/pages/AdminPayrollDashboard";
 const AppRoutes = () => {
   return (
     <BrowserRouter>
@@ -51,7 +51,7 @@ const AppRoutes = () => {
 
           <Route
             path={ROUTES.PAYROLL}
-            element={<PayrollDashboard />}
+            element={<AdminPayrollDashboard />}
           />
 
           <Route

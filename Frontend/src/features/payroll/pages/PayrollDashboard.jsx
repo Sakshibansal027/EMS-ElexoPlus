@@ -37,11 +37,11 @@ const PayrollDashboard = () => {
       
       {/* Dashboard Top Header & Tab Navigation */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800 pb-4">
-        <p className="text-sm text-zinc-400">
+        <h1 className="mt-1 text-[var(--color-foreground-muted)]">
           {activeTab === PAYROLL_TABS.TEAM ? (
             <>
               Manage and track your{" "}
-              <span className="text-amber-500 font-semibold">
+              <span className="text-primary font-semibold">
                 team performance
               </span>
               , incentives, and attendance impact.
@@ -49,13 +49,13 @@ const PayrollDashboard = () => {
           ) : (
             <>
               Here's your{" "}
-              <span className="text-amber-500 font-semibold">
+              <span className="text-primary font-semibold">
                 salary overview
               </span>{" "}
               and payslip breakdown for {employee?.currentMonth || "this month"}.
             </>
           )}
-        </p>
+        </h1>
 
         {/* Tab Switcher */}
         <div className="relative inline-flex bg-zinc-950/80 p-1 rounded-xl border border-zinc-800/80 backdrop-blur-md shadow-inner self-start sm:self-auto shrink-0">
@@ -112,7 +112,7 @@ const PayrollDashboard = () => {
         </div>
       )}
 
-      {/* 🟡 TAB 2: MY PAYROLL */}
+      {/* TAB 2: MY PAYROLL */}
       {activeTab === PAYROLL_TABS.MY_PAYROLL && (
         <div className="space-y-6 animate-fadeIn">
           {/* Employee Top Stats (SAFE OPTIONAL CHAINING ADDED) */}
