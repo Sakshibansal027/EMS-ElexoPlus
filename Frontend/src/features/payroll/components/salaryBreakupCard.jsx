@@ -16,7 +16,6 @@ const SalaryBreakupCard = ({ payrollData = {} }) => {
     // Safe extraction with fallback defaults
     const salaryBreakup = payrollData?.salaryBreakup || {};
     const deductions = payrollData?.deductions || {};
-    const netPay = payrollData?.netPay ?? 0;
 
     const basicSalary = salaryBreakup.basicSalary ?? 0;
     const hra = salaryBreakup.hra ?? 0;
@@ -24,6 +23,26 @@ const SalaryBreakupCard = ({ payrollData = {} }) => {
     const incentive = salaryBreakup.incentive ?? 0;
 
     const gross = basicSalary + hra + allowances + incentive;
+
+    let safeDeductions = { pf: 0, professionalTax: 0, tds: 0, other: 0 };
+    if (typeof deductions === "object" && deductions !== null) {
+        safeDeductions = {
+            pf: Number(deductions.pf || 0),
+            professionalTax: Number(deductions.professionalTax || 0),
+            tds: Number(deductions.tds || deductions.incomeTax || 0),
+            other: Number(deductions.other || 0),
+        };
+    } else if (typeof deductions === "number") {
+        safeDeductions = {
+            pf: Math.round(deductions * 0.4),
+            professionalTax: Math.round(deductions * 0.1),
+            tds: Math.round(deductions * 0.4),
+            other: Math.round(deductions * 0.1),
+        };
+    }
+
+    const totalDeductionVal = safeDeductions.pf + safeDeductions.professionalTax + safeDeductions.tds + safeDeductions.other;
+    const displayNetPay = gross - totalDeductionVal;
 
     const pieData = [
         { name: "Basic Salary", value: basicSalary },
@@ -64,7 +83,7 @@ const SalaryBreakupCard = ({ payrollData = {} }) => {
                             NET PAY
                         </p>
                         <h4 className="text-xl font-bold">
-                            ₹{(netPay ?? 0).toLocaleString("en-IN")}
+                            ₹{(displayNetPay ?? 0).toLocaleString("en-IN")}
                         </h4>
                     </div>
                 </div>
@@ -76,12 +95,12 @@ const SalaryBreakupCard = ({ payrollData = {} }) => {
                     <Row label="Incentive" value={incentive} />
                     <Row label="Gross Earnings" value={gross} highlight />
                     
-                    <Row label="PF" value={deductions.pf} negative />
-                    <Row label="Professional Tax" value={deductions.professionalTax} negative />
-                    <Row label="Income Tax" value={deductions.tds} negative />
-                    <Row label="Other" value={deductions.other} negative />
+                    <Row label="PF" value={safeDeductions.pf} negative />
+                    <Row label="Professional Tax" value={safeDeductions.professionalTax} negative />
+                    <Row label="Income Tax" value={safeDeductions.tds} negative />
+                    <Row label="Other" value={safeDeductions.other} negative />
                     
-                    <Row label="Net Pay" value={netPay} highlight />
+                    <Row label="Net Pay" value={displayNetPay} highlight />
                 </div>
             </div>
         </div>

@@ -19,7 +19,7 @@ const EmployeePayrollDashboard = () => {
   return (
     <div className="space-y-5">
       {/* Header Title */}
-      <h1 className="mt-1 text-[#9a9a9a]">
+      <h1 className="mt-1 text-[var(--color-foreground-muted)]">
         Here's your salary overview for{" "}
         <span className="text-yellow-500 font-medium">
           {dashboard?.currentMonth || "this month"}

@@ -1,31 +1,46 @@
+import React from "react";
 import { X } from "lucide-react";
 
 const PayslipModal = ({ data, onClose }) => {
     if (!data) return null;
 
-    const salary = data.salaryBreakup || {};
-    const deductions = data.deductions || {};
+    // --- Safe Normalization for Flat Mock Record ---
+    const employeeId = data.employeeId || data.id || "-";
+    const designation = data.designation || data.role || "-";
+    const month = data.month || data.payPeriod || "July 2026";
 
-    const grossSalary =
-        (salary.basicSalary || 0) +
-        (salary.hra || 0) +
-        (salary.allowances || 0) +
-        (salary.incentive || 0);
+    // Earnings Mapping
+    const basicSalary = Number(data.basicSalary ?? data.salaryBreakup?.basicSalary ?? 0);
+    const allowances = Number(data.allowances ?? data.salaryBreakup?.allowances ?? 0);
+    const incentive = Number(data.incentive ?? data.incentives ?? data.salaryBreakup?.incentive ?? 0);
+    const hra = Number(data.hra ?? data.salaryBreakup?.hra ?? (basicSalary ? Math.round(basicSalary * 0.4) : 0));
 
-    const totalDeductions =
-        (deductions.pf || 0) +
-        (deductions.professionalTax || 0) +
-        (deductions.tds || 0) +
-        (deductions.other || 0);
+    const grossSalary = basicSalary + hra + allowances + incentive;
 
-    const netPay =
-        data.netPay ??
-        grossSalary - totalDeductions;
+    // Deductions Mapping (object vs numeric fallback)
+    let deductions = { pf: 0, professionalTax: 0, tds: 0, other: 0 };
+    if (data.deductions && typeof data.deductions === "object") {
+        deductions = {
+            pf: Number(data.deductions.pf || 0),
+            professionalTax: Number(data.deductions.professionalTax || 0),
+            tds: Number(data.deductions.tds || data.deductions.incomeTax || 0),
+            other: Number(data.deductions.other || 0),
+        };
+    } else {
+        const totalDeductionsInput = Number(data.deductions || 0);
+        deductions = {
+            pf: Math.round(totalDeductionsInput * 0.4),
+            professionalTax: Math.round(totalDeductionsInput * 0.1),
+            tds: Math.round(totalDeductionsInput * 0.4),
+            other: Math.round(totalDeductionsInput * 0.1),
+        };
+    }
+
+    const totalDeductions = deductions.pf + deductions.professionalTax + deductions.tds + deductions.other;
+    const netPay = grossSalary - totalDeductions;
 
     const money = (value) =>
-        Number(value || 0).toLocaleString(
-            "en-IN"
-        );
+        Number(value || 0).toLocaleString("en-IN");
 
     return (
         <div
@@ -56,9 +71,10 @@ const PayslipModal = ({ data, onClose }) => {
                     shadow-lg
                     hover:bg-gray-100
                     transition-colors
+                    cursor-pointer
                 "
             >
-                <X size={18} className="text-gray-800" />
+                <X size={18} className="text-white hover:text-black" />
             </button>
             <div
                 role="dialog"
@@ -77,7 +93,7 @@ const PayslipModal = ({ data, onClose }) => {
                 "
                 style={{
                     fontFamily: "system-ui, -apple-system, sans-serif",
-                    aspectRatio: "1 / 1.38" /* Vertically standard aspect scale */
+                    aspectRatio: "1 / 1.38"
                 }}
             >
                 <img
@@ -100,21 +116,20 @@ const PayslipModal = ({ data, onClose }) => {
                     className="relative z-10 px-9 pb-10 flex-1 flex flex-col justify-between h-full"
                     style={{ paddingTop: "145px", color: "#000" }}
                 >
-                    
-                    <div className="text-center mb-4">
+                    <div className="text-center mb-2">
                         <h1 className="text-[26px] font-black tracking-wider text-gray-900 m-0">
                             PAYSLIP
                         </h1>
                         <p className="text-xs font-bold text-gray-400 mt-0.5 uppercase tracking-wider">
-                            {data.month}
+                            {month}
                         </p>
                     </div>
 
-                    <div className="border border-gray-200 rounded-xl p-5 my-2 bg-white/80 backdrop-blur-xs">
-                        <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+                    <div className="border border-gray-200 rounded-xl p-4 my-1 bg-white/90 backdrop-blur-xs shadow-sm">
+                        <div className="grid grid-cols-2 gap-x-6 gap-y-3">
                             <Info label="Employee Name" value={data.employeeName} />
-                            <Info label="Employee ID" value={data.employeeId} />
-                            <Info label="Designation" value={data.designation} />
+                            <Info label="Employee ID" value={employeeId} />
+                            <Info label="Designation" value={designation} />
                             <Info label="Department" value={data.department} />
                         </div>
                     </div>
@@ -125,10 +140,10 @@ const PayslipModal = ({ data, onClose }) => {
                             title="Earnings"
                             money={money}
                             rows={[
-                                ["Basic Salary", salary.basicSalary],
-                                ["HRA", salary.hra],
-                                ["Allowances", salary.allowances],
-                                ["Incentive", salary.incentive],
+                                ["Basic Salary", basicSalary],
+                                ["HRA", hra],
+                                ["Allowances", allowances],
+                                ["Incentive", incentive],
                                 ["Gross Salary", grossSalary, true],
                             ]}
                         />
@@ -147,9 +162,9 @@ const PayslipModal = ({ data, onClose }) => {
                     </div>
 
                     {/* Bottom Segment: Emphasized Highlight Block & Footer Notes */}
-                    <div className="mt-4">
-                        <div className="border border-amber-300 bg-amber-50/95 backdrop-blur-xs rounded-xl px-6 py-3.5 flex justify-between items-center mb-6 shadow-sm">
-                            <span className="text-sm font-bold text-gray-600 uppercase tracking-wider">
+                    <div className="mt-2">
+                        <div className="border border-amber-300 bg-amber-50/95 backdrop-blur-xs rounded-xl px-6 py-3 flex justify-between items-center mb-4 shadow-sm">
+                            <span className="text-xs font-bold text-gray-600 uppercase tracking-wider">
                                 Net Pay
                             </span>
                             <span className="text-2xl font-black text-gray-900">
@@ -168,7 +183,7 @@ const PayslipModal = ({ data, onClose }) => {
 };
 
 const SalaryTable = ({ title, rows, money }) => (
-    <div className="w-full border border-gray-200 rounded-xl overflow-hidden bg-white/40 h-full flex flex-col">
+    <div className="w-full border border-gray-200 rounded-xl overflow-hidden bg-white/60 h-full flex flex-col">
         <table className="w-full border-collapse flex-1">
             <thead>
                 <tr>
@@ -195,20 +210,20 @@ const SalaryTable = ({ title, rows, money }) => (
 
 const headerStyle = {
     background: "#fef9c3",
-    padding: "10px 14px",
+    padding: "8px 12px",
     color: "#111827",
     fontWeight: 700,
     textAlign: "left",
-    fontSize: "12.5px",
+    fontSize: "12px",
     borderBottom: "1px solid #e5e7eb"
 };
 
 const Info = ({ label, value }) => (
     <div>
-        <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">
+        <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-0.5">
             {label}
         </div>
-        <div className="text-sm font-bold text-gray-900">
+        <div className="text-xs font-bold text-gray-900">
             {value || "-"}
         </div>
     </div>
@@ -219,9 +234,9 @@ const Row = ({ label, value, bold = false, money }) => (
         <td
             style={{
                 borderBottom: "1px solid #f3f4f6",
-                padding: "10px 14px",
+                padding: "8px 12px",
                 color: bold ? "#000" : "#4b5563",
-                fontSize: "11.5px",
+                fontSize: "11px",
                 fontWeight: bold ? 700 : 500,
             }}
         >
@@ -230,10 +245,10 @@ const Row = ({ label, value, bold = false, money }) => (
         <td
             style={{
                 borderBottom: "1px solid #f3f4f6",
-                padding: "10px 14px",
+                padding: "8px 12px",
                 textAlign: "right",
                 color: bold ? "#000" : "#111827",
-                fontSize: "11.5px",
+                fontSize: "11px",
                 fontWeight: bold ? 700 : 600,
             }}
         >
