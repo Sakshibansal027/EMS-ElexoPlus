@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   ShieldCheck, 
   Lock, 
@@ -8,17 +8,34 @@ import {
   ArrowRight,
   X
 } from "lucide-react";
-import { usePayrollVerification } from "../hooks/usePayrollVerification";
+import payrollService from "../services/payrollService";
 
-export const PayrollVerificationView = () => {
-  const {
-    pendingRecords,
-    searchTerm,
-    setSearchTerm,
-    selectedRecord,
-    setSelectedRecord,
-    handleFinalProcess,
-  } = usePayrollVerification();
+export const PayrollVerificationView = ({
+  pendingRecords: propPendingRecords,
+  handleFinalProcess: propHandleFinalProcess,
+}) => {
+  const [internalPendingRecords, setInternalPendingRecords] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedRecord, setSelectedRecord] = useState(null);
+
+  useEffect(() => {
+    if (!propPendingRecords) {
+      payrollService.getPayrollRecords().then((res) => {
+        const records = res.data || res || [];
+        const pending = records.filter(
+          (rec) => String(rec.status).toLowerCase() !== "processed"
+        );
+        setInternalPendingRecords(pending);
+      });
+    }
+  }, [propPendingRecords]);
+
+  const pendingRecords = (propPendingRecords && propPendingRecords.length > 0) ? propPendingRecords : internalPendingRecords;
+  const handleFinalProcess = propHandleFinalProcess || ((id) => {
+    payrollService.processPayroll(id);
+    setInternalPendingRecords((prev) => prev.filter((r) => r.id !== id));
+    setSelectedRecord(null);
+  });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalSearchTerm, setModalSearchTerm] = useState("");

@@ -307,103 +307,23 @@ export const SalaryStructureManager = () => {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2 pt-4 border-t border-[var(--color-border)]">
+              {/* Modal Action Buttons Added Here */}
+              <div className="flex justify-end gap-3 pt-4 border-t border-[var(--color-border)]">
                 <button
                   type="button"
                   onClick={closeModals}
-                  className="px-4 py-2.5 rounded-xl bg-[var(--color-muted)] hover:bg-[var(--color-card-hover)] font-semibold transition cursor-pointer text-[var(--color-foreground)]"
+                  className="px-4 py-2 rounded-xl border border-[var(--color-border)] hover:bg-[var(--color-muted)] font-semibold transition cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-[var(--color-primary)] text-white font-bold hover:opacity-90 transition cursor-pointer shadow-md shadow-[var(--color-primary)]/20"
+                  className="px-5 py-2 rounded-xl bg-[var(--color-primary)] text-white font-bold hover:opacity-90 transition cursor-pointer shadow-md"
                 >
                   Save Structure
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* ASSIGNMENT MODAL */}
-      {isAssignModalOpen && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
-          <div className="relative z-[10000] bg-[var(--color-background-elevated)] border border-[var(--color-border)] w-full max-w-lg rounded-2xl shadow-2xl p-6 space-y-4 my-auto max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center border-b border-[var(--color-border)] pb-3">
-              <div>
-                <h3 className="text-sm font-bold uppercase tracking-wider text-[var(--color-primary)]">
-                  Assign Structure
-                </h3>
-                <p className="text-xs text-[var(--color-foreground-muted)] font-medium mt-0.5">
-                  Target Tier: <strong className="text-[var(--color-foreground)]">{selectedStructure?.name}</strong>
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={closeModals}
-                className="p-1.5 rounded-xl hover:bg-[var(--color-muted)] transition cursor-pointer"
-              >
-                <X className="w-5 h-5 text-[var(--color-foreground)]" />
-              </button>
-            </div>
-
-            <div className="max-h-64 overflow-y-auto space-y-2 text-xs pr-1">
-              {employees.length === 0 ? (
-                <p className="p-4 text-center text-[var(--color-foreground-muted)]">No employees available.</p>
-              ) : (
-                employees.map((emp) => {
-                  const empId = emp.id || emp._id;
-                  const isChecked = selectedEmpIds.includes(empId);
-
-                  return (
-                    <div
-                      key={empId}
-                      onClick={() => toggleEmployeeSelection(empId)}
-                      className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${
-                        isChecked
-                          ? "border-[var(--color-primary)] bg-[var(--color-primary)]/10"
-                          : "border-[var(--color-border)] hover:bg-[var(--color-card-hover)]"
-                      }`}
-                    >
-                      <div>
-                        <div className="font-bold text-[var(--color-foreground)]">{emp.name}</div>
-                        <div className="text-[10px] text-[var(--color-foreground-muted)] font-semibold mt-0.5">
-                          {emp.dept || emp.department || "General"}
-                        </div>
-                      </div>
-                      <div
-                        className={`w-5 h-5 rounded-lg flex items-center justify-center border transition-colors ${
-                          isChecked
-                            ? "bg-[var(--color-primary)] border-[var(--color-primary)] text-white"
-                            : "border-[var(--color-border)] bg-[var(--color-background)]"
-                        }`}
-                      >
-                        {isChecked && <Check className="w-3.5 h-3.5 stroke-[3]" />}
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-
-            <div className="flex justify-end gap-2 pt-3 border-t border-[var(--color-border)]">
-              <button
-                type="button"
-                onClick={closeModals}
-                className="px-4 py-2 rounded-xl bg-[var(--color-muted)] text-xs font-semibold transition cursor-pointer text-[var(--color-foreground)]"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleSaveAssignment}
-                className="px-4 py-2 rounded-xl bg-[var(--color-primary)] text-white text-xs font-bold hover:opacity-90 transition cursor-pointer shadow-md shadow-[var(--color-primary)]/20"
-              >
-                Confirm Assignment ({selectedEmpIds.length})
-              </button>
-            </div>
           </div>
         </div>
       )}

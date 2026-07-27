@@ -32,7 +32,7 @@ const renderIncentiveLabel = ({ x, y, value }) => (
         fontWeight="bold"
         textAnchor="middle"
     >
-        ₹{value.toFixed(2)}L
+        ₹{(Number(value) || 0).toFixed(2)}L
     </text>
 );
 

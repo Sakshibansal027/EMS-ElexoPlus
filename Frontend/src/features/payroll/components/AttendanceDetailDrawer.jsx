@@ -2,13 +2,17 @@ import { Fragment } from "react";
 import { X, Calendar, AlertTriangle, TrendingDown } from "lucide-react";
 import { Dialog, Transition } from "@headlessui/react";
 
-import { fallbackAttendanceDetail as fallbackData } from "../mock/hrPayrollMock";
 import { getLogStatusStyle } from "../utils/payroll";
 
-const AttendanceDetailDrawer = ({ isOpen, onClose, data }) => {
-    const activeData = (data && (data.logs?.length > 0 || data.drawerSummary)) ? data : fallbackData;
-    const drawerSummary = activeData.drawerSummary || activeData.summary || fallbackData.drawerSummary;
-    const logsList = activeData.logs || fallbackData.logs;
+const defaultAttendanceDetail = {
+  drawerSummary: { totalEmployees: 0, criticalCount: 0, warningCount: 0, lopImpact: "0 Days" },
+  logs: []
+};
+
+const AttendanceDetailDrawer = ({ isOpen, onClose, data = defaultAttendanceDetail }) => {
+    const activeData = data || defaultAttendanceDetail;
+    const drawerSummary = activeData.drawerSummary || activeData.summary || defaultAttendanceDetail.drawerSummary;
+    const logsList = activeData.logs || defaultAttendanceDetail.logs;
 
     return (
         <Transition.Root show={isOpen} as={Fragment}>

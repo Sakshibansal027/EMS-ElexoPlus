@@ -154,7 +154,7 @@ const MasterEmployeePayrollDirectory = ({ data = [] }) => {
               </button>
 
               {isDeptOpen && (
-                <div className="absolute left-0 mt-2 w-48 bg-[var(--color-background-elevated)] border border-[var(--color-border)] rounded-2xl shadow-lg p-1.5 z-[var(--z-dropdown)] dropdown-enter">
+                <div className="absolute left-0 mt-2 w-48 bg-[var(--color-background-elevated)] border border-[var(--color-border)] rounded-2xl shadow-xl p-1.5 z-50">
                   {departments.map((dept) => {
                     const isSelected = selectedDept === dept;
                     return (
@@ -198,7 +198,7 @@ const MasterEmployeePayrollDirectory = ({ data = [] }) => {
               </button>
 
               {isRoleOpen && (
-                <div className="absolute left-0 mt-2 w-52 bg-[var(--color-background-elevated)] border border-[var(--color-border)] rounded-2xl shadow-lg p-1.5 z-[var(--z-dropdown)] dropdown-enter">
+                <div className="absolute left-0 mt-2 w-52 bg-[var(--color-background-elevated)] border border-[var(--color-border)] rounded-2xl shadow-xl p-1.5 z-50">
                   {roles.map((role) => {
                     const isSelected = selectedRole === role;
                     return (

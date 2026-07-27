@@ -1,16 +1,9 @@
 import React, { useState, useMemo } from "react";
 import { Calendar, DollarSign, Users, CheckCircle2, Download, AlertTriangle } from "lucide-react";
-import { calculateEmployeePayroll } from "../utils/payrollCalculator";
+import { calculateEmployeePayroll } from "../utils/payroll";
 import { PayrollPreviewTable } from "./PayrollPreviewTable";
 
-// Mock Initial Data (In production, fetched via API)
-const MOCK_EMPLOYEES = [
-  { id: "EMP001", name: "Ankit Sharma", department: "Engineering", designation: "Frontend Lead", baseMonthlyGross: 85000, presentDays: 22, paidLeaves: 0 },
-  { id: "EMP002", name: "Priya Patel", department: "Product", designation: "Product Manager", baseMonthlyGross: 95000, presentDays: 20, paidLeaves: 1 },
-  { id: "EMP003", name: "Rohan Verma", department: "Design", designation: "UI/UX Designer", baseMonthlyGross: 60000, presentDays: 18, paidLeaves: 0 },
-];
-
-export const PayrollManager = () => {
+export const PayrollManager = ({ employees = [] }) => {
   // Payroll State
   const [selectedMonth, setSelectedMonth] = useState("2026-07"); // YYYY-MM
   const [overrides, setOverrides] = useState({}); // Stores per-employee UI edits
@@ -36,11 +29,11 @@ export const PayrollManager = () => {
 
   // Re-calculate all rows dynamically on any override or month change
   const payrollRows = useMemo(() => {
-    return MOCK_EMPLOYEES.map((emp) => {
+    return employees.map((emp) => {
       const empOverrides = overrides[emp.id] || {};
       return calculateEmployeePayroll(emp, null, monthConfig, empOverrides);
     });
-  }, [monthConfig, overrides]);
+  }, [employees, monthConfig, overrides]);
 
   // Aggregate Executive Summaries
   const summary = useMemo(() => {
