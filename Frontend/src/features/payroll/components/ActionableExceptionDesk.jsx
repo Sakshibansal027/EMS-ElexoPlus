@@ -110,11 +110,11 @@ const ActionableExceptionsDesk = ({ items = [] }) => {
 
       {/* 2. POP-UP MODAL FOR ALL ITEMS */}
       {isModalOpen && (
-        <div 
-          className="fixed inset-0 z-[var(--z-modal)] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn"
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn"
           onClick={() => setIsModalOpen(false)}
         >
-          <div 
+          <div
             className="bg-[var(--color-background-elevated)] border border-[var(--color-border)] w-full max-w-5xl max-h-[85vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >

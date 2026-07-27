@@ -67,12 +67,12 @@ const TeamIncentiveSummaryCard = ({ data = [], onViewAll }) => {
 
                                         {/* Assigned Target */}
                                         <td className="py-2.5 text-right font-medium text-zinc-300">
-                                            {emp.assignedTarget.toLocaleString("en-IN")}
+                                            {(Number(emp.assignedTarget) || 0).toLocaleString("en-IN")}
                                         </td>
 
                                         {/* Achieved */}
                                         <td className="py-2.5 text-right font-medium text-zinc-300">
-                                            {emp.achieved.toLocaleString("en-IN")}
+                                            {(Number(emp.achieved) || 0).toLocaleString("en-IN")}
                                         </td>
 
                                         {/* Achievement % with Bar */}

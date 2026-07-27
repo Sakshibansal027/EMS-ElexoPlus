@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { adminService } from "../services/adminService";
+import { payrollService } from "../services/payrollService";
 
 export const usePayrollVerification = () => {
   const [pendingRecords, setPendingRecords] = useState([]);

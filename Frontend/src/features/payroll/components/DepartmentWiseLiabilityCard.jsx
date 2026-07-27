@@ -8,7 +8,6 @@ import {
   CartesianGrid,
 } from "recharts";
 
-import { mockDepartmentLiabilityData as defaultDepartmentData } from "../mock/hrPayrollMock";
 import { formatLakhs, formatAmount } from "../utils/payroll";
 
 // Custom Tooltip with CSS Variable Theme
@@ -28,22 +27,24 @@ const CustomTooltip = ({ active, payload, label }) => {
             ₹{formatAmount(payload[0].value)}
           </span>
         </p>
-        <p className="text-[var(--color-foreground-muted,#a1a1aa)] flex items-center justify-between gap-4">
-          <span className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-zinc-600"></span>
-            Previous Month:
-          </span>
-          <span className="font-semibold text-zinc-400">
-            ₹{formatAmount(payload[1].value)}
-          </span>
-        </p>
+        {payload[1] && (
+          <p className="text-[var(--color-foreground,#fafafa)] flex items-center justify-between gap-4">
+            <span className="flex items-center gap-1.5 text-[var(--color-foreground-muted,#a1a1aa)]">
+              <span className="w-2 h-2 rounded-full bg-[var(--color-primary,yellow)]/40"></span>
+              Previous Month:
+            </span>
+            <span className="font-semibold text-[var(--color-foreground-muted,#a1a1aa)]">
+              ₹{formatAmount(payload[1].value)}
+            </span>
+          </p>
+        )}
       </div>
     );
   }
   return null;
 };
 
-const DepartmentWiseLiabilityCard = ({ data = defaultDepartmentData }) => {
+const DepartmentWiseLiabilityCard = ({ data = [], loading = false }) => {
   return (
     <div className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-2xl p-5 sm:p-6 shadow-xl transition-all duration-300 hover:border-[var(--color-primary)]/50 w-full">
       {/* Header Section */}

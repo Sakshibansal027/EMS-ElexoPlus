@@ -1,14 +1,64 @@
-import { PAYROLL_DATE_LOCALE } from "../constants/payroll";
+import { PAYROLL_DATE_LOCALE } from "../constants/payroll.js";
 
 export const getCurrentPayrollMonth = () => new Date().toLocaleDateString(PAYROLL_DATE_LOCALE, { month: "long", year: "numeric" });
 
+const parseNumericValue = (val) => {
+  if (val === null || val === undefined || val === "") return 0;
+  if (typeof val === "number") return isNaN(val) ? 0 : val;
+  if (typeof val === "string") {
+    const cleaned = val.replace(/[^0-9.-]+/g, "");
+    const parsed = parseFloat(cleaned);
+    return isNaN(parsed) ? 0 : parsed;
+  }
+  return 0;
+};
+
 export const calculatePayrollTotals = ({ salaryBreakup = {}, deductions = {} } = {}, { includeIncentive = true } = {}) => {
-  const earnings = includeIncentive ? salaryBreakup : Object.fromEntries(Object.entries(salaryBreakup).filter(([key]) => key !== "incentive"));
-  const grossEarnings = Object.values(earnings || {}).reduce((total, value) => total + (Number(value) || 0), 0);
+  const earnings = includeIncentive
+    ? salaryBreakup
+    : Object.fromEntries(Object.entries(salaryBreakup || {}).filter(([key]) => key !== "incentive" && key !== "incentives"));
+  const grossEarnings = Object.values(earnings || {}).reduce((total, value) => total + parseNumericValue(value), 0);
   const totalDeductions = typeof deductions === "number"
     ? deductions
-    : Object.values(deductions || {}).reduce((total, value) => total + (Number(value) || 0), 0);
+    : Object.values(deductions || {}).reduce((total, value) => total + parseNumericValue(value), 0);
   return { grossEarnings, totalDeductions, netPay: grossEarnings - totalDeductions };
+};
+
+export const calculateEmployeePayroll = (emp = {}, structure = null, monthConfig = { daysInMonth: 30 }, overrides = {}) => {
+  const presentDays = overrides.presentDays ?? emp.presentDays ?? 22;
+  const paidLeaves = overrides.paidLeaves ?? emp.paidLeaves ?? 0;
+  const daysInMonth = monthConfig.daysInMonth || 30;
+
+  const baseGross = emp.baseMonthlyGross || (emp.ctc ? emp.ctc / 12 : 50000);
+  const perDayRate = baseGross / daysInMonth;
+  const payableDays = presentDays + paidLeaves;
+  const grossEarned = Math.round(payableDays * perDayRate);
+
+  const basic = Math.round(grossEarned * 0.5);
+  const hra = Math.round(grossEarned * 0.2);
+  const allowances = Math.round(grossEarned * 0.3);
+
+  const pf = Math.round(basic * 0.12);
+  const pt = 200;
+  const tds = Math.round(grossEarned * 0.05);
+  const totalDeductions = pf + pt + tds;
+
+  const netPayable = grossEarned - totalDeductions;
+
+  return {
+    ...emp,
+    presentDays,
+    paidLeaves,
+    payableDays,
+    baseMonthlyGross: baseGross,
+    grossEarned,
+    basic,
+    hra,
+    allowances,
+    deductions: { pf, pt, tds, total: totalDeductions },
+    totalDeductions,
+    netPayable,
+  };
 };
 
 export const createPayrollView = (payroll = {}, options) => {
@@ -24,6 +74,10 @@ export const createPayrollView = (payroll = {}, options) => {
     }
     if (stat.title === "TOTAL DEDUCTIONS") {
       return { ...stat, value: formatCurrency(totals.totalDeductions) };
+    }
+    if (stat.title === "INCENTIVE EARNED") {
+      const incVal = payrollData.salaryBreakup?.incentive ?? payrollData.salaryBreakup?.incentives ?? 0;
+      return { ...stat, value: formatCurrency(incVal) };
     }
     return stat;
   });
@@ -85,10 +139,8 @@ export const downloadPayrollHistory = (history) => {
 // Formatting & Currency Helpers
 export const formatCurrency = (value) => {
   if (value === null || value === undefined || value === "") return "₹0";
-  if (typeof value === "string" && value.includes("₹")) return value;
-  
-  const numericVal = typeof value === "string" ? Number(value.replace(/[^0-9.-]+/g, "")) : Number(value);
-  return isNaN(numericVal) ? value : `₹${numericVal.toLocaleString("en-IN")}`;
+  const numericVal = parseNumericValue(value);
+  return isNaN(numericVal) ? (typeof value === "string" ? value : "₹0") : `₹${numericVal.toLocaleString("en-IN")}`;
 };
 
 export const formatAmount = (amt) => {
@@ -160,4 +212,3 @@ export const getHoldButtonClass = (isOnHold) => {
     ? "bg-emerald-500/15 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/25"
     : "bg-rose-500/10 border-rose-500/30 text-rose-400 hover:bg-rose-500/20";
 };
-

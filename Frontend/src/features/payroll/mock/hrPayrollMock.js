@@ -349,7 +349,7 @@ export const personalPayroll = {
   payroll: {
     stats: [
       { id: 1, title: "CURRENT MONTH NET PAY", value: "₹1,08,700", subtitle: "Paid on 31 Jul 2026", icon: "Wallet", color: "yellow" },
-      { id: 2, title: "INCENTIVE EARNED", value: "₹0", subtitle: "This Month", icon: "TrendingUp", color: "yellow" },
+      { id: 2, title: "INCENTIVE EARNED", value: "₹7,000", subtitle: "This Month", icon: "TrendingUp", color: "yellow" },
       { id: 3, title: "TOTAL DEDUCTIONS", value: "₹12,300", subtitle: "View Breakdown", icon: "ArrowDown", color: "red" },
       { id: 4, title: "LOP DAYS", value: "0 Days", subtitle: "following LOP this month", icon: "CalendarX", color: "red" },
       { id: 5, title: "PAYROLL STATUS", value: "Processed", subtitle: "Salary Credited", icon: "ShieldCheck", color: "green" }

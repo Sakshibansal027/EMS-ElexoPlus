@@ -1,18 +1,41 @@
-import React, { useState } from "react";
-import { useAdminPayroll } from "../hooks/useAdminPayroll";
+import React, { useState, useEffect } from "react";
 import { PayrollModal } from "./PayrollModal";
 import { CustomDropdown } from "./ui/CustomDropdown"; 
 import { PayrollReviewModal } from "./PayrollReviewModal";
 import PayslipModal from "./PayslipModal";
 import { Eye, Download, ArrowRight } from "lucide-react";
+import payrollService from "../services/payrollService";
 
-export const PayrollTable = ({ limit = 4 }) => {
-  const { records = [], loading, error, processPayroll, refetch } = useAdminPayroll();
-  
+export const PayrollTable = ({
+  records: propRecords,
+  loading: propLoading = false,
+  error: propError = null,
+  processPayroll: propProcessPayroll,
+  refetch: propRefetch,
+  limit = 4,
+}) => {
+  const loading = propLoading;
+  const error = propError;
+  const refetch = propRefetch;
+  const [internalRecords, setInternalRecords] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState("July 2026");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRecordForReview, setSelectedRecordForReview] = useState(null);
   const [selectedPayslipRecord, setSelectedPayslipRecord] = useState(null);
+
+  useEffect(() => {
+    if (!propRecords || propRecords.length === 0) {
+      payrollService.getPayrollRecords().then((res) => {
+        setInternalRecords(res.data || res || []);
+      });
+    }
+  }, [propRecords]);
+
+  const records = (propRecords && propRecords.length > 0) ? propRecords : internalRecords;
+  const processPayroll = propProcessPayroll || ((id) => {
+    payrollService.processPayroll(id);
+    setInternalRecords((prev) => prev.map((r) => r.id === id ? { ...r, status: "Processed" } : r));
+  });
 
   const months = ["June 2026", "July 2026", "August 2026"];
 
