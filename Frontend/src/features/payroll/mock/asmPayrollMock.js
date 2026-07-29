@@ -1,0 +1,613 @@
+export const quickReports = [
+    {
+        id: "team_incentive",
+        title: "TEAM INCENTIVE REPORT",
+        type: "team_incentive",
+        data: {
+            month: "JULY 2026",
+            employeeName: "Harshit Goel",
+            employeeId: "EMP-001",
+            designation: "Sales Lead",
+            department: "Sales & Operations",
+            totalTeamPayout: 88000,
+
+            members: [
+                {
+                    name: "Aman Sharma",
+                    role: "Sales Exec",
+                    target: "₹5,00,000",
+                    achieved: "₹6,20,000",
+                    incentive: 25000,
+                },
+                {
+                    name: "Riya Verma",
+                    role: "Sr. Exec",
+                    target: "₹6,00,000",
+                    achieved: "₹7,50,000",
+                    incentive: 32000,
+                },
+                {
+                    name: "Ketan Mehta",
+                    role: "Sales Exec",
+                    target: "₹4,00,000",
+                    achieved: "₹4,80,000",
+                    incentive: 18000,
+                },
+                {
+                    name: "Neha Gupta",
+                    role: "Junior Exec",
+                    target: "₹3,00,000",
+                    achieved: "₹3,50,000",
+                    incentive: 13000,
+                },
+            ],
+        },
+    },
+
+    {
+        id: "perf_vs_inc",
+        title: "PERFORMANCE VS INCENTIVE REPORT",
+        type: "perf_vs_inc",
+        data: {
+            month: "JULY 2026",
+            employeeName: "Harshit Goel",
+            employeeId: "EMP-001",
+            designation: "Sales Executive",
+            department: "Sales & Operations",
+            totalIncentive: 20000,
+
+            metrics: [
+                {
+                    kpi: "Sales Target Achieved",
+                    target: "₹5,00,000",
+                    actual: "₹6,20,000",
+                    score: "124%",
+                    incentive: 12000,
+                },
+                {
+                    kpi: "Client Onboarding",
+                    target: "10 Clients",
+                    actual: "12 Clients",
+                    score: "120%",
+                    incentive: 5000,
+                },
+                {
+                    kpi: "Customer CSAT Score",
+                    target: "90%",
+                    actual: "94%",
+                    score: "104%",
+                    incentive: 3000,
+                },
+            ],
+        },
+    },
+
+    {
+        id: "monthly_trend",
+        title: "MONTHLY INCENTIVE TREND",
+        type: "monthly_trend",
+        data: {
+            month: "JULY 2026",
+            employeeName: "Harshit Goel",
+            employeeId: "EMP-001",
+            designation: "Sales Executive",
+            department: "Sales & Operations",
+            totalYtdIncentive: 114000,
+
+            trends: [
+                {
+                    month: "Feb 2026",
+                    targetAchieved: "105%",
+                    status: "Unlocked",
+                    payout: 18000,
+                },
+                {
+                    month: "Mar 2026",
+                    targetAchieved: "110%",
+                    status: "Unlocked",
+                    payout: 21000,
+                },
+                {
+                    month: "Apr 2026",
+                    targetAchieved: "95%",
+                    status: "Unlocked",
+                    payout: 14000,
+                },
+                {
+                    month: "May 2026",
+                    targetAchieved: "120%",
+                    status: "Unlocked",
+                    payout: 26000,
+                },
+                {
+                    month: "Jun 2026",
+                    targetAchieved: "88%",
+                    status: "Partial",
+                    payout: 10000,
+                },
+                {
+                    month: "Jul 2026",
+                    targetAchieved: "124%",
+                    status: "Unlocked",
+                    payout: 25000,
+                },
+            ],
+        },
+    },
+
+    {
+        id: "target_achievement",
+        title: "TARGET ACHIEVEMENT REPORT",
+        type: "target_achievement",
+        data: {
+            month: "JULY 2026",
+            employeeName: "Harshit Goel",
+            employeeId: "EMP-001",
+            designation: "Sales Executive",
+            department: "Sales & Operations",
+            overallScore: "116%",
+
+            targets: [
+                {
+                    category: "Primary Sales Volume",
+                    allocated: "₹10,00,000",
+                    achieved: "₹11,80,000",
+                    status: "Exceeded",
+                },
+                {
+                    category: "Secondary Sales Volume",
+                    allocated: "₹5,00,000",
+                    achieved: "₹5,40,000",
+                    status: "Achieved",
+                },
+                {
+                    category: "Key Account Onboarding",
+                    allocated: "5 Accounts",
+                    achieved: "6 Accounts",
+                    status: "Exceeded",
+                },
+                {
+                    category: "Product Upselling",
+                    allocated: "20 Units",
+                    achieved: "18 Units",
+                    status: "80% Done",
+                },
+            ],
+        },
+    },
+];
+
+export const payrollDashboardData = {
+    stats: [
+        {
+            id: 1,
+            title: "Total Team Incentive",
+            value: "₹1,85,000",
+            subtitle: "+12% vs last month",
+            icon: "Users",
+            color: "yellow",
+        },
+        {
+            id: 2,
+            title: "Team Achievement",
+            value: "84%",
+            subtitle: "42 / 50 Orders",
+            icon: "Target",
+            color: "green",
+        },
+        {
+            id: 3,
+            title: "Incentive Eligible",
+            value: "18",
+            subtitle: "Employees",
+            icon: "UserCheck",
+            color: "blue",
+        },
+        {
+            id: 4,
+            title: "Est. Monthly Incentive",
+            value: "₹2,10,000",
+            subtitle: "Projected",
+            icon: "Wallet",
+            color: "yellow",
+        },
+        {
+            id: 5,
+            title: "Attendance Impact",
+            value: "3",
+            subtitle: "Employees Affected",
+            icon: "CalendarX",
+            color: "red",
+        },
+    ],
+
+    trendData: [
+        { month: "Jan 2026", achievement: 72, incentive: 1.2 },
+        { month: "Feb 2026", achievement: 75, incentive: 1.45 },
+        { month: "Mar 2026", achievement: 68, incentive: 1.32 },
+        { month: "Apr 2026", achievement: 78, incentive: 1.65 },
+        { month: "May 2026", achievement: 81, incentive: 1.78 },
+        { month: "Jun 2026", achievement: 84, incentive: 1.85 },
+    ],
+
+    teamIncentives: [
+        {
+            id: 1,
+            name: "Raj Sharma",
+            zone: "North Zone",
+            avatar: "https://i.pravatar.cc/150?img=11",
+            assignedTarget: 150000,
+            achieved: 180200,
+            achievementPct: 120,
+        },
+        {
+            id: 2,
+            name: "Amit Kumar",
+            zone: "North Zone",
+            avatar: "https://i.pravatar.cc/150?img=12",
+            assignedTarget: 140000,
+            achieved: 159600,
+            achievementPct: 114,
+        },
+        {
+            id: 3,
+            name: "Neha Singh",
+            zone: "East Zone",
+            avatar: "https://i.pravatar.cc/150?img=5",
+            assignedTarget: 120000,
+            achieved: 129600,
+            achievementPct: 108,
+        },
+        {
+            id: 4,
+            name: "Vikash Yadav",
+            zone: "East Zone",
+            avatar: "https://i.pravatar.cc/150?img=13",
+            assignedTarget: 120000,
+            achieved: 105600,
+            achievementPct: 88,
+        },
+        {
+            id: 5,
+            name: "Sandeep Patel",
+            zone: "West Zone",
+            avatar: "https://i.pravatar.cc/150?img=14",
+            assignedTarget: 130000,
+            achieved: 89700,
+            achievementPct: 69,
+        },
+        {
+            id: 6,
+            name: "Ravi Kumar",
+            zone: "West Zone",
+            avatar: "https://i.pravatar.cc/150?img=15",
+            assignedTarget: 110000,
+            achieved: 58300,
+            achievementPct: 53,
+        },
+    ],
+
+    monthlyIncentiveTrend: [
+        { month: "Jul", amount: 0.95 },
+        { month: "Aug", amount: 1.1 },
+        { month: "Sep", amount: 1.05 },
+        { month: "Oct", amount: 1.25 },
+        { month: "Nov", amount: 1.18 },
+        { month: "Dec", amount: 1.3 },
+        { month: "Jan", amount: 1.2 },
+        { month: "Feb", amount: 1.45 },
+        { month: "Mar", amount: 1.32 },
+        { month: "Apr", amount: 1.65 },
+        { month: "May", amount: 1.78 },
+        { month: "Jun", amount: 1.85 },
+    ],
+
+    quickReports,
+};
+
+export const expenseReimbursements = [
+    {
+        id: "ASM-EXP-01",
+        type: "Regional Travel",
+        amount: 4200,
+        date: "12 July 2026",
+        status: "Approved",
+    },
+    {
+        id: "ASM-EXP-02",
+        type: "Hotel Accommodation",
+        amount: 6850,
+        date: "08 July 2026",
+        status: "Approved",
+    },
+    {
+        id: "ASM-EXP-03",
+        type: "Client Meeting",
+        amount: 2350,
+        date: "05 July 2026",
+        status: "Pending",
+    },
+    {
+        id: "ASM-EXP-04",
+        type: "Fuel Reimbursement",
+        amount: 3150,
+        date: "02 July 2026",
+        status: "Approved",
+    },
+    {
+        id: "ASM-EXP-05",
+        type: "Food & Refreshments",
+        amount: 1450,
+        date: "28 June 2026",
+        status: "Rejected",
+    },
+    {
+        id: "ASM-EXP-06",
+        type: "Intercity Travel",
+        amount: 7900,
+        date: "24 June 2026",
+        status: "Approved",
+    },
+    {
+        id: "ASM-EXP-07",
+        type: "Internet & Mobile",
+        amount: 1200,
+        date: "20 June 2026",
+        status: "Pending",
+    },
+    {
+        id: "ASM-EXP-08",
+        type: "Office Supplies",
+        amount: 980,
+        date: "16 June 2026",
+        status: "Approved",
+    },
+    {
+        id: "ASM-EXP-09",
+        type: "Training & Workshop",
+        amount: 5600,
+        date: "10 June 2026",
+        status: "Approved",
+    },
+    {
+        id: "ASM-EXP-10",
+        type: "Parking & Toll Charges",
+        amount: 750,
+        date: "06 June 2026",
+        status: "Rejected",
+    },
+];
+
+export const attendanceImpact = {
+    summary: {
+        totalUnplannedLeaves: "8 Days",
+        impactLevel: "Moderate Impact",
+        estimatedLoss: "₹12,400",
+        crossedLopCount: 3,
+    },
+    drawerSummary: {
+        totalDeduction: "₹12,400",
+        highLopCases: "3 Members",
+    },
+    logs: [
+        { id: 1, name: "Sandeep Patel", dept: "West Zone", type: "Loss of Pay (LOP)", impact: "-₹5,200", date: "12 Jul 2026", status: "Critical" },
+        { id: 2, name: "Ravi Kumar", dept: "West Zone", type: "Unplanned Leave", impact: "-₹4,400", date: "15 Jul 2026", status: "Critical" },
+        { id: 3, name: "Vikash Yadav", dept: "East Zone", type: "Late Arrival (4x)", impact: "-₹2,800", date: "18 Jul 2026", status: "Warning" },
+    ],
+};
+
+export const asmPayrollMock = {
+    dashboard: {
+        ...payrollDashboardData,
+        quickReports,
+        attendanceImpact,
+        expenseReimbursements,
+    },
+
+    payroll: {
+        stats: [
+            {
+                id: 1,
+                title: "CURRENT MONTH NET PAY",
+                value: "₹1,12,600",
+                subtitle: "Paid on 31 Jul 2026",
+                icon: "Wallet",
+                color: "yellow",
+            },
+            {
+                id: 2,
+                title: "INCENTIVE EARNED",
+                value: "₹32,000",
+                subtitle: "This Month",
+                icon: "TrendingUp",
+                color: "yellow",
+            },
+            {
+                id: 3,
+                title: "TOTAL DEDUCTIONS",
+                value: "₹11,400",
+                subtitle: "View Breakdown",
+                icon: "ArrowDown",
+                color: "red",
+            },
+            {
+                id: 4,
+                title: "LOP DAYS",
+                value: "0 Days",
+                subtitle: "Following LOP this month",
+                icon: "CalendarX",
+                color: "red",
+            },
+            {
+                id: 5,
+                title: "PAYROLL STATUS",
+                value: "Processed",
+                subtitle: "Salary Credited",
+                icon: "ShieldCheck",
+                color: "green",
+            },
+        ],
+
+        salaryBreakup: {
+            basicSalary: 52000,
+            hra: 20800,
+            allowances: 19200,
+            incentive: 32000,
+        },
+
+        deductions: {
+            pf: 6240,
+            professionalTax: 200,
+            tds: 4560,
+            other: 400,
+        },
+    },
+
+    history: [
+        {
+            month: "Jul 2026",
+            netPay: 112600,
+            status: "Processed",
+            payslipId: "ASM-2026-07",
+            deductions: 11400,
+        },
+        {
+            month: "Jun 2026",
+            netPay: 110300,
+            status: "Processed",
+            payslipId: "ASM-2026-06",
+            deductions: 11200,
+        },
+        {
+            month: "May 2026",
+            netPay: 107800,
+            status: "Processed",
+            payslipId: "ASM-2026-05",
+            deductions: 10900,
+        },
+        {
+            month: "Apr 2026",
+            netPay: 106200,
+            status: "Processed",
+            payslipId: "ASM-2026-04",
+            deductions: 10800,
+        },
+        {
+            month: "Mar 2026",
+            netPay: 104900,
+            status: "Processed",
+            payslipId: "ASM-2026-03",
+            deductions: 10650,
+        },
+        {
+            month: "Feb 2026",
+            netPay: 103700,
+            status: "Processed",
+            payslipId: "ASM-2026-02",
+            deductions: 10500,
+        },
+        {
+            month: "Jan 2026",
+            netPay: 102500,
+            status: "Processed",
+            payslipId: "ASM-2026-01",
+            deductions: 10400,
+        },
+        {
+            month: "Dec 2025",
+            netPay: 101300,
+            status: "Processed",
+            payslipId: "ASM-2025-12",
+            deductions: 10250,
+        },
+        {
+            month: "Nov 2025",
+            netPay: 100100,
+            status: "Processed",
+            payslipId: "ASM-2025-11",
+            deductions: 10100,
+        },
+        {
+            month: "Oct 2025",
+            netPay: 98800,
+            status: "Processed",
+            payslipId: "ASM-2025-10",
+            deductions: 9950,
+        },
+        {
+            month: "Sep 2025",
+            netPay: 97500,
+            status: "Processed",
+            payslipId: "ASM-2025-09",
+            deductions: 9800,
+        },
+        {
+            month: "Aug 2025",
+            netPay: 96200,
+            status: "Processed",
+            payslipId: "ASM-2025-08",
+            deductions: 9650,
+        },
+    ],
+
+    latestPayslip: {
+        id: "ASM-2026-07",
+        month: "July 2026",
+        creditedOn: "31 Jul 2026",
+        status: "Paid",
+        employeeName: "Raj Sharma",
+        employeeId: "ASM001",
+        designation: "Area Sales Manager",
+        department: "Sales Operations",
+        netPay: 112600,
+        pdfUrl: "/mock/payslips/july-2026.pdf",
+    },
+
+    revisions: [
+        {
+            date: "01 Apr 2026",
+            type: "Annual Increment",
+            description: "Your annual increment has been applied.",
+            ctc: 1320000,
+        },
+        {
+            date: "01 Oct 2025",
+            type: "Performance Increment",
+            description: "Performance-based increment after exceeding quarterly sales targets.",
+            ctc: 1240000,
+        },
+        {
+            date: "01 Apr 2025",
+            type: "Annual Increment",
+            description: "Annual salary revision for FY 2025–26.",
+            ctc: 1180000,
+        },
+        {
+            date: "01 Nov 2024",
+            type: "Promotion",
+            description: "Promoted to Area Sales Manager with revised compensation.",
+            ctc: 1100000,
+        },
+        {
+            date: "01 Apr 2024",
+            type: "Annual Increment",
+            description: "Annual increment based on company appraisal cycle.",
+            ctc: 1020000,
+        },
+        {
+            date: "01 Oct 2023",
+            type: "Performance Increment",
+            description: "Exceptional performance during H1 review resulted in a salary revision.",
+            ctc: 960000,
+        },
+        {
+            date: "01 Apr 2023",
+            type: "Annual Increment",
+            description: "Annual compensation revision.",
+            ctc: 900000,
+        },
+    ],
+
+    expenseReimbursements,
+    attendanceImpact,
+};

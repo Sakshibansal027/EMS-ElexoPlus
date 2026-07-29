@@ -11,10 +11,9 @@ import ComingSoon from "../components/common/ComingSoon";
 import EmployeeMaster from "../features/employee-master/pages/EmployeeMaster";
 import LeaveManagement from "../features/leave/pages/LeaveManagement";
 import Sales from "../features/sales/pages/SalesPage";
+import PayrollManagement from "../features/payroll/pages/PayrollManagement";
 import { ROUTES } from "./routes";
 import NotificationsPage from "../features/notifications/pages/NotificationsPage";
-import EmployeePayrollDashboard from "../features/payroll/pages/employeePayrollDashboard";
-
 const AppRoutes = () => {
   return (
     <BrowserRouter>
@@ -49,7 +48,7 @@ const AppRoutes = () => {
 
           <Route
             path={ROUTES.PAYROLL}
-            element={<EmployeePayrollDashboard />}
+            element={<PayrollManagement />}
           />
 
           <Route
