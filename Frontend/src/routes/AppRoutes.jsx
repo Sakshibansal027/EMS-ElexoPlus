@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import authStorage from "../features/auth/utils/authStorage";
 import AttendancePage from "../features/attendance/pages/AttendancePage";
 import DashboardLayout from "../layouts/DashboardLayout";
 import Profile from "../features/profile/pages/Profile";
@@ -18,7 +19,16 @@ const AppRoutes = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to={ROUTES.LOGIN} replace />} />
+        <Route
+          path="/"
+          element={
+            authStorage.isAuthenticated() ? (
+              <Navigate to={ROUTES.DASHBOARD} replace />
+            ) : (
+              <Navigate to={ROUTES.LOGIN} replace />
+            )
+          }
+        />
 
         <Route path={ROUTES.LOGIN} element={<LoginPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -72,7 +82,16 @@ const AppRoutes = () => {
           />
         </Route>
 
-        <Route path="*" element={<Navigate to={ROUTES.LOGIN} replace />} />
+        <Route
+          path="*"
+          element={
+            authStorage.isAuthenticated() ? (
+              <Navigate to={ROUTES.DASHBOARD} replace />
+            ) : (
+              <Navigate to={ROUTES.LOGIN} replace />
+            )
+          }
+        />
       </Routes>
     </BrowserRouter>
   );

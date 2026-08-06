@@ -3,8 +3,9 @@ import authStorage from "../utils/authStorage";
 const useAuth = () => {
   const user = authStorage.getCurrentUser();
 
-  const login = (userData) => {
-    authStorage.setCurrentUser(userData);
+  const login = (userData, token, remember = false) => {
+    authStorage.setCurrentUser(userData, remember);
+    authStorage.setToken(token, remember);
   };
 
   const logout = () => {

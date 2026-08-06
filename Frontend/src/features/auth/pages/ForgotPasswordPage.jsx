@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, ArrowLeft, Sparkles, ShieldCheck, FileText, Wallet, CheckCircle } from 'lucide-react';
+import authService from '../services/authService';
 
 const FEATURE_CARDS = [
     { icon: FileText, label: 'Employee Master', value: 'Complete profiles' },
@@ -28,17 +29,22 @@ function ForgotPasswordPage() {
         return true;
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
 
         if (!validateForm()) return;
 
         setLoading(true);
-        setTimeout(() => {
-            setLoading(false);
-            setSent(true);
-        }, 1500);
+        const response = await authService.forgotPassword({ email });
+        setLoading(false);
+
+        if (!response.success) {
+            setError(response.message);
+            return;
+        }
+
+        setSent(true);
     };
 
     return (
