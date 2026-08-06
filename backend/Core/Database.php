@@ -16,7 +16,7 @@ class Database
                 $db['driver'] ?? 'mysql',
                 $db['host'] ?? '127.0.0.1',
                 $db['port'] ?? '3306',
-                $db['name'] ?? 'ems_elexoplus'
+                $db['name'] ?? 'u364819982_ems'
             );
             self::$instance = new PDO($dsn, $db['user'] ?? 'root', $db['pass'] ?? '', [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,

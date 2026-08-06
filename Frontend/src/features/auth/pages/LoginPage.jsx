@@ -62,11 +62,9 @@ function LoginPage() {
   //     return true;
   // };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-
-    // if (!validateForm()) return;
 
     const validationError = validateLogin({
       email,
@@ -78,31 +76,20 @@ function LoginPage() {
       return;
     }
 
-    // setLoading(true);
-    // setTimeout(() => {
-    //   setLoading(false);
-    //   setError("Authentication service not available. Please try again later.");
-    // }, 1500);
-
     setLoading(true);
 
-    setTimeout(() => {
-      const response = authService.login({
-        email,
-        password,
-      });
+    const response = await authService.login({ email, password });
 
-      setLoading(false);
+    setLoading(false);
 
-      if (!response.success) {
-        setError(response.message);
-        return;
-      }
+    if (!response.success) {
+      setError(response.message);
+      return;
+    }
 
-      login(response.user);
+    login(response.user, response.token, rememberMe);
 
-      navigate(ROUTES.DASHBOARD);
-    }, 600);
+    navigate(ROUTES.DASHBOARD);
   };
 
   return (

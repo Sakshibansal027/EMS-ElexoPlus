@@ -73,7 +73,9 @@ class Router
                 }
 
                 if (is_array($result)) {
-                    json($result);
+                    $status = (int) ($result['status'] ?? 200);
+                    unset($result['status']);
+                    json($result, $status);
                 } elseif (is_string($result)) {
                     echo $result;
                 }
