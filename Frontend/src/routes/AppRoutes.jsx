@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import authStorage from "../features/auth/utils/authStorage";
 import AttendancePage from "../features/attendance/pages/AttendancePage";
 import DashboardLayout from "../layouts/DashboardLayout";
 import Profile from "../features/profile/pages/Profile";
@@ -7,7 +8,7 @@ import ForgotPasswordPage from "../features/auth/pages/ForgotPasswordPage";
 import ProtectedRoute from "../features/auth/components/ProtectedRoute";
 import SettingsPage from "../features/settings/pages/SettingsPage";
 import Dashboard from "../features/dashboard/pages/Dashboard";
-import ComingSoon from "../components/common/ComingSoon";
+import ReportsPage from "../features/reports/pages/ReportsPage";
 import EmployeeMaster from "../features/employee-master/pages/EmployeeMaster";
 import LeaveManagement from "../features/leave/pages/LeaveManagement";
 import Sales from "../features/sales/pages/SalesPage";
@@ -18,7 +19,16 @@ const AppRoutes = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to={ROUTES.LOGIN} replace />} />
+        <Route
+          path="/"
+          element={
+            authStorage.isAuthenticated() ? (
+              <Navigate to={ROUTES.DASHBOARD} replace />
+            ) : (
+              <Navigate to={ROUTES.LOGIN} replace />
+            )
+          }
+        />
 
         <Route path={ROUTES.LOGIN} element={<LoginPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -58,7 +68,7 @@ const AppRoutes = () => {
 
           <Route
             path={ROUTES.REPORTS}
-            element={<ComingSoon title="Reports" />}
+            element={<ReportsPage />}
           />
 
           <Route
@@ -72,7 +82,16 @@ const AppRoutes = () => {
           />
         </Route>
 
-        <Route path="*" element={<Navigate to={ROUTES.LOGIN} replace />} />
+        <Route
+          path="*"
+          element={
+            authStorage.isAuthenticated() ? (
+              <Navigate to={ROUTES.DASHBOARD} replace />
+            ) : (
+              <Navigate to={ROUTES.LOGIN} replace />
+            )
+          }
+        />
       </Routes>
     </BrowserRouter>
   );
