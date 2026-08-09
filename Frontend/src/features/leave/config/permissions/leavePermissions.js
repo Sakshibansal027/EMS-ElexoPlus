@@ -10,6 +10,8 @@ export const LEAVE_PERMISSIONS = Object.freeze({
         showUpcomingLeaves: false,
         showLeaveAnalytics: false,
         canReviewLeaves: true,
+        canManageLeavePolicies: true,
+        showTeamCalendar: true
     },
 
     [ROLES.HR]: {
@@ -17,10 +19,12 @@ export const LEAVE_PERMISSIONS = Object.freeze({
         showLeaveStats: true,
         showTeamLeaves: true,
         showLeaveBalance: false,
-        showLeaveHistory: false,
-        showUpcomingLeaves: false,
-        showLeaveAnalytics: false,
+        showLeaveHistory: true,
+        showUpcomingLeaves: true,
+        showLeaveAnalytics: true,
         canReviewLeaves: true,
+        canManageLeavePolicies: false,
+        showTeamCalendar: true
     },
 
     [ROLES.ASM]: {
@@ -28,21 +32,25 @@ export const LEAVE_PERMISSIONS = Object.freeze({
         showLeaveStats: true,
         showTeamLeaves: true,
         showLeaveBalance: false,
-        showLeaveHistory: false,
-        showUpcomingLeaves: false,
-        showLeaveAnalytics: false,
+        showLeaveHistory: true,
+        showUpcomingLeaves: true,
+        showLeaveAnalytics: true,
         canReviewLeaves: true,
+        canManageLeavePolicies: false,
+        showTeamCalendar: true
     },
 
     [ROLES.SALES_EXECUTIVE]: {
         showApplyLeave: true,
-        showLeaveStats: true,
+        showLeaveStats: false,
         showTeamLeaves: false,
         showLeaveBalance: true,
         showLeaveHistory: true,
         showUpcomingLeaves: true,
         showLeaveAnalytics: true,
         canReviewLeaves: false,
+        canManageLeavePolicies: false,
+        showTeamCalendar: true
     },
 });
 

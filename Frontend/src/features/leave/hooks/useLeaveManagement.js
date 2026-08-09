@@ -4,9 +4,11 @@ import {
     getLeaveDashboard,
     updateLeaveApplicationStatus,
 } from "../services/leaveService.js";
+
 import useAuth from "../../auth/hooks/useAuth.js";
 import { DEFAULT_LEAVE_USER, normalizeEmployeeId } from "../config/roles.js";
 import { getLeavePermissions } from "../config/permissions/leavePermissions.js";
+
 import {
     employeePeriodOptions,
     employeeStatusOptions,
@@ -14,6 +16,7 @@ import {
     managementLeaveTypeOptions,
     managementStatusTabs,
 } from "../config/leaveOptions.js";
+
 import {
     addLeaveBalancePercentages,
     filterEmployeeLeaves,
@@ -22,13 +25,21 @@ import {
     getUpcomingLeaves,
     paginate,
 } from "../shared/utils/leave.js";
+
 import { applyLeaveMessages } from "../config/applyLeaveForm.js";
 
 export const useLeaveManagement = () => {
     const { user: loggedInUser } = useAuth();
-    const role = loggedInUser?.role ?? DEFAULT_LEAVE_USER.role;
-    const userId = normalizeEmployeeId(loggedInUser?.employeeId ?? loggedInUser?.id);
-    const asmId = loggedInUser?.asmId ?? DEFAULT_LEAVE_USER.asmId;
+
+    const role =
+        loggedInUser?.role ?? DEFAULT_LEAVE_USER.role;
+
+    const userId = normalizeEmployeeId(
+        loggedInUser?.employeeId ?? loggedInUser?.id
+    );
+
+    const asmId =
+        loggedInUser?.asmId ?? DEFAULT_LEAVE_USER.asmId;
 
     const [data, setData] = useState({
         managementCards: [],
@@ -36,18 +47,32 @@ export const useLeaveManagement = () => {
         summaryCards: [],
         leaveBalanceData: [],
         leaveHistory: [],
+        leavePolicies: [],
+        calendarData: {
+            events: [],
+            holidays: [],
+        },
     });
+
     const [error, setError] = useState(null);
+
     const [teamPage, setTeamPage] = useState(1);
     const [historyPage, setHistoryPage] = useState(1);
+
     const [teamFilters, setTeamFilters] = useState({
         status: "All",
         leaveType: "All",
         dayType: "All",
     });
-    const [historyStatus, setHistoryStatus] = useState("All Status");
-    const [historyPeriod, setHistoryPeriod] = useState("All Records");
-    const [showAllUpcomingLeaves, setShowAllUpcomingLeaves] = useState(false);
+
+    const [historyStatus, setHistoryStatus] =
+        useState("All Status");
+
+    const [historyPeriod, setHistoryPeriod] =
+        useState("All Records");
+
+    const [showAllUpcomingLeaves, setShowAllUpcomingLeaves] =
+        useState(false);
 
     const permissions = useMemo(
         () => getLeavePermissions(role),
@@ -55,101 +80,193 @@ export const useLeaveManagement = () => {
     );
 
     useEffect(() => {
-        let isCurrentRequest = true;
+        let mounted = true;
 
-        getLeaveDashboard({ role, userId, asmId })
-            .then((dashboard) => {
-                if (isCurrentRequest) {
-                    setData(dashboard);
-                    setError(null);
+        const fetchDashboard = async () => {
+            try {
+                const dashboard = await getLeaveDashboard({
+                    role,
+                    userId,
+                    asmId,
+                });
+
+                if (!mounted) return;
+
+                setData({
+                    managementCards:
+                        dashboard.managementCards ?? [],
+                    teamLeaves:
+                        dashboard.teamLeaves ?? [],
+                    summaryCards:
+                        dashboard.summaryCards ?? [],
+                    leaveBalanceData:
+                        dashboard.leaveBalanceData ?? [],
+                    leaveHistory:
+                        dashboard.leaveHistory ?? [],
+                    leavePolicies:
+                        dashboard.leavePolicies ?? [],
+                    calendarData:
+                        dashboard.calendarData ?? {
+                            events: [],
+                            holidays: [],
+                        },
+                });
+
+                setError(null);
+            } catch (err) {
+                if (mounted) {
+                    setError(err);
                 }
-            })
-            .catch((requestError) => {
-                if (isCurrentRequest) {
-                    setError(requestError);
-                }
-            });
+            }
+        };
+
+        fetchDashboard();
 
         return () => {
-            isCurrentRequest = false;
+            mounted = false;
         };
     }, [role, userId, asmId]);
 
     const filteredTeamLeaves = useMemo(
-        () => filterManagementLeaves(data.teamLeaves, teamFilters),
+        () =>
+            filterManagementLeaves(
+                data.teamLeaves,
+                teamFilters
+            ),
         [data.teamLeaves, teamFilters]
     );
+
     const teamPagination = useMemo(
-        () => paginate(filteredTeamLeaves, teamPage, 6),
+        () =>
+            paginate(filteredTeamLeaves, teamPage, 6),
         [filteredTeamLeaves, teamPage]
     );
+
     const filteredLeaveHistory = useMemo(
-        () => filterEmployeeLeaves(data.leaveHistory, historyStatus, historyPeriod),
-        [data.leaveHistory, historyStatus, historyPeriod]
+        () =>
+            filterEmployeeLeaves(
+                data.leaveHistory,
+                historyStatus,
+                historyPeriod
+            ),
+        [
+            data.leaveHistory,
+            historyStatus,
+            historyPeriod,
+        ]
     );
+
     const historyPagination = useMemo(
-        () => paginate(filteredLeaveHistory, historyPage, 5),
+        () =>
+            paginate(filteredLeaveHistory, historyPage, 5),
         [filteredLeaveHistory, historyPage]
     );
+
     const leaveBalanceData = useMemo(
-        () => addLeaveBalancePercentages(data.leaveBalanceData),
+        () =>
+            addLeaveBalancePercentages(
+                data.leaveBalanceData
+            ),
         [data.leaveBalanceData]
     );
+
     const leaveAnalytics = useMemo(
-        () => getLeaveAnalytics(data.leaveBalanceData),
+        () =>
+            getLeaveAnalytics(
+                data.leaveBalanceData
+            ),
         [data.leaveBalanceData]
     );
+
     const upcomingLeaves = useMemo(
-        () => getUpcomingLeaves(filteredLeaveHistory),
+        () =>
+            getUpcomingLeaves(
+                filteredLeaveHistory
+            ),
         [filteredLeaveHistory]
     );
+
     const visibleUpcomingLeaves = useMemo(
-        () => upcomingLeaves.slice(0, 3),
-        [upcomingLeaves]
+        () =>
+            showAllUpcomingLeaves
+                ? upcomingLeaves
+                : upcomingLeaves.slice(0, 3),
+        [upcomingLeaves, showAllUpcomingLeaves]
     );
 
     const setTeamFilter = (key, value) => {
-        setTeamFilters((current) => ({ ...current, [key]: value }));
+        setTeamFilters((prev) => ({
+            ...prev,
+            [key]: value,
+        }));
+
         setTeamPage(1);
     };
+
     const updateHistoryStatus = (value) => {
         setHistoryStatus(value);
         setHistoryPage(1);
     };
+
     const updateHistoryPeriod = (value) => {
         setHistoryPeriod(value);
         setHistoryPage(1);
     };
-    const changeStatus = async (leaveId, status) => {
-        await updateLeaveApplicationStatus(leaveId, status);
-        setData((current) => ({
-            ...current,
-            teamLeaves: current.teamLeaves.map((item) =>
-                item.id === leaveId ? { ...item, status } : item
+
+    const changeStatus = async (
+        leaveId,
+        status
+    ) => {
+        await updateLeaveApplicationStatus(
+            leaveId,
+            status
+        );
+
+        setData((prev) => ({
+            ...prev,
+            teamLeaves: prev.teamLeaves.map(
+                (leave) =>
+                    leave.id === leaveId
+                        ? {
+                              ...leave,
+                              status,
+                          }
+                        : leave
             ),
         }));
     };
+
     const cancelLeave = async (leaveId) => {
-        const confirmed = window.confirm(applyLeaveMessages.confirmCancel);
+        const confirmed = window.confirm(
+            applyLeaveMessages.confirmCancel
+        );
 
         if (!confirmed) return;
 
         await cancelLeaveApplication(leaveId);
-        setData((current) => ({
-            ...current,
-            leaveHistory: current.leaveHistory.filter((leave) => leave.id !== leaveId),
+
+        setData((prev) => ({
+            ...prev,
+            leaveHistory:
+                prev.leaveHistory.filter(
+                    (leave) =>
+                        leave.id !== leaveId
+                ),
         }));
     };
 
     return {
         error,
+
         permissions,
+
         user: {
             ...loggedInUser,
             role,
             employeeId: userId,
             asmId,
         },
+
         options: {
             managementStatusTabs,
             managementLeaveTypeOptions,
@@ -157,12 +274,18 @@ export const useLeaveManagement = () => {
             employeeStatusOptions,
             employeePeriodOptions,
         },
+
         leaveStats: {
-            managementCards: data.managementCards,
-            summaryCards: data.summaryCards,
+            managementCards:
+                data.managementCards,
+            summaryCards:
+                data.summaryCards,
             leaveBalanceData,
             leaveAnalytics,
+            calendarData:
+                data.calendarData,
         },
+
         teamLeaves: {
             filters: teamFilters,
             setFilter: setTeamFilter,
@@ -171,16 +294,29 @@ export const useLeaveManagement = () => {
             currentPage: teamPage,
             setCurrentPage: setTeamPage,
             changeStatus,
+
+            calendarEvents:
+                data.calendarData.events,
+
+            holidays:
+                data.calendarData.holidays,
         },
+
         selfLeaves: {
             status: historyStatus,
             period: historyPeriod,
-            updateStatus: updateHistoryStatus,
-            updatePeriod: updateHistoryPeriod,
-            filtered: filteredLeaveHistory,
-            pagination: historyPagination,
-            currentPage: historyPage,
-            setCurrentPage: setHistoryPage,
+            updateStatus:
+                updateHistoryStatus,
+            updatePeriod:
+                updateHistoryPeriod,
+            filtered:
+                filteredLeaveHistory,
+            pagination:
+                historyPagination,
+            currentPage:
+                historyPage,
+            setCurrentPage:
+                setHistoryPage,
             upcomingLeaves,
             visibleUpcomingLeaves,
             showAllUpcomingLeaves,

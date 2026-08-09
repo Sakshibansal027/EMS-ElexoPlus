@@ -12,7 +12,6 @@ const Pagination = ({
     for (let i = 1; i <= totalPages; i++) {
         pageNumbers.push(i);
     }
-
     return (
         <div className="flex items-center justify-between mt-8">
 

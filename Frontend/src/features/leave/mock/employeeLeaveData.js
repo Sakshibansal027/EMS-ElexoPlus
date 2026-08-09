@@ -70,6 +70,9 @@ export const leaveHistory = [
         duration: "1 Day",
         dayType: "Full Day",
         reason: "Family Function",
+        emergencyContact: "Rajesh Sharma (Brother)",
+        phone: "+91 98765 43210",
+        document: "Family_Function_Invitation.pdf",
         status: "Approved",
     },
     {
@@ -82,6 +85,9 @@ export const leaveHistory = [
         duration: "2 Days",
         dayType: "Full Day",
         reason: "Fever",
+        emergencyContact: "Sunita Sharma (Mother)",
+        phone: "+91 91234 56789",
+        document: "Medical_Prescription_Dr_Verma.pdf",
         status: "Approved",
     },
     {
@@ -94,6 +100,9 @@ export const leaveHistory = [
         duration: "5 Days",
         dayType: "Full Day",
         reason: "Vacation",
+        emergencyContact: "Amit Kumar (Friend)",
+        phone: "+91 99887 76655",
+        document: "Not Attached",
         status: "Approved",
     },
     {
@@ -106,6 +115,9 @@ export const leaveHistory = [
         duration: "1 Day",
         dayType: "Half Day",
         reason: "Personal Work",
+        emergencyContact: "Rajesh Sharma (Brother)",
+        phone: "+91 98765 43210",
+        document: "Not Attached",
         status: "Rejected",
     },
     {
@@ -118,6 +130,9 @@ export const leaveHistory = [
         duration: "1 Day",
         dayType: "Full Day",
         reason: "Cold & Cough",
+        emergencyContact: "Sunita Sharma (Mother)",
+        phone: "+91 91234 56789",
+        document: "Clinic_Receipt.pdf",
         status: "Pending",
     },
     {
@@ -130,6 +145,9 @@ export const leaveHistory = [
         duration: "3 Days",
         dayType: "Full Day",
         reason: "Trip",
+        emergencyContact: "Amit Kumar (Friend)",
+        phone: "+91 99887 76655",
+        document: "Travel_Itinerary.pdf",
         status: "Approved",
     },
     {
@@ -142,6 +160,9 @@ export const leaveHistory = [
         duration: "1 Day",
         dayType: "Full Day",
         reason: "Medical Checkup",
+        emergencyContact: "Sunita Sharma (Mother)",
+        phone: "+91 91234 56789",
+        document: "Lab_Report_Appointment.pdf",
         status: "Pending",
     },
     {
@@ -154,6 +175,9 @@ export const leaveHistory = [
         duration: "1 Day",
         dayType: "Full Day",
         reason: "Medical Checkup",
+        emergencyContact: "Sunita Sharma (Mother)",
+        phone: "+91 91234 56789",
+        document: "Lab_Report_Appointment.pdf",
         status: "Pending",
     },
 ];
