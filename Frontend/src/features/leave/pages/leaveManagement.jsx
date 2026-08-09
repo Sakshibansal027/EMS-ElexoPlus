@@ -28,18 +28,25 @@ const LeaveManagement = () => {
     const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
     const [selectedPolicy, setSelectedPolicy] = useState(null);
 
-    const applyLeaveForm = useApplyLeaveForm({
-        onSuccess: () => setShowApplyLeaveForm(false),
-    });
-
     const {
-        permissions,
-        user,
-        options,
-        leaveStats,
-        teamLeaves,
-        selfLeaves,
-    } = useLeaveManagement();
+        permissions,
+        user,
+        options,
+        leaveStats,
+        teamLeaves,
+        selfLeaves,
+        refetch,
+    } = useLeaveManagement();
+
+    const applyLeaveForm = useApplyLeaveForm({
+        employee: user,
+        onSuccess: () => {
+            setShowApplyLeaveForm(false);
+            // Newly submitted leave now lives in the mock store —
+            // refetch so it actually shows up in the UI.
+            refetch();
+        },
+    });
 
     // Fetch leave policies on load if permitted
     useEffect(() => {
@@ -125,7 +132,7 @@ const LeaveManagement = () => {
             {permissions.showLeaveStats && permissions.showTeamLeaves && (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-10">
                     {leaveStats.managementCards.map((leave) => (
-                        <LeaveStatCard key={leave.leaveType} {...leave} />
+                        <LeaveStatCard key={leave.title} {...leave} />
                     ))}
                 </div>
             )}
@@ -413,9 +420,13 @@ const LeaveManagement = () => {
 
             {selectedLeave && (
                 <LeaveDetailsModal
-                    leave={selectedLeave}
-                    onClose={() => setSelectedLeave(null)}
-                />
+                    leave={selectedLeave}
+                    onClose={() => setSelectedLeave(null)}
+                    onCancelLeave={(leaveId) => {
+                        selfLeaves.cancelLeave(leaveId);
+                        setSelectedLeave(null);
+                    }}
+                />
             )}
 
             {/* --- Leave Policy Configuration Modal (with optional Delete inside if needed) --- */}

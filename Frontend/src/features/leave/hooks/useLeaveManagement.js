@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
     cancelLeaveApplication,
     getLeaveDashboard,
@@ -37,7 +37,7 @@ export const useLeaveManagement = () => {
     const userId = normalizeEmployeeId(
         loggedInUser?.employeeId ?? loggedInUser?.id
     );
-
+    console.log({ role, userId })
     const asmId =
         loggedInUser?.asmId ?? DEFAULT_LEAVE_USER.asmId;
 
@@ -79,53 +79,43 @@ export const useLeaveManagement = () => {
         [role]
     );
 
-    useEffect(() => {
-        let mounted = true;
+    const fetchDashboard = useCallback(async () => {
+        try {
+            const dashboard = await getLeaveDashboard({
+                role,
+                userId,
+                asmId,
+            });
 
-        const fetchDashboard = async () => {
-            try {
-                const dashboard = await getLeaveDashboard({
-                    role,
-                    userId,
-                    asmId,
-                });
+            setData({
+                managementCards:
+                    dashboard.managementCards ?? [],
+                teamLeaves:
+                    dashboard.teamLeaves ?? [],
+                summaryCards:
+                    dashboard.summaryCards ?? [],
+                leaveBalanceData:
+                    dashboard.leaveBalanceData ?? [],
+                leaveHistory:
+                    dashboard.leaveHistory ?? [],
+                leavePolicies:
+                    dashboard.leavePolicies ?? [],
+                calendarData:
+                    dashboard.calendarData ?? {
+                        events: [],
+                        holidays: [],
+                    },
+            });
 
-                if (!mounted) return;
-
-                setData({
-                    managementCards:
-                        dashboard.managementCards ?? [],
-                    teamLeaves:
-                        dashboard.teamLeaves ?? [],
-                    summaryCards:
-                        dashboard.summaryCards ?? [],
-                    leaveBalanceData:
-                        dashboard.leaveBalanceData ?? [],
-                    leaveHistory:
-                        dashboard.leaveHistory ?? [],
-                    leavePolicies:
-                        dashboard.leavePolicies ?? [],
-                    calendarData:
-                        dashboard.calendarData ?? {
-                            events: [],
-                            holidays: [],
-                        },
-                });
-
-                setError(null);
-            } catch (err) {
-                if (mounted) {
-                    setError(err);
-                }
-            }
-        };
-
-        fetchDashboard();
-
-        return () => {
-            mounted = false;
-        };
+            setError(null);
+        } catch (err) {
+            setError(err);
+        }
     }, [role, userId, asmId]);
+
+    useEffect(() => {
+        fetchDashboard();
+    }, [fetchDashboard]);
 
     const filteredTeamLeaves = useMemo(
         () =>
@@ -257,6 +247,7 @@ export const useLeaveManagement = () => {
 
     return {
         error,
+        refetch: fetchDashboard,
 
         permissions,
 
