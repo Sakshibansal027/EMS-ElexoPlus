@@ -12,6 +12,7 @@ import { useState, useEffect } from "react";
 const LeaveDetailsSidebar = ({
     leave,
     onClose,
+    onCancelLeave,
 }) => {
     const [isVisible, setIsVisible] = useState(false);
 
@@ -188,6 +189,7 @@ const LeaveDetailsSidebar = ({
                     <div className="px-6 py-4 border-t border-border/60 bg-card/40 flex items-center justify-between">
                         {leave.status === "Pending" ? (
                             <button
+                                onClick={() => onCancelLeave?.(leave.id)}
                                 className="
                                     px-4 py-2.5
                                     rounded-xl
