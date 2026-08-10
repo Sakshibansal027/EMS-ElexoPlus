@@ -1,32 +1,48 @@
-USE ems_elexoplus;
-//kis employee ko konsa salary structure assign hua hai
-CREATE TABLE IF NOT EXISTS employee_salary_structures (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    employee_id INT NOT NULL,
-    template_id INT NOT NULL,
+CREATE TABLE employee_salary_structures (
+    employee_salary_structure_id CHAR(36) PRIMARY KEY,
+
+    employee_id CHAR(36) NOT NULL,
+
+    salary_structure_id CHAR(36) NOT NULL,
+
     effective_from DATE NOT NULL,
-    effective_to DATE,
-    annual_ctc DECIMAL(12,2),
-    monthly_gross DECIMAL(12,2),
+
+    effective_to DATE NULL,
+
     status ENUM(
         'Active',
-        'Expired'
-    ) DEFAULT 'Active',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (template_id)
-        REFERENCES salary_structure_templates(id)
+        'Inactive'
+    ) NOT NULL DEFAULT 'Active',
+
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_employee_salary_structure_employee
+        FOREIGN KEY (employee_id)
+        REFERENCES employees(employee_id)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE,
+
+    CONSTRAINT fk_employee_salary_structure_structure
+        FOREIGN KEY (salary_structure_id)
+        REFERENCES salary_structures(salary_structure_id)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE,
+
+    CONSTRAINT chk_salary_structure_dates
+        CHECK (
+            effective_to IS NULL
+            OR effective_to >= effective_from
+        )
 );
 
-//breakup of salary structure assigned
-CREATE TABLE IF NOT EXISTS employee_salary_components (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    employee_salary_structure_id INT NOT NULL,
-    component_id INT NOT NULL,
-    amount DECIMAL(12,2),
-    percentage DECIMAL(8,2),
-    calculated_amount DECIMAL(12,2),
-    FOREIGN KEY (employee_salary_structure_id)
-        REFERENCES employee_salary_structures(id),
-    FOREIGN KEY (component_id)
-        REFERENCES salary_component_masters(id)
-);
+CREATE INDEX idx_employee_salary_structure_employee
+    ON employee_salary_structures(employee_id);
+
+CREATE INDEX idx_employee_salary_structure_structure
+    ON employee_salary_structures(salary_structure_id);
+
+CREATE INDEX idx_employee_salary_structure_status
+    ON employee_salary_structures(status);
