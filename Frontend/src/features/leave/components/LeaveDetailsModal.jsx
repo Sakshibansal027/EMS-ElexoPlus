@@ -1,11 +1,9 @@
 import {
     Calendar,
-    Clock3,
     FileText,
     PhoneCall,
     Paperclip,
     X,
-    ShieldAlert,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -17,11 +15,8 @@ const LeaveDetailsSidebar = ({
     const [isVisible, setIsVisible] = useState(false);
 
     useEffect(() => {
-        if (leave) {
-            requestAnimationFrame(() => setIsVisible(true));
-        } else {
-            setIsVisible(false);
-        }
+        const frame = requestAnimationFrame(() => setIsVisible(Boolean(leave)));
+        return () => cancelAnimationFrame(frame);
     }, [leave]);
 
     if (!leave) return null;
@@ -66,7 +61,7 @@ const LeaveDetailsSidebar = ({
                                     Leave Application Details
                                 </h2>
                                 <p className="text-xs text-muted-foreground mt-0.5">
-                                    Reference ID: <span className="text-foreground font-medium">#{leave.id}</span> • {leave.employeeId}
+                                    Leave application details
                                 </p>
                             </div>
                         </div>

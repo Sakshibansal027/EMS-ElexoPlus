@@ -48,7 +48,7 @@ const EmployeeHeader = ({ employee, onClose }) => {
                         <div className="mt-3 flex flex-wrap gap-2">
 
                             <span className="rounded-full bg-[var(--color-primary)]/10 px-3 py-1 text-sm text-[var(--color-primary)]">
-                                {employee.id}
+                                {employee.code}
                             </span>
 
                             <span className="rounded-full bg-zinc-800 px-3 py-1 text-sm">

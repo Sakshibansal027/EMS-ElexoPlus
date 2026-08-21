@@ -145,6 +145,13 @@ class LeaveRequestController
         $remarks = Request::input('remarks', null);
         $nextApprover = Request::input('next_approver_employee_id', null);
 
+        // Demo/default routing: when the ASM approves, move the request to
+        // the first active HR employee. A caller can still provide an explicit
+        // next approver to override this in a multi-HR organisation.
+        if ($decision === 'Approved' && empty($nextApprover)) {
+            $nextApprover = $this->resolveDefaultHrApprover();
+        }
+
         return $this->requestService->processDecision(
             $params['id'],
             $approvingEmployeeId,
@@ -202,12 +209,25 @@ class LeaveRequestController
      */
     private function resolveWorkingDays(): array
     {
+        try {
+            $stmt = Database::connection()->prepare('SELECT working_days FROM company_settings LIMIT 1');
+            $stmt->execute();
+            $row = $stmt->fetch();
+            $days = $row ? json_decode($row['working_days'], true) : null;
+            if (is_array($days) && $days) return $days;
+        } catch (\Throwable) {
+            // Settings module may not be migrated yet in a local demo setup.
+        }
+
+        return ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+    }
+
+    private function resolveDefaultHrApprover(): ?string
+    {
         $stmt = Database::connection()->prepare(
-            'SELECT working_days FROM company_settings LIMIT 1'
+            "SELECT employee_id FROM users WHERE role = 'HR' AND employee_id IS NOT NULL LIMIT 1"
         );
         $stmt->execute();
-        $row = $stmt->fetch();
-
-        return $row ? json_decode($row['working_days'], true) : ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+        return $stmt->fetchColumn() ?: null;
     }
 }

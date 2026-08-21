@@ -6,7 +6,10 @@ import ChangePasswordModal from "../components/ChangePasswordModal";
 
 const Profile = () => {
   const [openPasswordModal, setOpenPasswordModal] = useState(false);
-  const { user, profile, permissions } = useProfile();
+  const { user, profile, permissions, loading, error } = useProfile();
+
+  if (loading || !profile) return <section className="p-8 text-foreground-muted">Loading profile…</section>;
+  if (error) return <section className="p-8 text-danger">{error}</section>;
 
   return (
     <section className="space-y-8">

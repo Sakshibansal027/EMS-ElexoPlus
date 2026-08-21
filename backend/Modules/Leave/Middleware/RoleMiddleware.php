@@ -29,9 +29,14 @@ class RoleMiddleware
             return $auth; // not logged in at all — same error/status AuthMiddleware already built
         }
 
-        $userId = $auth['user']['user_id'];
-        $userRoleCodes = self::rolesForUser($userId);
+        $userId = $auth['user']['user_id'] ?? $auth['user']['id'] ?? null;
+        $userRoleCodes = $userId ? self::rolesForUser((string) $userId) : [];
+        // Legacy users table stores one role directly instead of RBAC rows.
+        if (!$userRoleCodes && !empty($auth['user']['role'])) {
+            $userRoleCodes = [strtoupper((string) $auth['user']['role'])];
+        }
 
+        $allowedRoleCodes = array_map('strtoupper', $allowedRoleCodes);
         $hasAllowedRole = count(array_intersect($allowedRoleCodes, $userRoleCodes)) > 0;
 
         if (!$hasAllowedRole) {
@@ -46,16 +51,21 @@ class RoleMiddleware
      */
     private static function rolesForUser(string $userId): array
     {
-        $stmt = Database::connection()->prepare(
-            "SELECT r.role_code
-             FROM user_roles ur
-             JOIN roles r ON r.role_id = ur.role_id
-             WHERE ur.user_id = ?
-               AND ur.status = 'Active'
-               AND r.status = 'Active'"
-        );
-        $stmt->execute([$userId]);
-
-        return array_column($stmt->fetchAll(), 'role_code');
+        try {
+            $stmt = Database::connection()->prepare(
+                "SELECT r.role_code
+                 FROM user_roles ur
+                 JOIN roles r ON r.role_id = ur.role_id
+                 WHERE ur.user_id = ?
+                   AND ur.status = 'Active'
+                   AND r.status = 'Active'"
+            );
+            $stmt->execute([$userId]);
+            return array_column($stmt->fetchAll(), 'role_code');
+        } catch (\Throwable) {
+            // The current production database uses the legacy users.role
+            // column. handle() safely falls back to that verified value.
+            return [];
+        }
     }
 }

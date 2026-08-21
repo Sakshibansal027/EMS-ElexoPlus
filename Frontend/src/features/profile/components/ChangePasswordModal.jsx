@@ -9,8 +9,8 @@ import {
   CheckCircle2,
   Circle,
 } from "lucide-react";
-import useAuth from "../../auth/hooks/useAuth";
 import { ROUTES } from "../../../routes/routes";
+import { changePassword } from "../service/profileService";
 
 const PASSWORD_RULES = [
   {
@@ -37,7 +37,6 @@ const PASSWORD_RULES = [
 
 const ChangePasswordModal = ({ open, onClose }) => {
   const navigate = useNavigate();
-  const { user } = useAuth();
 
   const [error, setError] = useState("");
 
@@ -136,19 +135,12 @@ const ChangePasswordModal = ({ open, onClose }) => {
 
   useEffect(() => {
     if (!open) {
-      setForm({
-        current: "",
-        password: "",
-        confirm: "",
-      });
-
-      setShowPassword({
-        current: false,
-        password: false,
-        confirm: false,
-      });
-
-      setLoading(false);
+      const timer = window.setTimeout(() => {
+        setForm({ current: "", password: "", confirm: "" });
+        setShowPassword({ current: false, password: false, confirm: false });
+        setLoading(false);
+      }, 0);
+      return () => window.clearTimeout(timer);
     }
   }, [open]);
 
@@ -295,22 +287,17 @@ const ChangePasswordModal = ({ open, onClose }) => {
           <button onClick={onClose} className="px-4 py-2 text-sm font-medium hover:bg-white/5 rounded-xl transition">Cancel</button>
           <button
             disabled={!isFormValid || loading}
-            onClick={() => {
-              if (form.current !== user.password) {
-                setError("Current password is incorrect.");
-                return;
-              }
+            onClick={async () => {
               setError("");
               setLoading(true);
-              setTimeout(() => {
-
-                alert("Password Updated Successfully");
-
-                setLoading(false);
-
+              try {
+                await changePassword({ currentPassword: form.current, newPassword: form.password });
                 onClose();
-
-              }, 1200);
+              } catch (requestError) {
+                setError(requestError.response?.data?.message || "Unable to update password.");
+              } finally {
+                setLoading(false);
+              }
             }}
             className="
 btn-primary

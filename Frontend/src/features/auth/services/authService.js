@@ -98,7 +98,8 @@
 import client from "../../../api/client";
 import MOCK_USERS from "../mock/mockUsers";
 
-const USE_MOCK_AUTH = true;
+// Keep this false in normal environments. Set it to true only for isolated UI demos.
+const USE_MOCK_AUTH = false;
 
 const login = async ({ email, password }) => {
   // ==============================
@@ -136,7 +137,6 @@ const login = async ({ email, password }) => {
   // when backend authentication is ready.
   // ==============================
 
-  /*
   try {
     const { data } = await client.post("/auth/login", { email, password });
 
@@ -159,13 +159,10 @@ const login = async ({ email, password }) => {
       refreshToken: null,
     };
   }
-  */
 };
 
 const getCurrentUser = async () => {
-  if (USE_MOCK_AUTH) {
-    return null;
-  }
+  if (USE_MOCK_AUTH) return null;
 
   const { data } = await client.get("/auth/me");
 
@@ -173,9 +170,7 @@ const getCurrentUser = async () => {
 };
 
 const logout = async () => {
-  if (USE_MOCK_AUTH) {
-    return;
-  }
+  if (USE_MOCK_AUTH) return;
 
   try {
     await client.post("/auth/logout");
