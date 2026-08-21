@@ -29,12 +29,11 @@ class RoleMiddleware
             return $auth; // not logged in at all — same error/status AuthMiddleware already built
         }
 
+        // The current canonical schema stores a single verified role on users.
+        // Only use RBAC assignments for a future multi-role schema with no direct role.
+        $userRoleCodes = !empty($auth['user']['role']) ? [strtoupper((string) $auth['user']['role'])] : [];
         $userId = $auth['user']['user_id'] ?? $auth['user']['id'] ?? null;
-        $userRoleCodes = $userId ? self::rolesForUser((string) $userId) : [];
-        // Legacy users table stores one role directly instead of RBAC rows.
-        if (!$userRoleCodes && !empty($auth['user']['role'])) {
-            $userRoleCodes = [strtoupper((string) $auth['user']['role'])];
-        }
+        if (!$userRoleCodes && $userId) $userRoleCodes = self::rolesForUser((string) $userId);
 
         $allowedRoleCodes = array_map('strtoupper', $allowedRoleCodes);
         $hasAllowedRole = count(array_intersect($allowedRoleCodes, $userRoleCodes)) > 0;

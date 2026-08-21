@@ -80,22 +80,16 @@ class AuthService
     {
         $user = $this->users->findByEmail($email);
 
-        if (!$user) {
-            return ['success' => false, 'message' => 'No account found with this email.', 'status' => 404];
-        }
+        // Do not reveal whether an email address belongs to an account.
+        if (!$user) return ['success' => true, 'message' => 'If the account exists, password reset instructions have been sent.'];
 
         $token = bin2hex(random_bytes(32));
         $this->resets->invalidateFor(User::idOf($user));
         $this->resets->createFor(User::idOf($user), $token);
 
-        $link = config('app.url', 'http://localhost:8000') . '/reset-password?token=' . $token;
-        error_log("[ElexoPlus] Password reset link for {$email}: {$link}");
-
-        if (config('debug', false)) {
-            return ['success' => true, 'message' => 'Password reset token generated.', 'reset_token' => $token];
-        }
-
-        return ['success' => true, 'message' => 'Password reset link sent to your email.'];
+        // Deliver the generated link through the configured mail provider.
+        // It must never be logged or returned in an API response.
+        return ['success' => true, 'message' => 'If the account exists, password reset instructions have been sent.'];
     }
 
     public function resetPassword(string $token, string $password): array
@@ -106,8 +100,8 @@ class AuthService
             return ['success' => false, 'message' => 'Invalid or expired reset token.', 'status' => 400];
         }
 
-        if (strlen($password) < 6) {
-            return ['success' => false, 'message' => 'Password must be at least 6 characters.', 'status' => 422];
+        if (!$this->isStrongPassword($password)) {
+            return ['success' => false, 'message' => 'Password does not meet the security requirements.', 'status' => 422];
         }
 
         $hash = password_hash($password, PASSWORD_BCRYPT);
@@ -134,5 +128,14 @@ class AuthService
             'type' => 'refresh',
             'role' => $user['role'] ?? null,
         ], config('jwt.refresh_ttl', 604800));
+    }
+
+    private function isStrongPassword(string $password): bool
+    {
+        return strlen($password) >= 8
+            && preg_match('/[A-Z]/', $password)
+            && preg_match('/[a-z]/', $password)
+            && preg_match('/\d/', $password)
+            && preg_match('/[^A-Za-z0-9]/', $password);
     }
 }

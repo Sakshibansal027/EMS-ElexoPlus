@@ -9,6 +9,8 @@ import {
 import SectionTitle from "./SectionTitle";
 
 const DocumentsSection = ({ employee }) => {
+  const documents = Array.isArray(employee?.documents) ? employee.documents : [];
+
   return (
     <div className="mt-10">
 
@@ -23,7 +25,11 @@ const DocumentsSection = ({ employee }) => {
         overflow-hidden
         "
       >
-        {employee.documents.map((doc, index) => (
+        {documents.length === 0 ? (
+          <p className="px-6 py-8 text-center text-sm text-[var(--color-muted-foreground)]">
+            No employee documents are available.
+          </p>
+        ) : documents.map((doc, index) => (
           <div
             key={doc.name}
             className={`
@@ -35,7 +41,7 @@ const DocumentsSection = ({ employee }) => {
             transition-all
             hover:bg-[rgba(244,194,28,.05)]
             ${
-              index !== employee.documents.length - 1
+              index !== documents.length - 1
                 ? "border-b border-[var(--color-border)]"
                 : ""
             }

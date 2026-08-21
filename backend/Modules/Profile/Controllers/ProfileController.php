@@ -33,6 +33,10 @@ class ProfileController
             $employee = $stmt->fetch() ?: [];
         }
 
+        $address = $this->firstRow('SELECT address_line_1, city, state, country, postal_code FROM employee_addresses WHERE employee_id=? AND address_type=?', [$user['employee_id'] ?? '', 'Current']);
+        $bank = $this->firstRow('SELECT bank_name, account_number, ifsc_code FROM employee_bank_accounts WHERE employee_id=? AND is_primary=1', [$user['employee_id'] ?? '']);
+        $statutory = $this->firstRow('SELECT pan_number FROM employee_statutory_details WHERE employee_id=?', [$user['employee_id'] ?? '']);
+
         return ['success' => true, 'profile' => [
             'personal' => [
                 ['label' => 'Date of Birth', 'value' => $employee['date_of_birth'] ?? 'Not provided'],
@@ -49,10 +53,19 @@ class ProfileController
             ],
             'contact' => [
                 ['label' => 'Email', 'value' => $employee['email'] ?? ($user['email'] ?? 'Not provided')],
+                ['label' => 'Address', 'value' => $address['address_line_1'] ?? 'Not provided'],
+                ['label' => 'City', 'value' => $address['city'] ?? 'Not provided'],
+                ['label' => 'State', 'value' => $address['state'] ?? 'Not provided'],
+                ['label' => 'PIN Code', 'value' => $address['postal_code'] ?? 'Not provided'],
                 ['label' => 'Work Location', 'value' => $employee['location_name'] ?? 'Not assigned'],
             ],
             'emergency' => [],
-            'bank' => [],
+            'bank' => [
+                ['label' => 'Bank Name', 'value' => $bank['bank_name'] ?? 'Not provided'],
+                ['label' => 'Account Number', 'value' => $this->mask($bank['account_number'] ?? '')],
+                ['label' => 'IFSC Code', 'value' => $bank['ifsc_code'] ?? 'Not provided'],
+                ['label' => 'PAN Number', 'value' => $this->mask($statutory['pan_number'] ?? '')],
+            ],
         ]];
     }
 
@@ -71,5 +84,22 @@ class ProfileController
         }
         User::updatePassword(User::idOf($auth['user']), password_hash($password, PASSWORD_BCRYPT));
         return ['success' => true, 'message' => 'Password updated successfully.'];
+    }
+
+    private function firstRow(string $sql, array $bindings): array
+    {
+        try {
+            $stmt = Database::connection()->prepare($sql);
+            $stmt->execute($bindings);
+            return $stmt->fetch() ?: [];
+        } catch (\Throwable) {
+            return [];
+        }
+    }
+
+    private function mask(string $value): string
+    {
+        if ($value === '') return 'Not provided';
+        return str_repeat('•', max(0, strlen($value) - 4)) . substr($value, -4);
     }
 }
