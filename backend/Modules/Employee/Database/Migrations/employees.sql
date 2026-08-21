@@ -25,7 +25,7 @@ CREATE TABLE employees (
     employment_type_id CHAR(36) NOT NULL,
     work_location_id CHAR(36) NOT NULL,
 
-    employee_status_id CHAR(36) NOT NULL
+    employee_status_id CHAR(36) NOT NULL,
 
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
