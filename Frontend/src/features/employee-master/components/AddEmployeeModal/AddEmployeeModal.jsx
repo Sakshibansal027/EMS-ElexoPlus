@@ -41,7 +41,7 @@ const AddEmployeeModal = ({ onClose, addEmployee, isEditMode, updateEmployee, em
 
   useEffect(() => {
     if (employee) {
-      setFormData(employee);
+      void Promise.resolve().then(() => setFormData(employee));
     }
   }, [employee]);
   
@@ -120,16 +120,19 @@ const AddEmployeeModal = ({ onClose, addEmployee, isEditMode, updateEmployee, em
     console.log(newErrors);
     return Object.keys(newErrors).length === 0;
   };
- const handleSubmit = () => {
+ const handleSubmit = async () => {
   if (!validateForm()) return;
 
-  if (isEditMode) {
-    updateEmployee(formData);
-  } else {
-    addEmployee(formData);
+  try {
+    if (isEditMode) {
+      await updateEmployee(formData);
+    } else {
+      await addEmployee(formData);
+    }
+    onClose();
+  } catch (error) {
+    setErrors({ form: error.response?.data?.message || "Unable to save employee." });
   }
-
-  onClose();
 };
   const handleReset = () => {
   setFormData({

@@ -29,9 +29,13 @@ class RoleMiddleware
             return $auth; // not logged in at all — same error/status AuthMiddleware already built
         }
 
-        $userId = $auth['user']['user_id'];
-        $userRoleCodes = self::rolesForUser($userId);
+        // The current canonical schema stores a single verified role on users.
+        // Only use RBAC assignments for a future multi-role schema with no direct role.
+        $userRoleCodes = !empty($auth['user']['role']) ? [strtoupper((string) $auth['user']['role'])] : [];
+        $userId = $auth['user']['user_id'] ?? $auth['user']['id'] ?? null;
+        if (!$userRoleCodes && $userId) $userRoleCodes = self::rolesForUser((string) $userId);
 
+        $allowedRoleCodes = array_map('strtoupper', $allowedRoleCodes);
         $hasAllowedRole = count(array_intersect($allowedRoleCodes, $userRoleCodes)) > 0;
 
         if (!$hasAllowedRole) {
@@ -46,16 +50,21 @@ class RoleMiddleware
      */
     private static function rolesForUser(string $userId): array
     {
-        $stmt = Database::connection()->prepare(
-            "SELECT r.role_code
-             FROM user_roles ur
-             JOIN roles r ON r.role_id = ur.role_id
-             WHERE ur.user_id = ?
-               AND ur.status = 'Active'
-               AND r.status = 'Active'"
-        );
-        $stmt->execute([$userId]);
-
-        return array_column($stmt->fetchAll(), 'role_code');
+        try {
+            $stmt = Database::connection()->prepare(
+                "SELECT r.role_code
+                 FROM user_roles ur
+                 JOIN roles r ON r.role_id = ur.role_id
+                 WHERE ur.user_id = ?
+                   AND ur.status = 'Active'
+                   AND r.status = 'Active'"
+            );
+            $stmt->execute([$userId]);
+            return array_column($stmt->fetchAll(), 'role_code');
+        } catch (\Throwable) {
+            // The current production database uses the legacy users.role
+            // column. handle() safely falls back to that verified value.
+            return [];
+        }
     }
 }

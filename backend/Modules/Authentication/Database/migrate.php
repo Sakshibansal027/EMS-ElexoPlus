@@ -6,26 +6,32 @@
  * Usage: php Modules/Authentication/Database/migrate.php
  */
 
-require __DIR__ . '/../../../vendor/autoload.php';
+$composerAutoload = __DIR__ . '/../../../vendor/autoload.php';
+require file_exists($composerAutoload)
+    ? $composerAutoload
+    : __DIR__ . '/../../../bootstrap/autoload.php';
 
 use Core\Database;
 
 $db = Database::connection();
 
-$migration = __DIR__ . '/migrations.sql';
+// Keep the dependency order explicit: users must exist before user_roles.
+$migrations = ['users.sql', 'password_resets.sql', 'access_control.sql'];
 
-if (!file_exists($migration)) {
-    fwrite(STDERR, "Migration file not found: $migration\n");
-    exit(1);
-}
+foreach ($migrations as $filename) {
+    $file = __DIR__ . '/Migrations/' . $filename;
+    if (!file_exists($file)) {
+        fwrite(STDERR, "Migration file not found: $file\n");
+        exit(1);
+    }
 
-$sql = file_get_contents($migration);
-
-try {
-    $db->exec($sql);
-} catch (\Throwable $e) {
-    fwrite(STDERR, "Migration failed: " . $e->getMessage() . "\n");
-    exit(1);
+    try {
+        $db->exec(file_get_contents($file));
+        echo "Applied: $filename\n";
+    } catch (\Throwable $e) {
+        fwrite(STDERR, "Migration '$filename' failed: " . $e->getMessage() . "\n");
+        exit(1);
+    }
 }
 
 echo "Migrations applied OK.\n";

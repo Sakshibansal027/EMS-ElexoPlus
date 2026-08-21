@@ -167,7 +167,7 @@ const ApplyLeaveModal = ({ employee, onClose, form }) => {
                                 border-[rgba(244,194,28,.2)]
                             "
                         >
-                            {employee.employeeId}
+                            {employee.employeeCode || "Employee"}
                         </span>
                     </div>
 

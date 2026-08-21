@@ -6,7 +6,7 @@ use Modules\Authentication\Models\PasswordReset;
 
 class PasswordResetRepository
 {
-    public function createFor(int $userId, string $token): void
+    public function createFor(string $userId, string $token): void
     {
         PasswordReset::createFor($userId, $token);
     }
@@ -16,12 +16,12 @@ class PasswordResetRepository
         return PasswordReset::findValid($token);
     }
 
-    public function markUsed(int $id): void
+    public function markUsed(string $id): void
     {
         PasswordReset::markUsed($id);
     }
 
-    public function invalidateFor(int $userId): void
+    public function invalidateFor(string $userId): void
     {
         PasswordReset::invalidateFor($userId);
     }

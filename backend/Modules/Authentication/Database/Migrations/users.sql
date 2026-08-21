@@ -1,13 +1,20 @@
 CREATE TABLE users (
     user_id CHAR(36) PRIMARY KEY,
 
-    employee_id CHAR(36) NOT NULL UNIQUE,
+    -- A user may be created before its employee profile is completed.
+    employee_id CHAR(36) NULL UNIQUE,
 
     username VARCHAR(50) NOT NULL UNIQUE,
 
     email VARCHAR(255) NOT NULL UNIQUE,
 
     password_hash VARCHAR(255) NOT NULL,
+
+    name VARCHAR(150) NULL,
+    designation VARCHAR(100) NULL,
+    avatar VARCHAR(500) NULL,
+    role ENUM('ADMIN', 'HR', 'ASM', 'SALES_EXECUTIVE')
+        NOT NULL DEFAULT 'SALES_EXECUTIVE',
 
     status ENUM('Active', 'Inactive')
         NOT NULL DEFAULT 'Active',

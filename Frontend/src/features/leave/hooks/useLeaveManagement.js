@@ -35,7 +35,7 @@ export const useLeaveManagement = () => {
         loggedInUser?.role ?? DEFAULT_LEAVE_USER.role;
 
     const userId = normalizeEmployeeId(
-        loggedInUser?.employeeId ?? loggedInUser?.id
+        loggedInUser?.employeeCode
     );
     console.log({ role, userId })
     const asmId =
@@ -114,7 +114,11 @@ export const useLeaveManagement = () => {
     }, [role, userId, asmId]);
 
     useEffect(() => {
-        fetchDashboard();
+        const timer = window.setTimeout(() => {
+            fetchDashboard();
+        }, 0);
+
+        return () => window.clearTimeout(timer);
     }, [fetchDashboard]);
 
     const filteredTeamLeaves = useMemo(

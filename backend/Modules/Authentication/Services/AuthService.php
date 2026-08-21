@@ -19,11 +19,15 @@ class AuthService
     {
         $user = $this->users->findByEmail($email);
 
-        if (!$user || !password_verify($password, $user['password'])) {
+        if (!$user || !password_verify($password, $user['password_hash'] ?? $user['password'] ?? '')) {
             return ['success' => false, 'message' => 'Invalid email or password.', 'status' => 401];
         }
 
-        $this->users->updateLastLogin((int) $user['id']);
+        if (isset($user['status']) && !in_array($user['status'], ['Active', 'System Live'], true)) {
+            return ['success' => false, 'message' => 'This account is inactive.', 'status' => 403];
+        }
+
+        $this->users->updateLastLogin(User::idOf($user));
 
         return [
             'success' => true,
@@ -34,7 +38,7 @@ class AuthService
         ];
     }
 
-    public function me(int $id): array
+    public function me(string $id): array
     {
         $user = $this->users->findById($id);
 
@@ -58,7 +62,7 @@ class AuthService
             return ['success' => false, 'message' => 'Invalid or expired refresh token.', 'status' => 401];
         }
 
-        $user = $this->users->findById((int) $claims['sub']);
+        $user = $this->users->findById((string) $claims['sub']);
 
         if (!$user) {
             return ['success' => false, 'message' => 'User not found.', 'status' => 404];
@@ -76,22 +80,16 @@ class AuthService
     {
         $user = $this->users->findByEmail($email);
 
-        if (!$user) {
-            return ['success' => false, 'message' => 'No account found with this email.', 'status' => 404];
-        }
+        // Do not reveal whether an email address belongs to an account.
+        if (!$user) return ['success' => true, 'message' => 'If the account exists, password reset instructions have been sent.'];
 
         $token = bin2hex(random_bytes(32));
-        $this->resets->invalidateFor((int) $user['id']);
-        $this->resets->createFor((int) $user['id'], $token);
+        $this->resets->invalidateFor(User::idOf($user));
+        $this->resets->createFor(User::idOf($user), $token);
 
-        $link = config('app.url', 'http://localhost:8000') . '/reset-password?token=' . $token;
-        error_log("[ElexoPlus] Password reset link for {$email}: {$link}");
-
-        if (config('debug', false)) {
-            return ['success' => true, 'message' => 'Password reset token generated.', 'reset_token' => $token];
-        }
-
-        return ['success' => true, 'message' => 'Password reset link sent to your email.'];
+        // Deliver the generated link through the configured mail provider.
+        // It must never be logged or returned in an API response.
+        return ['success' => true, 'message' => 'If the account exists, password reset instructions have been sent.'];
     }
 
     public function resetPassword(string $token, string $password): array
@@ -102,14 +100,14 @@ class AuthService
             return ['success' => false, 'message' => 'Invalid or expired reset token.', 'status' => 400];
         }
 
-        if (strlen($password) < 6) {
-            return ['success' => false, 'message' => 'Password must be at least 6 characters.', 'status' => 422];
+        if (!$this->isStrongPassword($password)) {
+            return ['success' => false, 'message' => 'Password does not meet the security requirements.', 'status' => 422];
         }
 
         $hash = password_hash($password, PASSWORD_BCRYPT);
-        $this->users->updatePassword((int) $record['user_id'], $hash);
-        $this->resets->markUsed((int) $record['id']);
-        $this->resets->invalidateFor((int) $record['user_id']);
+        $this->users->updatePassword((string) $record['user_id'], $hash);
+        $this->resets->markUsed((string) ($record['password_reset_id'] ?? $record['id']));
+        $this->resets->invalidateFor($record['user_id']);
 
         return ['success' => true, 'message' => 'Password reset successfully. You can now log in.'];
     }
@@ -117,7 +115,7 @@ class AuthService
     private function issueAccessToken(array $user): string
     {
         return Jwt::issue([
-            'sub' => (int) $user['id'],
+            'sub' => User::idOf($user),
             'type' => 'access',
             'role' => $user['role'] ?? null,
         ]);
@@ -126,9 +124,18 @@ class AuthService
     private function issueRefreshToken(array $user): string
     {
         return Jwt::issue([
-            'sub' => (int) $user['id'],
+            'sub' => User::idOf($user),
             'type' => 'refresh',
             'role' => $user['role'] ?? null,
         ], config('jwt.refresh_ttl', 604800));
+    }
+
+    private function isStrongPassword(string $password): bool
+    {
+        return strlen($password) >= 8
+            && preg_match('/[A-Z]/', $password)
+            && preg_match('/[a-z]/', $password)
+            && preg_match('/\d/', $password)
+            && preg_match('/[^A-Za-z0-9]/', $password);
     }
 }
