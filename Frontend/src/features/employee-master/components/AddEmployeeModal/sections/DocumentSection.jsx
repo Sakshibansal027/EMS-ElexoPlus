@@ -1,9 +1,7 @@
 import { FileText } from "lucide-react";
 import UploadBox from "../UploadBox";
 
-const DocumentsSection = ({formData,
-  handleChange,
-  setFormData,}) => {
+const DocumentsSection = ({ documentFiles, onFileChange }) => {
   return (
     <div
       className="
@@ -51,13 +49,13 @@ const DocumentsSection = ({formData,
 
       <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
 
-        <UploadBox title="Resume" />
+        <UploadBox title="Resume" file={documentFiles.Resume} onFileChange={(file) => onFileChange("Resume", file)} />
 
-        <UploadBox title="Offer Letter" />
+        <UploadBox title="Offer Letter" file={documentFiles["Offer Letter"]} onFileChange={(file) => onFileChange("Offer Letter", file)} />
 
-        <UploadBox title="PAN Card" />
+        <UploadBox title="PAN Card" file={documentFiles["PAN Card"]} onFileChange={(file) => onFileChange("PAN Card", file)} />
 
-        <UploadBox title="Aadhaar Card" />
+        <UploadBox title="Aadhaar Card" file={documentFiles["Aadhaar Card"]} onFileChange={(file) => onFileChange("Aadhaar Card", file)} />
 
       </div>
 

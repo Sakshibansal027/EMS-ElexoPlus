@@ -4,35 +4,19 @@ export const departments = [
     value: "",
   },
   {
-    label: "Development",
-    value: "Development",
-  },
-  {
-    label: "Testing",
-    value: "Testing",
+    label: "Administration",
+    value: "Administration",
   },
   {
     label: "Sales",
     value: "Sales",
   },
   {
-    label: "Design",
-    value: "Design",
-  },
-  {
-    label: "Finance",
-    value: "Finance",
+    label: "Human Resources",
+    value: "Human Resources",
   },
   {
     label: "Operations",
     value: "Operations",
-  },
-  {
-    label: "HR",
-    value: "HR",
-  },
-  {
-    label: "Marketing",
-    value: "Marketing",
   },
 ];

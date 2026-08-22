@@ -80,4 +80,87 @@ class EmployeeRepository
         $stmt->execute([$value, $value]);
         return $stmt->fetchColumn() ?: null;
     }
+
+    public function documentsForEmployee(string $employeeId): array
+    {
+        $stmt = Database::connection()->prepare(
+            'SELECT document_id, document_type, document_name, status
+             FROM employee_documents WHERE employee_id = ? ORDER BY uploaded_at DESC'
+        );
+        $stmt->execute([$employeeId]);
+        return $stmt->fetchAll();
+    }
+
+    public function viewData(string $employeeId): array
+    {
+        $db = Database::connection();
+        $address = $db->prepare("SELECT address_line_1 FROM employee_addresses WHERE employee_id=? AND address_type='Current' LIMIT 1");
+        $address->execute([$employeeId]);
+        $documents = $db->prepare('SELECT document_id, document_name, document_type, status FROM employee_documents WHERE employee_id=? ORDER BY uploaded_at DESC');
+        $documents->execute([$employeeId]);
+        $balances = $db->prepare('SELECT p.leave_policy_code, b.remaining_days FROM employee_leave_balances b JOIN leave_policies p ON p.leave_policy_id=b.leave_policy_id WHERE b.employee_id=? AND b.leave_year=?');
+        $balances->execute([$employeeId, (int) date('Y')]);
+        $bank = $db->prepare('SELECT bank_name, account_number, ifsc_code FROM employee_bank_accounts WHERE employee_id=? AND is_primary=1 LIMIT 1');
+        $bank->execute([$employeeId]);
+        $statutory = $db->prepare('SELECT pan_number, aadhaar_number, uan_number FROM employee_statutory_details WHERE employee_id=? LIMIT 1');
+        $statutory->execute([$employeeId]);
+        $compensation = $db->prepare('SELECT basic_salary, hra, allowance, bonus, gross_salary, net_salary FROM employee_compensations WHERE employee_id=? LIMIT 1');
+        $compensation->execute([$employeeId]);
+        return ['address' => $address->fetch() ?: [], 'documents' => $documents->fetchAll(), 'balances' => $balances->fetchAll(), 'bank' => $bank->fetch() ?: [], 'statutory' => $statutory->fetch() ?: [], 'compensation' => $compensation->fetch() ?: []];
+    }
+
+    public function saveProfileData(string $employeeId, array $data): void
+    {
+        $db = Database::connection();
+        if (isset($data['address']) && trim((string) $data['address']) !== '') {
+            $this->upsert($db, 'employee_addresses', 'employee_id', $employeeId,
+                ['address_line_1' => trim((string) $data['address']), 'city' => 'Not specified', 'state' => 'Not specified', 'country' => 'India', 'postal_code' => '000000'],
+                ['address_id' => Uuid::generate(), 'employee_id' => $employeeId, 'address_type' => 'Current']);
+        }
+        if (array_key_exists('bankName', $data) && trim((string) $data['bankName']) !== '') {
+            $this->upsert($db, 'employee_bank_accounts', 'employee_id', $employeeId,
+                ['bank_name' => trim((string) $data['bankName']), 'account_number' => trim((string) $data['accountNo']), 'ifsc_code' => strtoupper(trim((string) $data['ifsc']))],
+                ['bank_account_id' => Uuid::generate(), 'employee_id' => $employeeId, 'is_primary' => 1]);
+        }
+        if (array_key_exists('pan', $data) && trim((string) $data['pan']) !== '') {
+            $this->upsert($db, 'employee_statutory_details', 'employee_id', $employeeId,
+                ['pan_number' => strtoupper(trim((string) $data['pan'])), 'aadhaar_number' => preg_replace('/\D/', '', (string) $data['aadhaar']), 'uan_number' => preg_replace('/\D/', '', (string) $data['uan'])],
+                ['statutory_detail_id' => Uuid::generate(), 'employee_id' => $employeeId]);
+        }
+        if (array_key_exists('basicSalary', $data) && $data['basicSalary'] !== '') {
+            $this->upsert($db, 'employee_compensations', 'employee_id', $employeeId,
+                ['basic_salary' => $data['basicSalary'], 'hra' => $data['hra'], 'allowance' => $data['allowance'], 'bonus' => $data['bonus'], 'gross_salary' => $data['grossSalary'], 'net_salary' => $data['netSalary']],
+                ['employee_compensation_id' => Uuid::generate(), 'employee_id' => $employeeId]);
+        }
+    }
+
+    public function findDocument(string $employeeId, string $documentId): ?array
+    {
+        $stmt = Database::connection()->prepare('SELECT document_id, document_name, document_url FROM employee_documents WHERE employee_id=? AND document_id=? LIMIT 1');
+        $stmt->execute([$employeeId, $documentId]);
+        return $stmt->fetch() ?: null;
+    }
+
+    public function addDocument(string $employeeId, string $type, string $name, string $storagePath): array
+    {
+        $id = Uuid::generate();
+        Database::connection()->prepare("INSERT INTO employee_documents (document_id,employee_id,document_type,document_name,document_url,status) VALUES (?,?,?,?,?,'Pending')")
+            ->execute([$id, $employeeId, $type, $name, $storagePath]);
+        return ['document_id' => $id, 'document_type' => $type, 'document_name' => $name, 'status' => 'Pending'];
+    }
+
+    private function upsert(\PDO $db, string $table, string $key, string $value, array $updates, array $insert): void
+    {
+        $exists = $db->prepare("SELECT 1 FROM {$table} WHERE {$key}=? LIMIT 1");
+        $exists->execute([$value]);
+        if ($exists->fetchColumn()) {
+            $sets = implode(', ', array_map(static fn(string $column) => "{$column}=?", array_keys($updates)));
+            $stmt = $db->prepare("UPDATE {$table} SET {$sets} WHERE {$key}=?");
+            $stmt->execute([...array_values($updates), $value]);
+            return;
+        }
+        $columns = array_keys([...$insert, ...$updates]);
+        $stmt = $db->prepare('INSERT INTO ' . $table . ' (' . implode(',', $columns) . ') VALUES (' . implode(',', array_fill(0, count($columns), '?')) . ')');
+        $stmt->execute(array_values([...$insert, ...$updates]));
+    }
 }

@@ -54,10 +54,9 @@ justify-center
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-        <FormInput
-          label="Employee ID"
-          placeholder="EMP001"
-        />
+        <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-input)] px-4 py-3 text-sm text-gray-400">
+          Employee code is generated automatically when you save.
+        </div>
 
         <FormInput
           label="Full Name"
