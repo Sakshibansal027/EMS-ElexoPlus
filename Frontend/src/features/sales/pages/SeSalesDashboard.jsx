@@ -4,8 +4,6 @@ import { Calendar } from 'lucide-react';
 import { useSEDashboardData } from '../hooks/useSEDashboardData';
 import SETopMetrics from '../components/SETopMetrics';
 import SETargetChart from '../components/SETargetChart';
-import QuickActions from '../components/QuickActions';
-import TodaysSummary from '../components/TodaysSummary';
 import SEPerformanceWidgets from '../components/SEPerformanceWidgets';
 import SEMyLeadsTable from '../components/SEMyLeadsTable';
 import SEMyOrdersTable from '../components/SEMyOrdersTable';

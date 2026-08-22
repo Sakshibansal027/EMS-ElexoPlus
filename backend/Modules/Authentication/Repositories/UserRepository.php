@@ -6,7 +6,7 @@ use Modules\Authentication\Models\User;
 
 class UserRepository
 {
-    public function findById(int $id): ?array
+    public function findById(string $id): ?array
     {
         return User::find($id);
     }
@@ -21,12 +21,12 @@ class UserRepository
         return User::create($data);
     }
 
-    public function updateLastLogin(int $id): void
+    public function updateLastLogin(string $id): void
     {
         User::updateLastLogin($id);
     }
 
-    public function updatePassword(int $id, string $passwordHash): bool
+    public function updatePassword(string $id, string $passwordHash): bool
     {
         return User::updatePassword($id, $passwordHash);
     }

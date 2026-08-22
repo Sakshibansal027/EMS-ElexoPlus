@@ -27,12 +27,22 @@ class AuthMiddleware
             return ['error' => 'Invalid or expired token.', 'status' => 401];
         }
 
-        $user = User::find((int) $claims['sub']);
+        $user = User::find((string) $claims['sub']);
 
         if (!$user) {
             return ['error' => 'User not found.', 'status' => 401];
         }
 
-        return ['user' => User::publicData($user)];
+        // Legacy demo users use "System Live" while newer rows use "Active".
+        // Explicit inactive/disabled values must never retain access via an old token.
+        $status = strtolower(trim((string) ($user['status'] ?? 'active')));
+        if (in_array($status, ['inactive', 'disabled', 'suspended', 'revoked', '0'], true)) {
+            return ['error' => 'This account is inactive.', 'status' => 401];
+        }
+
+        // Middleware is server-only context. Keep the stable internal keys
+        // needed for ownership/RBAC checks; controllers must use
+        // User::publicData() for any API response sent to the browser.
+        return ['user' => $user];
     }
 }

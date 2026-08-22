@@ -10,7 +10,7 @@ import {
 } from "../shared/utils/validation.js";
 import { applyLeaveMessages } from "../config/applyLeaveForm.js";
 
-export const useApplyLeaveForm = ({ onSuccess }) => {
+export const useApplyLeaveForm = ({ employee, onSuccess }) => {
     const [leaveType, setLeaveType] = useState(null);
     const [dayType, setDayType] = useState("Full Day");
     const [fromDate, setFromDate] = useState("");
@@ -105,6 +105,7 @@ export const useApplyLeaveForm = ({ onSuccess }) => {
             reason,
             emergencyContact,
             document,
+            employee,
         });
 
         alert(applyLeaveMessages.success);

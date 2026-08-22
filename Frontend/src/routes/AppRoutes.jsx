@@ -9,7 +9,7 @@ import ResetPasswordPage from "../features/auth/pages/ResetPasswordPage";
 import ProtectedRoute from "../features/auth/components/ProtectedRoute";
 import SettingsPage from "../features/settings/pages/SettingsPage";
 import Dashboard from "../features/dashboard/pages/Dashboard";
-import ComingSoon from "../components/common/ComingSoon";
+import ReportsPage from "../features/reports/pages/ReportsPage";
 import EmployeeMaster from "../features/employee-master/pages/EmployeeMaster";
 import LeaveManagement from "../features/leave/pages/LeaveManagement";
 import Sales from "../features/sales/pages/SalesPage";
@@ -70,7 +70,7 @@ const AppRoutes = () => {
 
           <Route
             path={ROUTES.REPORTS}
-            element={<ComingSoon title="Reports" />}
+            element={<ReportsPage />}
           />
 
           <Route

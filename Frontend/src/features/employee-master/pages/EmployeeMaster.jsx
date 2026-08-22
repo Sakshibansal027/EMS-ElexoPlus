@@ -28,7 +28,9 @@ const EmployeeMaster = () => {
     addEmployee,
     editEmployee,
     deleteEmployee,
-    resetFilters
+    resetFilters,
+    loading,
+    error,
   } = useEmployees();
 
 
@@ -74,6 +76,7 @@ const EmployeeMaster = () => {
       {/* Search & Filters */}
 
       <div className="mt-8 rounded-2xl border border-[var(--color-border)] bg-[var(--color-card)] p-5">
+        {error && <p className="mb-4 text-sm text-red-400">{error}</p>}
         <div className="space-y-5">
           {/* Full Width Search */}
           <EmployeeSearch search={search} setSearch={setSearch} />
@@ -92,7 +95,7 @@ const EmployeeMaster = () => {
             />
           </div>
         </div>
-        <EmployeeGrid employees={filteredEmployees} onEdit={handleEdit} onDelete={deleteEmployee} />
+        {loading ? <p className="py-10 text-center text-foreground-muted">Loading employees…</p> : <EmployeeGrid employees={filteredEmployees} onEdit={handleEdit} onDelete={deleteEmployee} />}
       </div>
 
       {openAddModal && (

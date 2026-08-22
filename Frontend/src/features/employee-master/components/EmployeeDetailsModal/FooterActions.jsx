@@ -1,6 +1,6 @@
 import { Pencil, Trash2, X } from "lucide-react";
 
-const FooterActions = ({ onClose }) => {
+const FooterActions = ({ onClose, onEdit, onDelete }) => {
   return (
     <div
       className="
@@ -17,6 +17,7 @@ const FooterActions = ({ onClose }) => {
       {/* Edit */}
 
       <button
+        onClick={onEdit}
         className="
         flex
         items-center
@@ -41,6 +42,7 @@ const FooterActions = ({ onClose }) => {
       {/* Delete */}
 
       <button
+        onClick={onDelete}
         className="
         flex
         items-center

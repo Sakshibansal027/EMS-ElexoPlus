@@ -41,7 +41,15 @@ class Jwt
             return null;
         }
 
-        if (isset($claims['exp']) && $claims['exp'] < time()) {
+        if (!isset($claims['exp'], $claims['iat'], $claims['iss']) || !is_numeric($claims['exp']) || !is_numeric($claims['iat'])) {
+            return null;
+        }
+
+        if (!hash_equals((string) config('app.url', 'http://localhost:8000'), (string) $claims['iss'])) {
+            return null;
+        }
+
+        if ($claims['exp'] <= time() || $claims['iat'] > time() + 60) {
             return null;
         }
 

@@ -77,7 +77,7 @@ const EmployeeCard = ({ employee, onView, onEdit, onDelete }) => {
                 text-[var(--color-primary)]
               "
             >
-              {employee.id}
+              {employee.code}
             </span>
           </div>
         </div>

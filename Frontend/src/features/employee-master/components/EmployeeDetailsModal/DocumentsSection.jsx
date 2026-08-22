@@ -7,8 +7,19 @@ import {
 } from "lucide-react";
 
 import SectionTitle from "./SectionTitle";
+import { openEmployeeDocument } from "../../services/employeeService";
 
 const DocumentsSection = ({ employee }) => {
+  const documents = Array.isArray(employee?.documents) ? employee.documents : [];
+  const openDocument = async (document, download = false) => {
+    if (!document?.id) return;
+    try {
+      await openEmployeeDocument(employee.id, document.id, download);
+    } catch {
+      window.alert("Unable to open this document.");
+    }
+  };
+
   return (
     <div className="mt-10">
 
@@ -23,7 +34,11 @@ const DocumentsSection = ({ employee }) => {
         overflow-hidden
         "
       >
-        {employee.documents.map((doc, index) => (
+        {documents.length === 0 ? (
+          <p className="px-6 py-8 text-center text-sm text-[var(--color-muted-foreground)]">
+            No employee documents are available.
+          </p>
+        ) : documents.map((doc, index) => (
           <div
             key={doc.name}
             className={`
@@ -35,7 +50,7 @@ const DocumentsSection = ({ employee }) => {
             transition-all
             hover:bg-[rgba(244,194,28,.05)]
             ${
-              index !== employee.documents.length - 1
+              index !== documents.length - 1
                 ? "border-b border-[var(--color-border)]"
                 : ""
             }
@@ -93,6 +108,8 @@ const DocumentsSection = ({ employee }) => {
             <div className="flex items-center gap-3">
 
               <button
+                type="button"
+                onClick={() => void openDocument(doc)}
                 className="
                 rounded-xl
                 p-2
@@ -106,6 +123,8 @@ const DocumentsSection = ({ employee }) => {
               </button>
 
               <button
+                type="button"
+                onClick={() => void openDocument(doc, true)}
                 className="
                 rounded-xl
                 p-2
