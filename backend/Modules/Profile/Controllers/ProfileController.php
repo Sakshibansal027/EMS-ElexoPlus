@@ -36,6 +36,7 @@ class ProfileController
         $address = $this->firstRow('SELECT address_line_1, city, state, country, postal_code FROM employee_addresses WHERE employee_id=? AND address_type=?', [$user['employee_id'] ?? '', 'Current']);
         $bank = $this->firstRow('SELECT bank_name, account_number, ifsc_code FROM employee_bank_accounts WHERE employee_id=? AND is_primary=1', [$user['employee_id'] ?? '']);
         $statutory = $this->firstRow('SELECT pan_number FROM employee_statutory_details WHERE employee_id=?', [$user['employee_id'] ?? '']);
+        $documents = $this->rows('SELECT document_id, document_name, document_type, status FROM employee_documents WHERE employee_id=? ORDER BY uploaded_at DESC', [$user['employee_id'] ?? '']);
 
         return ['success' => true, 'profile' => [
             'personal' => [
@@ -66,7 +67,24 @@ class ProfileController
                 ['label' => 'IFSC Code', 'value' => $bank['ifsc_code'] ?? 'Not provided'],
                 ['label' => 'PAN Number', 'value' => $this->mask($statutory['pan_number'] ?? '')],
             ],
+            'documents' => array_map(static fn(array $document) => ['id' => $document['document_id'], 'name' => $document['document_name'], 'type' => $document['document_type'], 'status' => $document['status']], $documents),
         ]];
+    }
+
+    public function downloadDocument(array $params): string|array
+    {
+        $auth = AuthMiddleware::handle();
+        if (isset($auth['error'])) return ['success' => false, 'message' => $auth['error'], 'status' => $auth['status']];
+        $employeeId = (string) ($auth['user']['employee_id'] ?? '');
+        $document = $employeeId === '' ? [] : $this->firstRow('SELECT document_name, document_url FROM employee_documents WHERE employee_id=? AND document_id=?', [$employeeId, $params['documentId']]);
+        if (!$document) return ['success' => false, 'message' => 'Document not found.', 'status' => 404];
+        $storageRoot = realpath(rtrim((string) config('upload.path'), '/\\'));
+        $path = $storageRoot ? realpath($storageRoot . DIRECTORY_SEPARATOR . ltrim($document['document_url'], '/\\')) : false;
+        if (!$storageRoot || !$path || !str_starts_with($path, $storageRoot . DIRECTORY_SEPARATOR)) return ['success' => false, 'message' => 'Document file is unavailable.', 'status' => 404];
+        header('Content-Type: ' . ((new \finfo(FILEINFO_MIME_TYPE))->file($path) ?: 'application/octet-stream'));
+        header('Content-Length: ' . filesize($path));
+        header('Content-Disposition: inline; filename="' . str_replace('"', '', $document['document_name']) . '"');
+        return (string) file_get_contents($path);
     }
 
     public function changePassword(array $params): array
@@ -95,6 +113,12 @@ class ProfileController
         } catch (\Throwable) {
             return [];
         }
+    }
+
+    private function rows(string $sql, array $bindings): array
+    {
+        try { $stmt = Database::connection()->prepare($sql); $stmt->execute($bindings); return $stmt->fetchAll(); }
+        catch (\Throwable) { return []; }
     }
 
     private function mask(string $value): string

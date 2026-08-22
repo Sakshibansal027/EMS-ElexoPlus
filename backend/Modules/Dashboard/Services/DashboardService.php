@@ -92,7 +92,14 @@ class DashboardService
         $items = [];
         foreach ($this->repository->rows('SELECT order_no,order_value,created_at FROM orders WHERE employee_id=? ORDER BY created_at DESC LIMIT 4', [$employeeId]) as $row) $items[] = $this->activity('Order created', "Order {$row['order_no']} for ₹" . number_format((float) $row['order_value'], 2), 'success', $row['created_at']);
         foreach ($this->repository->rows('SELECT lead_name,created_at FROM leads WHERE assigned_employee_id=? ORDER BY created_at DESC LIMIT 3', [$employeeId]) as $row) $items[] = $this->activity('Lead added', $row['lead_name'], 'info', $row['created_at']);
-        if (in_array($role, ['ADMIN', 'HR', 'ASM'], true)) foreach ($this->repository->rows('SELECT lr.status,lr.updated_at,e.full_name FROM leave_requests lr INNER JOIN employees e ON e.employee_id=lr.employee_id ORDER BY lr.updated_at DESC LIMIT 5') as $row) $items[] = $this->activity('Leave ' . strtolower($row['status']), $row['full_name'] . "'s leave request", $row['status'] === 'Approved' ? 'success' : 'warning', $row['updated_at']);
+        if (in_array($role, ['ADMIN', 'HR'], true)) {
+            $leaveActivity = $this->repository->rows('SELECT lr.status,lr.updated_at,e.full_name FROM leave_requests lr INNER JOIN employees e ON e.employee_id=lr.employee_id ORDER BY lr.updated_at DESC LIMIT 5');
+            foreach ($leaveActivity as $row) $items[] = $this->activity('Leave ' . strtolower($row['status']), $row['full_name'] . "'s leave request", $row['status'] === 'Approved' ? 'success' : 'warning', $row['updated_at']);
+        }
+        if ($role === 'ASM') {
+            $leaveActivity = $this->repository->rows('SELECT lr.status,lr.updated_at,e.full_name FROM leave_requests lr INNER JOIN employees e ON e.employee_id=lr.employee_id WHERE e.reporting_manager_id=? ORDER BY lr.updated_at DESC LIMIT 5', [$employeeId]);
+            foreach ($leaveActivity as $row) $items[] = $this->activity('Leave ' . strtolower($row['status']), $row['full_name'] . "'s leave request", $row['status'] === 'Approved' ? 'success' : 'warning', $row['updated_at']);
+        }
         usort($items, fn(array $a, array $b) => strcmp($b['occurred_at'], $a['occurred_at']));
         return array_slice($items, 0, 6);
     }
