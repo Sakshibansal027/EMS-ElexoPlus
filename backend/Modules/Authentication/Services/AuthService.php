@@ -6,6 +6,7 @@ use Modules\Authentication\Models\User;
 use Modules\Authentication\Repositories\PasswordResetRepository;
 use Modules\Authentication\Repositories\UserRepository;
 use Modules\Authentication\Support\Jwt;
+use Core\Mailer;
 
 class AuthService
 {
@@ -84,12 +85,20 @@ class AuthService
         if (!$user) return ['success' => true, 'message' => 'If the account exists, password reset instructions have been sent.'];
 
         $token = bin2hex(random_bytes(32));
-        $this->resets->invalidateFor(User::idOf($user));
-        $this->resets->createFor(User::idOf($user), $token);
+        $this->resets->invalidateFor((int) $user['id']);
+        $this->resets->createFor((int) $user['id'], $token);
 
-        // Deliver the generated link through the configured mail provider.
-        // It must never be logged or returned in an API response.
-        return ['success' => true, 'message' => 'If the account exists, password reset instructions have been sent.'];
+        $frontend = config('frontend_url', 'http://localhost:5173');
+        $link = $frontend . '/reset-password?token=' . $token;
+
+        $name = $user['name'] ?: $user['username'];
+        $subject = 'Reset your ElexoPlus password';
+        $body = $this->resetEmailHtml($name, $link);
+        $alt = "Hi {$name},\n\nWe received a request to reset your ElexoPlus password. Click the link below to choose a new one:\n\n{$link}\n\nIf you didn't request this, you can safely ignore this email.\n\nThanks,\nThe ElexoPlus Team";
+
+        Mailer::send($email, $subject, $body, $alt);
+
+        return ['success' => true, 'message' => 'Password reset link sent to your email.'];
     }
 
     public function resetPassword(string $token, string $password): array
@@ -130,12 +139,25 @@ class AuthService
         ], config('jwt.refresh_ttl', 604800));
     }
 
-    private function isStrongPassword(string $password): bool
+    private function resetEmailHtml(string $name, string $link): string
     {
-        return strlen($password) >= 8
-            && preg_match('/[A-Z]/', $password)
-            && preg_match('/[a-z]/', $password)
-            && preg_match('/\d/', $password)
-            && preg_match('/[^A-Za-z0-9]/', $password);
+        $escapedName = htmlspecialchars($name, ENT_QUOTES, 'UTF-8');
+        $escapedLink = htmlspecialchars($link, ENT_QUOTES, 'UTF-8');
+
+        return '
+        <div style="font-family: Arial, Helvetica, sans-serif; background: #0f172a; color: #e2e8f0; padding: 40px 16px;">
+            <div style="max-width: 520px; margin: 0 auto; background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 32px;">
+                <h2 style="margin: 0 0 16px; color: #f59e0b;">Reset your password</h2>
+                <p style="margin: 0 0 16px; line-height: 1.6;">Hi ' . $escapedName . ',</p>
+                <p style="margin: 0 0 16px; line-height: 1.6;">We received a request to reset the password for your ElexoPlus account. Click the button below to choose a new one.</p>
+                <p style="margin: 0 0 24px; text-align: center;">
+                    <a href="' . $escapedLink . '" style="display: inline-block; background: #f59e0b; color: #0f172a; text-decoration: none; font-weight: bold; padding: 12px 28px; border-radius: 10px;">Reset Password</a>
+                </p>
+                <p style="margin: 0 0 16px; line-height: 1.6; font-size: 13px; color: #94a3b8;">If the button does not work, copy and paste this link into your browser:</p>
+                <p style="margin: 0 0 24px; line-height: 1.5; word-break: break-all; font-size: 12px; color: #cbd5e1;">' . $escapedLink . '</p>
+                <p style="margin: 0 0 8px; line-height: 1.6; font-size: 13px; color: #94a3b8;">If you didn\'t request this, you can safely ignore this email.</p>
+                <p style="margin: 0; line-height: 1.6; font-size: 13px; color: #94a3b8;">Thanks,<br />The ElexoPlus Team</p>
+            </div>
+        </div>';
     }
 }
