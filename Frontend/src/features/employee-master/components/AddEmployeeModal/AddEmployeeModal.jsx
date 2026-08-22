@@ -1,10 +1,11 @@
 import { X, UserPlus } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import PersonalSection from "./sections/PersonalSection";
 import EmploymentSection from "./sections/EmploymentSection";
 import SalarySection from "./sections/SalarySection";
 import BankSection from "./sections/BankSection";
 import DocumentsSection from "./sections/DocumentSection";
+import { uploadEmployeeDocument } from "../../services/employeeService";
 
 import ModalFooter from "./ModalFooter";
 
@@ -23,7 +24,7 @@ const AddEmployeeModal = ({ onClose, addEmployee, isEditMode, updateEmployee, em
     manager: "",
     employmentType: "",
     location: "",
-    status: "",
+    status: "Active",
     bankName: "",
     accountNo: "",
     ifsc: "",
@@ -46,6 +47,9 @@ const AddEmployeeModal = ({ onClose, addEmployee, isEditMode, updateEmployee, em
   }, [employee]);
   
   const [errors, setErrors] = useState({});
+  const [isSaving, setIsSaving] = useState(false);
+  const [documentFiles, setDocumentFiles] = useState({});
+  const formTopRef = useRef(null);
   const handleChange = (e) => {
     const { name, value } = e.target;
     let newValue = value;
@@ -58,10 +62,7 @@ const AddEmployeeModal = ({ onClose, addEmployee, isEditMode, updateEmployee, em
       [name]: newValue,
     }));
 
-    setErrors((prev) => ({
-      ...prev,
-      [name]: "",
-    }));
+    setErrors((prev) => ({ ...prev, [name]: "", form: "" }));
   };
   const validateForm = () => {
     const newErrors = {};
@@ -88,10 +89,6 @@ const AddEmployeeModal = ({ onClose, addEmployee, isEditMode, updateEmployee, em
       newErrors.department = "Department is required";
     }
 
-    if (!formData.role) {
-      newErrors.role = "Role is required";
-    }
-
     if (!formData.designation.trim()) {
       newErrors.designation = "Designation is required";
     }
@@ -104,7 +101,7 @@ const AddEmployeeModal = ({ onClose, addEmployee, isEditMode, updateEmployee, em
       newErrors.employmentType = "Employment Type is required";
     }
 
-    if (!formData.location.trim()) {
+    if (!formData.location) {
       newErrors.location = "Work Location is required";
     }
 
@@ -112,28 +109,28 @@ const AddEmployeeModal = ({ onClose, addEmployee, isEditMode, updateEmployee, em
       newErrors.gender = "Gender is required";
     }
 
-    if (!formData.address.trim()) {
-      newErrors.address = "Address is required";
-    }
-
     setErrors(newErrors);
-    console.log(newErrors);
     return Object.keys(newErrors).length === 0;
   };
- const handleSubmit = async () => {
-  if (!validateForm()) return;
-
-  try {
-    if (isEditMode) {
-      await updateEmployee(formData);
-    } else {
-      await addEmployee(formData);
+  const handleSubmit = async () => {
+    if (!validateForm()) {
+      setErrors((prev) => ({ ...prev, form: "Please complete the required fields before saving." }));
+      formTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
     }
-    onClose();
-  } catch (error) {
-    setErrors({ form: error.response?.data?.message || "Unable to save employee." });
-  }
-};
+
+    try {
+      setIsSaving(true);
+      const savedEmployee = isEditMode ? await updateEmployee(formData) : await addEmployee(formData);
+      await Promise.all(Object.entries(documentFiles).filter(([, file]) => file).map(([type, file]) => uploadEmployeeDocument(savedEmployee.id, type, file)));
+      onClose();
+    } catch (error) {
+      setErrors({ form: error.response?.data?.message || "Unable to save employee. Please try again." });
+      formTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    } finally {
+      setIsSaving(false);
+    }
+  };
   const handleReset = () => {
   setFormData({
     name: "",
@@ -288,6 +285,12 @@ return (
 
       </div>
 
+      {errors.form && (
+        <div className="shrink-0 border-b border-red-500/30 bg-red-500/10 px-8 py-3 text-sm text-red-300" role="alert">
+          {errors.form}
+        </div>
+      )}
+
       {/* Scrollable Form */}
 
       <div
@@ -303,6 +306,7 @@ return (
           scrollbarColor: "#F4C21C transparent",
         }}
       >
+        <div ref={formTopRef} />
         <PersonalSection
           formData={formData}
           handleChange={handleChange}
@@ -327,9 +331,8 @@ return (
           setFormData={setFormData} />
 
         <DocumentsSection
-          formData={formData}
-          handleChange={handleChange}
-          setFormData={setFormData} />
+          documentFiles={documentFiles}
+          onFileChange={(type, file) => setDocumentFiles((previous) => ({ ...previous, [type]: file }))} />
       </div>
 
       {/* Footer */}
@@ -342,7 +345,7 @@ return (
           bg-[var(--color-card)]
         "
       >
-        <ModalFooter onClose={onClose} onSave={handleSubmit} onReset={handleReset} isEditMode={isEditMode} />
+        <ModalFooter onClose={onClose} onSave={handleSubmit} onReset={handleReset} isEditMode={isEditMode} isSaving={isSaving} />
       </div>
 
     </div>

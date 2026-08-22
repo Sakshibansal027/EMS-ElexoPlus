@@ -1,6 +1,6 @@
 import { RotateCcw, Save, X } from "lucide-react";
 
-const ModalFooter = ({ onClose, onSave, onReset,isEditMode }) => {
+const ModalFooter = ({ onClose, onSave, onReset, isEditMode, isSaving }) => {
   return (
     <div
       className="
@@ -21,6 +21,7 @@ const ModalFooter = ({ onClose, onSave, onReset,isEditMode }) => {
 
       <button
         onClick={onClose}
+        disabled={isSaving}
         className="
         flex
         items-center
@@ -60,6 +61,7 @@ const ModalFooter = ({ onClose, onSave, onReset,isEditMode }) => {
         hover:bg-[rgba(244,194,28,.12)]
         cursor-pointer
         " onClick={onReset}
+        disabled={isSaving}
       >
         <RotateCcw size={18} />
         Reset
@@ -83,10 +85,13 @@ const ModalFooter = ({ onClose, onSave, onReset,isEditMode }) => {
         hover:scale-105
         hover:shadow-[0_0_18px_rgba(244,194,28,.25)]
         cursor-pointer
-        "   onClick={onSave}
+        "
+        onClick={onSave}
+        disabled={isSaving}
+        aria-busy={isSaving}
       >
         <Save size={18} />
-        Save Employee
+        {isSaving ? "Saving..." : "Save Employee"}
       </button>
     </div>
   );

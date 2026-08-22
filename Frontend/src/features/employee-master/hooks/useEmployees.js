@@ -31,6 +31,7 @@ const [search, setSearch] = useState("");
   const addEmployee = async (newEmployee) => {
     const employee = await createEmployee(newEmployee);
     setEmployeeList((prev) => [employee, ...prev]);
+    return employee;
   };
 
   const filteredEmployees = useMemo(() => {
@@ -44,7 +45,7 @@ const [search, setSearch] = useState("");
       department === "" || employee.department === department;
 
     const matchRole =
-      role === "" || employee.role === role;
+      role === "" || employee.designation === role;
 
     const matchStatus =
       status === "" || employee.status === status;
@@ -98,11 +99,13 @@ const resetFilters = () => {
           : emp
       )
     );
+    return employee;
   };
 
   const deleteEmployee = async (employeeId) => {
+    if (!window.confirm("Deactivate this employee?")) return;
     await removeEmployee(employeeId);
-    setEmployeeList((prev) => prev.filter((employee) => employee.id !== employeeId));
+    setEmployeeList((prev) => prev.map((employee) => employee.id === employeeId ? { ...employee, status: "Inactive" } : employee));
 };
 
   return {

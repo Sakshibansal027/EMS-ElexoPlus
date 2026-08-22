@@ -1,6 +1,6 @@
 import { UploadCloud } from "lucide-react";
 
-const UploadBox = ({ title }) => {
+const UploadBox = ({ title, file, onFileChange }) => {
   return (
     <label
       className="
@@ -39,7 +39,7 @@ const UploadBox = ({ title }) => {
       </h4>
 
       <p className="mt-2 text-sm text-gray-400">
-        Click to upload
+        {file ? file.name : "Click to upload"}
       </p>
 
       <p className="mt-1 text-xs text-gray-500">
@@ -48,7 +48,9 @@ const UploadBox = ({ title }) => {
 
       <input
         type="file"
+        accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
         className="hidden"
+        onChange={(event) => onFileChange?.(event.target.files?.[0] || null)}
       />
     </label>
   );

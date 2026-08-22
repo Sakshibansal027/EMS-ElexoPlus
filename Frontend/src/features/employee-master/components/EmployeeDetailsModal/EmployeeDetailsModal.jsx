@@ -15,7 +15,7 @@ import {
   Building2,
 } from "lucide-react";
 
-const EmployeeDetailsModal = ({ employee, onClose }) => {
+const EmployeeDetailsModal = ({ employee, onClose, onEdit, onDelete }) => {
   if (!employee) return null;
 
   return (
@@ -113,7 +113,7 @@ const EmployeeDetailsModal = ({ employee, onClose }) => {
 
           {/* Footer */}
 
-          <FooterActions onClose={onClose} />
+          <FooterActions onClose={onClose} onEdit={onEdit} onDelete={onDelete} />
 
         </div>
       </div>

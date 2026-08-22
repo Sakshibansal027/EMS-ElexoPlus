@@ -6,6 +6,8 @@ use Modules\Employee\Controllers\EmployeeController;
 Router::group('api', function () {
     Router::group('employees', function () {
         Router::get('/options', [EmployeeController::class, 'options']);
+        Router::post('/{id}/documents', [EmployeeController::class, 'uploadDocument']);
+        Router::get('/{id}/documents/{documentId}/download', [EmployeeController::class, 'downloadDocument']);
         Router::get('/', [EmployeeController::class, 'index']);
         Router::post('/', [EmployeeController::class, 'store']);
         Router::get('/{id}', [EmployeeController::class, 'show']);
