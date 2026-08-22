@@ -172,7 +172,7 @@ const LeaveApplicationRow = ({
                         {status}
                     </span>
 
-                    {status === "Pending" && (
+                    {["Pending", "Under Review"].includes(status) && (
                         <div className="flex gap-2">
                             <button
                             onClick={() =>

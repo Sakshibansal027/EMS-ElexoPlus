@@ -17,7 +17,7 @@ import UpcomingLeaves from "../components/UpcomingLeaves.jsx";
 import LeavePolicyModal from "../components/LeavePolicyModal.jsx";
 import { useApplyLeaveForm } from "../hooks/useApplyLeaveForm.js";
 import { useLeaveManagement } from "../hooks/useLeaveManagement.js";
-import { getLeavePolicies, updateLeavePolicy, createLeavePolicy, deleteLeavePolicy } from "../services/leaveService.js"; // <-- Added deleteLeavePolicy
+import { getLeavePolicies, updateLeavePolicy, createLeavePolicy, deleteLeavePolicy, getLeaveRequestDocuments, openLeaveDocument } from "../services/leaveService.js";
 import TeamLeaveCalendar from "../components/TeamLeaveCalender.jsx";
 const LeaveManagement = () => {
     const [showApplyLeaveForm, setShowApplyLeaveForm] = useState(false);
@@ -40,6 +40,7 @@ const LeaveManagement = () => {
 
     const applyLeaveForm = useApplyLeaveForm({
         employee: user,
+        policies: leaveStats.leavePolicies,
         onSuccess: () => {
             setShowApplyLeaveForm(false);
             // Newly submitted leave now lives in the mock store —
@@ -60,7 +61,7 @@ const LeaveManagement = () => {
             const data = await getLeavePolicies();
             setLeavePolicies(data);
         } catch (error) {
-            console.error("Failed to fetch leave policies", error);
+            alert(error?.response?.data?.message || error?.message || "Unable to load leave policies.");
         }
     };
 
@@ -71,11 +72,10 @@ const LeaveManagement = () => {
             } else {
                 await createLeavePolicy(formData);
             }
-            fetchPolicies();
-            setIsPolicyModalOpen(false);
-            setSelectedPolicy(null);
+            await fetchPolicies();
         } catch (error) {
-            console.error("Failed to save leave policy", error);
+            alert(error?.response?.data?.message || error?.message || "Unable to save leave policy.");
+            throw error;
         }
     };
 
@@ -87,12 +87,20 @@ const LeaveManagement = () => {
                 setIsPolicyModalOpen(false);
                 setSelectedPolicy(null);
             } catch (error) {
-                console.error("Failed to delete leave policy", error);
+                alert(error?.response?.data?.message || error?.message || "Unable to deactivate leave policy.");
             }
         }
     };
 
-    const teamRecords = teamLeaves.pagination.records;
+    const viewLeave = async (leave) => {
+        try {
+            const documents = await getLeaveRequestDocuments(leave.id);
+            setSelectedLeave({ ...leave, documents, document: documents[0]?.name || "Not Attached" });
+        } catch (error) {
+            alert(error?.response?.data?.message || error?.message || "Unable to load leave details.");
+        }
+    };
+    const teamRecords = teamLeaves.pagination.records;
     const historyRecords = selfLeaves.pagination.records;
 
     return (
@@ -355,7 +363,7 @@ const LeaveManagement = () => {
                             selfLeaves.filtered.length
                         )}
                         onPageChange={selfLeaves.setCurrentPage}
-                        onViewLeave={setSelectedLeave}
+                                onViewLeave={viewLeave}
                     />
                 </>
             )}
@@ -421,6 +429,7 @@ const LeaveManagement = () => {
             {selectedLeave && (
                 <LeaveDetailsModal
                     leave={selectedLeave}
+                    onOpenDocument={openLeaveDocument}
                     onClose={() => setSelectedLeave(null)}
                     onCancelLeave={(leaveId) => {
                         selfLeaves.cancelLeave(leaveId);

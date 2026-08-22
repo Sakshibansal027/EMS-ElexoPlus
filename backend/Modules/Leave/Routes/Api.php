@@ -34,6 +34,7 @@ Router::group('api', function () {
         // --- Leave Request Documents (LeaveRequestDocumentController) ---
         Router::get('/requests/{requestId}/documents', [LeaveRequestDocumentController::class, 'index']);
         Router::post('/requests/{requestId}/documents', [LeaveRequestDocumentController::class, 'store']);
+        Router::get('/documents/{id}/download', [LeaveRequestDocumentController::class, 'download']);
         Router::delete('/documents/{id}', [LeaveRequestDocumentController::class, 'destroy']);
 
         // --- Employee Leave Balances (EmployeeLeaveBalanceController) ---

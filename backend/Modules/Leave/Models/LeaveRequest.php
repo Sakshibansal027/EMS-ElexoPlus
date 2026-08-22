@@ -95,7 +95,7 @@ class LeaveRequest
      */
     public static function update(string $id, array $data): ?array
     {
-        unset($data['leave_request_id'], $data['employee_id']);
+        $data = array_intersect_key($data, array_flip(['leave_policy_id', 'start_date', 'end_date', 'day_type', 'reason', 'emergency_contact']));
 
         if (empty($data)) {
             return self::find($id);
@@ -143,12 +143,28 @@ class LeaveRequest
     public static function allBetween(string $startDate, string $endDate): array
     {
         $stmt = Database::connection()->prepare(
-            'SELECT * FROM ' . self::TABLE . '
-             WHERE start_date <= ? AND end_date >= ?
-             ORDER BY start_date ASC'
+            'SELECT r.*, e.employee_code, e.full_name AS employee_name, p.leave_policy_code
+             FROM ' . self::TABLE . ' r
+             INNER JOIN employees e ON e.employee_id = r.employee_id
+             INNER JOIN leave_policies p ON p.leave_policy_id = r.leave_policy_id
+             WHERE r.start_date <= ? AND r.end_date >= ?
+             ORDER BY r.start_date ASC'
         );
         $stmt->execute([$endDate, $startDate]);
         return $stmt->fetchAll();
+    }
+
+    public static function hasConflictingRequest(string $employeeId, string $startDate, string $endDate): bool
+    {
+        $stmt = Database::connection()->prepare(
+            "SELECT 1 FROM " . self::TABLE . "
+             WHERE employee_id = ?
+               AND start_date <= ? AND end_date >= ?
+               AND status IN ('Pending', 'Under Review', 'Approved')
+             LIMIT 1"
+        );
+        $stmt->execute([$employeeId, $endDate, $startDate]);
+        return (bool) $stmt->fetchColumn();
     }
 
     public static function setStatus(string $id, string $status): ?array

@@ -6,7 +6,7 @@ use Modules\Authentication\Middleware\AuthMiddleware;
 use Modules\Leave\Middleware\RoleMiddleware;
 use Modules\Leave\Repositories\LeavePolicyRepository;
 use Modules\Leave\Services\LeavePolicyService;
-use Modules\Leave\Support\Request;
+use Modules\Authentication\Support\Request;
 
 class LeavePolicyController
 {
@@ -31,7 +31,8 @@ class LeavePolicyController
             return ['success' => false, 'message' => $auth['error'], 'status' => $auth['status']];
         }
 
-        $includeInactive = Request::input('all', '0') === '1';
+        $includeInactive = Request::input('all', '0') === '1'
+            && in_array(strtoupper((string) ($auth['user']['role'] ?? '')), ['ADMIN', 'HR'], true);
 
         return $includeInactive
             ? $this->policyService->listAll()
@@ -62,7 +63,7 @@ class LeavePolicyController
             return ['success' => false, 'message' => $auth['error'], 'status' => $auth['status']];
         }
 
-        $data = Request::input();
+        $data = Request::all();
 
         return $this->policyService->create($data);
     }
@@ -78,7 +79,7 @@ class LeavePolicyController
             return ['success' => false, 'message' => $auth['error'], 'status' => $auth['status']];
         }
 
-        $data = Request::input();
+        $data = Request::all();
 
         return $this->policyService->update($params['id'], $data);
     }

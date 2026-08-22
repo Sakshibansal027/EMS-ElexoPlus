@@ -37,7 +37,6 @@ export const useLeaveManagement = () => {
     const userId = normalizeEmployeeId(
         loggedInUser?.employeeCode
     );
-    console.log({ role, userId })
     const asmId =
         loggedInUser?.asmId ?? DEFAULT_LEAVE_USER.asmId;
 
@@ -215,19 +214,7 @@ export const useLeaveManagement = () => {
             leaveId,
             status
         );
-
-        setData((prev) => ({
-            ...prev,
-            teamLeaves: prev.teamLeaves.map(
-                (leave) =>
-                    leave.id === leaveId
-                        ? {
-                              ...leave,
-                              status,
-                          }
-                        : leave
-            ),
-        }));
+        await fetchDashboard();
     };
 
     const cancelLeave = async (leaveId) => {
@@ -238,15 +225,7 @@ export const useLeaveManagement = () => {
         if (!confirmed) return;
 
         await cancelLeaveApplication(leaveId);
-
-        setData((prev) => ({
-            ...prev,
-            leaveHistory:
-                prev.leaveHistory.filter(
-                    (leave) =>
-                        leave.id !== leaveId
-                ),
-        }));
+        await fetchDashboard();
     };
 
     return {

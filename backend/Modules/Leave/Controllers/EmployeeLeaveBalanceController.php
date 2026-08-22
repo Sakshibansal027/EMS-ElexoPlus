@@ -7,7 +7,7 @@ use Modules\Leave\Middleware\RoleMiddleware;
 use Modules\Leave\Repositories\EmployeeLeaveBalanceRepository;
 use Modules\Leave\Repositories\LeavePolicyRepository;
 use Modules\Leave\Services\EmployeeLeaveBalanceService;
-use Modules\Leave\Support\Request;
+use Modules\Authentication\Support\Request;
 
 class EmployeeLeaveBalanceController
 {

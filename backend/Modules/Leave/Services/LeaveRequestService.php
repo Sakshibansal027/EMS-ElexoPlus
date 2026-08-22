@@ -46,8 +46,16 @@ class LeaveRequestService
             }
         }
 
+        if (!$this->isValidDate($data['start_date']) || !$this->isValidDate($data['end_date'])) {
+            return ['success' => false, 'message' => 'start_date and end_date must use the YYYY-MM-DD format.', 'status' => 422];
+        }
+
         if ($data['end_date'] < $data['start_date']) {
             return ['success' => false, 'message' => 'end_date cannot be before start_date.', 'status' => 422];
+        }
+
+        if ($this->requests->hasConflictingRequest($data['employee_id'], $data['start_date'], $data['end_date'])) {
+            return ['success' => false, 'message' => 'An overlapping pending or approved leave request already exists.', 'status' => 422];
         }
 
         $policy = $this->policies->findById($data['leave_policy_id']);
@@ -55,9 +63,19 @@ class LeaveRequestService
             return ['success' => false, 'message' => 'This leave policy is not available.', 'status' => 422];
         }
 
-        $dayType = $data['day_type'] ?? 'Full Day';
+        // The UI has a single "Half Day" selection while the schema stores
+        // which half. Default that selection to First Half until the UI adds
+        // an explicit first/second-half control.
+        $dayType = ($data['day_type'] ?? 'Full Day') === 'Half Day' ? 'First Half' : ($data['day_type'] ?? 'Full Day');
+        if (!in_array($dayType, ['Full Day', 'First Half', 'Second Half'], true)) {
+            return ['success' => false, 'message' => 'day_type must be Full Day, First Half or Second Half.', 'status' => 422];
+        }
         if ($dayType !== 'Full Day' && !$policy['allow_half_day']) {
             return ['success' => false, 'message' => 'This leave policy does not allow half-day requests.', 'status' => 422];
+        }
+
+        if ($dayType !== 'Full Day' && $data['start_date'] !== $data['end_date']) {
+            return ['success' => false, 'message' => 'A half-day leave must start and end on the same date.', 'status' => 422];
         }
 
         if ($policy['requires_document'] && empty($data['has_document'])) {
@@ -137,6 +155,10 @@ class LeaveRequestService
             return ['success' => false, 'message' => 'Leave request not found.', 'status' => 404];
         }
 
+        if (!in_array($request['status'], ['Pending', 'Under Review'], true)) {
+            return ['success' => false, 'message' => 'This leave request has already been finalized.', 'status' => 409];
+        }
+
         $pendingStage = $this->approvals->findPendingForRequest($leaveRequestId);
         if (!$pendingStage) {
             return ['success' => false, 'message' => 'This request has no pending approval stage.', 'status' => 409];
@@ -144,6 +166,13 @@ class LeaveRequestService
 
         if ($pendingStage['approver_employee_id'] !== $approvingEmployeeId) {
             return ['success' => false, 'message' => 'You are not the assigned approver for this stage.', 'status' => 403];
+        }
+
+        // Validate the next stage before mutating the current one. Without
+        // this guard an unavailable HR approver would leave an ASM stage
+        // marked Approved but with no follow-up stage.
+        if ($decision === 'Approved' && $pendingStage['approval_level'] === 'ASM' && empty($nextApproverEmployeeId)) {
+            return ['success' => false, 'message' => 'No active HR approver is configured to continue this request.', 'status' => 422];
         }
 
         $this->approvals->recordDecision($pendingStage['approval_id'], $decision, $remarks);
@@ -155,10 +184,6 @@ class LeaveRequestService
 
         // Approved at this stage — figure out if there's a next one.
         if ($pendingStage['approval_level'] === 'ASM') {
-            if (empty($nextApproverEmployeeId)) {
-                return ['success' => false, 'message' => 'nextApproverEmployeeId (HR) is required to advance the chain.', 'status' => 422];
-            }
-
             $this->approvals->create([
                 'leave_request_id' => $leaveRequestId,
                 'approver_employee_id' => $nextApproverEmployeeId,
@@ -256,5 +281,11 @@ class LeaveRequestService
         $holidays = $this->holidays->findAllBetween($startDate, $endDate);
 
         return (float) max(0, $count - count($holidays));
+    }
+
+    private function isValidDate(string $value): bool
+    {
+        $date = \DateTime::createFromFormat('!Y-m-d', $value);
+        return $date !== false && $date->format('Y-m-d') === $value;
     }
 }

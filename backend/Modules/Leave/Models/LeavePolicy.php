@@ -87,7 +87,8 @@ class LeavePolicy
      */
     public static function update(string $id, array $data): ?array
     {
-        unset($data['leave_policy_id']); // never let the PK be updated via this path
+        $allowed = ['leave_policy_code', 'leave_policy_name', 'description', 'annual_quota', 'accrual_frequency', 'accrual_method', 'allow_half_day', 'requires_document', 'is_paid', 'carry_forward_allowed', 'max_carry_forward_days', 'status'];
+        $data = array_intersect_key($data, array_flip($allowed));
 
         if (empty($data)) {
             return self::find($id);

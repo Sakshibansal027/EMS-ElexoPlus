@@ -10,7 +10,7 @@ use Modules\Leave\Repositories\LeavePolicyRepository;
 use Modules\Leave\Repositories\EmployeeLeaveBalanceRepository;
 use Modules\Leave\Repositories\CompanyHolidayRepository;
 use Modules\Leave\Services\LeaveRequestService;
-use Modules\Leave\Support\Request;
+use Modules\Authentication\Support\Request;
 
 class LeaveRequestController
 {
@@ -80,6 +80,8 @@ class LeaveRequestController
         $to = (string) Request::input('to', date('Y-m-t'));
 
         $requests = (new LeaveRequestRepository())->findAllBetween($from, $to);
+        $visibleEmployeeIds = $this->visibleEmployeeIds($auth['user']);
+        $requests = array_values(array_filter($requests, static fn(array $request): bool => in_array($request['employee_id'], $visibleEmployeeIds, true)));
 
         return ['success' => true, 'requests' => $requests];
     }
@@ -99,6 +101,10 @@ class LeaveRequestController
             return ['success' => false, 'message' => 'Leave request not found.', 'status' => 404];
         }
 
+        if (!$this->canAccessRequest($auth['user'], $request)) {
+            return ['success' => false, 'message' => 'You do not have permission to view this leave request.', 'status' => 403];
+        }
+
         $trail = $this->approvals->findAllByRequest($params['id']);
 
         return ['success' => true, 'request' => $request, 'approval_trail' => $trail];
@@ -116,7 +122,7 @@ class LeaveRequestController
         }
 
         $employeeId = $auth['user']['employee_id'];
-        $data = Request::input();
+        $data = Request::all();
         $data['employee_id'] = $employeeId; // never trust a client-supplied employee_id
 
         $firstApprover = $this->resolveReportingManager($employeeId);
@@ -143,14 +149,10 @@ class LeaveRequestController
         $approvingEmployeeId = $auth['user']['employee_id'];
         $decision = (string) Request::input('decision', '');
         $remarks = Request::input('remarks', null);
-        $nextApprover = Request::input('next_approver_employee_id', null);
-
-        // Demo/default routing: when the ASM approves, move the request to
-        // the first active HR employee. A caller can still provide an explicit
-        // next approver to override this in a multi-HR organisation.
-        if ($decision === 'Approved' && empty($nextApprover)) {
-            $nextApprover = $this->resolveDefaultHrApprover();
-        }
+        // Approval routing is server-owned. Never accept an approver id from
+        // the browser: an ASM must not be able to route a request to an
+        // arbitrary account. The service still verifies the current approver.
+        $nextApprover = $decision === 'Approved' ? $this->resolveDefaultHrApprover() : null;
 
         return $this->requestService->processDecision(
             $params['id'],
@@ -198,7 +200,17 @@ class LeaveRequestController
         $stmt->execute([$employeeId]);
         $row = $stmt->fetch();
 
-        return $row['reporting_manager_id'] ?? null;
+        $managerId = $row['reporting_manager_id'] ?? null;
+        if ($managerId && $this->isActiveApproverAccount($managerId, 'ASM')) return $managerId;
+
+        // Demo data can contain an old employee-manager reference with no
+        // corresponding active login. Route to a real ASM account instead of
+        // creating an approval that nobody can ever action.
+        $stmt = Database::connection()->prepare(
+            "SELECT u.employee_id FROM users u INNER JOIN employees e ON e.employee_id = u.employee_id AND e.email = u.email WHERE u.role = 'ASM' AND u.employee_id IS NOT NULL AND u.status IN ('Active', 'System Live') LIMIT 1"
+        );
+        $stmt->execute();
+        return $stmt->fetchColumn() ?: null;
     }
 
     /**
@@ -225,9 +237,52 @@ class LeaveRequestController
     private function resolveDefaultHrApprover(): ?string
     {
         $stmt = Database::connection()->prepare(
-            "SELECT employee_id FROM users WHERE role = 'HR' AND employee_id IS NOT NULL LIMIT 1"
+            "SELECT u.employee_id FROM users u INNER JOIN employees e ON e.employee_id = u.employee_id AND e.email = u.email WHERE u.role = 'HR' AND u.employee_id IS NOT NULL AND u.status IN ('Active', 'System Live') LIMIT 1"
         );
         $stmt->execute();
         return $stmt->fetchColumn() ?: null;
+    }
+
+    /** @return string[] Employee IDs visible to this user in the calendar. */
+    private function visibleEmployeeIds(array $user): array
+    {
+        $employeeId = (string) ($user['employee_id'] ?? '');
+        if ($employeeId === '') return [];
+        if ($this->isLeaveAdministrator($user)) return array_column(
+            Database::connection()->query('SELECT employee_id FROM employees')->fetchAll(),
+            'employee_id'
+        );
+
+        if (strtoupper((string) ($user['role'] ?? '')) !== 'ASM') return [$employeeId];
+
+        $stmt = Database::connection()->prepare('SELECT employee_id FROM employees WHERE reporting_manager_id = ?');
+        $stmt->execute([$employeeId]);
+        return array_values(array_unique(array_merge([$employeeId], array_column($stmt->fetchAll(), 'employee_id'))));
+    }
+
+    private function canAccessRequest(array $user, array $request): bool
+    {
+        if ($this->isLeaveAdministrator($user)) return true;
+        if (($user['employee_id'] ?? null) === $request['employee_id']) return true;
+
+        $stmt = Database::connection()->prepare(
+            'SELECT 1 FROM leave_approvals WHERE leave_request_id = ? AND approver_employee_id = ? LIMIT 1'
+        );
+        $stmt->execute([$request['leave_request_id'], $user['employee_id'] ?? '']);
+        return (bool) $stmt->fetchColumn();
+    }
+
+    private function isLeaveAdministrator(array $user): bool
+    {
+        return in_array(strtoupper((string) ($user['role'] ?? '')), ['ADMIN', 'HR'], true);
+    }
+
+    private function isActiveApproverAccount(string $employeeId, string $role): bool
+    {
+        $stmt = Database::connection()->prepare(
+            "SELECT 1 FROM users u INNER JOIN employees e ON e.employee_id = u.employee_id AND e.email = u.email WHERE u.employee_id = ? AND u.role = ? AND u.status IN ('Active', 'System Live') LIMIT 1"
+        );
+        $stmt->execute([$employeeId, $role]);
+        return (bool) $stmt->fetchColumn();
     }
 }

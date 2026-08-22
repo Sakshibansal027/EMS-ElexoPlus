@@ -36,6 +36,11 @@ class LeaveRequestRepository
         return LeaveRequest::allBetween($startDate, $endDate);
     }
 
+    public function hasConflictingRequest(string $employeeId, string $startDate, string $endDate): bool
+    {
+        return LeaveRequest::hasConflictingRequest($employeeId, $startDate, $endDate);
+    }
+
     public function setStatus(string $id, string $status): ?array
     {
         return LeaveRequest::setStatus($id, $status);

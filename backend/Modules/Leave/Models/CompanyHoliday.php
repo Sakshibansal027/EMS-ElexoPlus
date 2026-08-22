@@ -79,7 +79,7 @@ class CompanyHoliday
 
     public static function update(string $id, array $data): ?array
     {
-        unset($data['holiday_id']);
+        $data = array_intersect_key($data, array_flip(['title', 'holiday_date', 'holiday_type', 'location']));
 
         if (empty($data)) {
             return self::find($id);

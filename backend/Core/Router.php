@@ -64,12 +64,27 @@ class Router
                 $params = array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
                 $handler = $route['handler'];
 
-                if (is_callable($handler)) {
-                    $result = $handler($params);
-                } else {
-                    [$class, $action] = $handler;
-                    $controller = new $class();
-                    $result = $controller->$action($params);
+                try {
+                    if (is_callable($handler)) {
+                        $result = $handler($params);
+                    } else {
+                        [$class, $action] = $handler;
+                        $controller = new $class();
+                        $result = $controller->$action($params);
+                    }
+                } catch (\Throwable $exception) {
+                    // Never expose database hosts, paths, SQL, or stack traces
+                    // to browser clients. Server logs retain the diagnostic.
+                    error_log(sprintf('API %s %s failed: %s', $method, $uri, $exception->getMessage()));
+                    $logDirectory = __DIR__ . '/../storage/logs';
+                    if (!is_dir($logDirectory)) @mkdir($logDirectory, 0755, true);
+                    @file_put_contents(
+                        $logDirectory . '/api-errors.log',
+                        sprintf("[%s] API %s %s failed: %s\n", date('c'), $method, $uri, $exception->getMessage()),
+                        FILE_APPEND | LOCK_EX
+                    );
+                    json(['success' => false, 'message' => 'The request could not be completed. Please try again.'], 500);
+                    return;
                 }
 
                 if (is_array($result)) {

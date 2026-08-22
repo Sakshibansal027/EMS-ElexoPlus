@@ -6,7 +6,7 @@ use Modules\Authentication\Middleware\AuthMiddleware;
 use Modules\Leave\Middleware\RoleMiddleware;
 use Modules\Leave\Repositories\CompanyHolidayRepository;
 use Modules\Leave\Services\CompanyHolidayService;
-use Modules\Leave\Support\Request;
+use Modules\Authentication\Support\Request;
 
 class CompanyHolidayController
 {
@@ -58,7 +58,7 @@ class CompanyHolidayController
             return ['success' => false, 'message' => $auth['error'], 'status' => $auth['status']];
         }
 
-        return $this->holidayService->create(Request::input());
+        return $this->holidayService->create(Request::all());
     }
 
     /**
@@ -71,7 +71,7 @@ class CompanyHolidayController
             return ['success' => false, 'message' => $auth['error'], 'status' => $auth['status']];
         }
 
-        return $this->holidayService->update($params['id'], Request::input());
+        return $this->holidayService->update($params['id'], Request::all());
     }
 
     /**
