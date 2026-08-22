@@ -4,6 +4,7 @@ return [
     'name'       => env('APP_NAME', 'EMS ElexoPlus'),
     'debug'      => filter_var(env('APP_DEBUG', false), FILTER_VALIDATE_BOOLEAN),
     'url'        => env('APP_URL', 'http://localhost:8000'),
+    'frontend_url' => rtrim(env('FRONTEND_URL', 'http://localhost:5173'), '/'),
     'timezone'   => env('APP_TIMEZONE', 'UTC'),
 
     'database'   => [
