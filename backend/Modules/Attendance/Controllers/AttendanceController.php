@@ -56,6 +56,45 @@ class AttendanceController
         );
     }
 
+    public function findAll(array $params): array
+    {
+        return $this->attendance->findAll();
+    }
+
+    public function findByEmployee(array $params): array
+    {
+        $employeeId = trim(
+            (string) ($params['employee_id'] ?? Request::input('employee_id', ''))
+        );
+
+        if ($employeeId === '') {
+            return [
+                'success' => false,
+                'message' => 'employee_id is required.',
+                'status' => 422,
+            ];
+        }
+
+        return $this->attendance->findByEmployee($employeeId);
+    }
+
+    public function findByDate(array $params): array
+    {
+        $attendanceDate = trim(
+            (string) ($params['attendance_date'] ?? Request::input('attendance_date', ''))
+        );
+
+        if ($attendanceDate === '') {
+            return [
+                'success' => false,
+                'message' => 'attendance_date is required.',
+                'status' => 422,
+            ];
+        }
+
+        return $this->attendance->findByDate($attendanceDate);
+    }
+
     public function create(array $params): array
     {
         $employeeId = trim((string) Request::input('employee_id', ''));
