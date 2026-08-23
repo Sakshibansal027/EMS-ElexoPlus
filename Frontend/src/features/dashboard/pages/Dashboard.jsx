@@ -10,7 +10,7 @@ import QuickActionSection from "../widgets/QuickActionSection";
 const Dashboard = () => {
   const { role, user } = useOutletContext();
 
-  const dashboard = useDashboard(role);
+  const { dashboard, loading, error, refresh } = useDashboard(role);
   const navigate = useNavigate();
 
   const handleHeroAction = (action) => {
@@ -21,10 +21,18 @@ const Dashboard = () => {
     }
 
     if (action.icon === "refresh") {
-      window.location.reload();
+      refresh();
     }
 
   };
+
+  if (!dashboard && loading) {
+    return <div className="py-16 text-center text-foreground-muted">Loading dashboard…</div>;
+  }
+
+  if (error) return <div className="py-16 text-center text-red-400">{error}</div>;
+
+  if (!dashboard) return null;
 
   return (
     <div className="dashboard-bg">

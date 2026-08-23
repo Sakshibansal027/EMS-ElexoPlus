@@ -4,14 +4,12 @@ import {
     applyLeaveMessages,
     leaveDurationOptions,
 } from "../config/applyLeaveForm.js";
-import {
-    leaveTypeOptions,
-} from "../config/leaveOptions.js";
 import { selectStyles } from "../config/leaveStyles.js";
 
 const ApplyLeaveModal = ({ employee, onClose, form }) => {
     const {
         leaveType,
+        leaveTypeOptions,
         dayType,
         fromDate,
         toDate,
@@ -20,6 +18,8 @@ const ApplyLeaveModal = ({ employee, onClose, form }) => {
         document,
         errors,
         showValidationError,
+        submitError,
+        isSubmitting,
         today,
         requiresMedicalDocument,
         isHalfDayDisabled,
@@ -123,6 +123,11 @@ const ApplyLeaveModal = ({ employee, onClose, form }) => {
                             {applyLeaveMessages.validation}
                         </div>
                     )}
+                    {submitError && (
+                        <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+                            {submitError}
+                        </div>
+                    )}
 
                     {/* Employee */}
                     <div
@@ -167,7 +172,7 @@ const ApplyLeaveModal = ({ employee, onClose, form }) => {
                                 border-[rgba(244,194,28,.2)]
                             "
                         >
-                            {employee.employeeId}
+                            {employee.employeeCode || "Employee"}
                         </span>
                     </div>
 
@@ -261,7 +266,6 @@ const ApplyLeaveModal = ({ employee, onClose, form }) => {
                                 event.target.value
                             )
                         }
-                        disabled={isHalfDayDisabled}
                         className="
                             input
                             w-full
@@ -271,7 +275,7 @@ const ApplyLeaveModal = ({ employee, onClose, form }) => {
                         "
                     >
                         {leaveDurationOptions.map((option) => (
-                            <option key={option} value={option}>
+                            <option key={option} value={option} disabled={option === "Half Day" && isHalfDayDisabled}>
                                 {option}
                             </option>
                         ))}
@@ -463,6 +467,7 @@ const ApplyLeaveModal = ({ employee, onClose, form }) => {
 
                         <button
                             onClick={submit}
+                            disabled={isSubmitting}
                             className="
                                 btn-primary
                                 px-6
@@ -471,7 +476,7 @@ const ApplyLeaveModal = ({ employee, onClose, form }) => {
                                 font-medium
                             "
                         >
-                            Submit Leave
+                            {isSubmitting ? "Submitting..." : "Submit Leave"}
                         </button>
                     </div>
 

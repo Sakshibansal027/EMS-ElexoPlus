@@ -30,6 +30,7 @@ export const LeaveApplicationsData = [
         id: 1,
         employeeName: "Rahul Sharma",
         employeeId: "EMP001",
+        asmId: "EMP003",
         designation: "Sales Executive",
         initials: "RS",
         leaveType: "CL",
@@ -63,7 +64,8 @@ export const LeaveApplicationsData = [
     {
         id: 3,
         employeeName: "Aman Kumar",
-        employeeId: "EMP003",
+        employeeId: "EMP0012",
+        asmId: "EMP003",
         designation: "Sales Executive",
         initials: "AK",
         leaveType: "SL",
@@ -115,6 +117,7 @@ export const LeaveApplicationsData = [
         id: 6,
         employeeName: "Rohit Mehta",
         employeeId: "EMP007",
+        asmId: "EMP003",
         designation: "Sales Executive",
         initials: "RM",
         leaveType: "CL",
@@ -149,6 +152,7 @@ export const LeaveApplicationsData = [
         id: 8,
         employeeName: "Sneha Gupta",
         employeeId: "EMP004",
+        asmId: "EMP003",
         designation: "Sales Executive",
         initials: "SG",
         leaveType: "CL",
@@ -164,3 +168,159 @@ export const LeaveApplicationsData = [
     },
 ];
 
+export const initialLeavePolicies = [
+    {
+        id: "pol_01",
+        leaveTypeCode: "CL",
+        leaveTypeName: "Casual Leave",
+        annualQuota: 12,
+        accrualFrequency: "Monthly",
+        accrualMethod: "Pro-rata",
+        carryForwardAllowed: false,
+        maxCarryForwardDays: 0,
+        description: "For short-term unplanned personal or urgent work."
+    },
+    {
+        id: "pol_02",
+        leaveTypeCode: "EL",
+        leaveTypeName: "Earned Leave",
+        annualQuota: 15,
+        accrualFrequency: "Yearly",
+        accrualMethod: "Upfront",
+        carryForwardAllowed: true,
+        maxCarryForwardDays: 10,
+        description: "Planned leaves accumulated over time for vacations or long rests."
+    },
+    {
+        id: "pol_03",
+        leaveTypeCode: "SL",
+        leaveTypeName: "Sick Leave",
+        annualQuota: 10,
+        accrualFrequency: "Monthly",
+        accrualMethod: "Pro-rata",
+        carryForwardAllowed: false,
+        maxCarryForwardDays: 0,
+        description: "Dedicated medical leave requiring certificate if exceeding 3 days."
+    }
+];
+
+// ================= TEAM LEAVE CALENDAR =================
+
+export const teamLeaveCalendarEvents = [
+    // Sales Executives
+    {
+        id: "cal_1",
+        employeeId: "EMP001",
+        employeeName: "Rahul Sharma",
+        role: "Sales Executive",
+        reportingManager: "EMP003",
+        department: "Sales",
+        leaveType: "Casual Leave",
+        startDate: "2026-08-12",
+        endDate: "2026-08-13",
+        status: "Approved",
+        location: "Delhi"
+    },
+    {
+        id: "cal_2",
+        employeeId: "EMP003",
+        employeeName: "Aman Kumar",
+        role: "Sales Executive",
+        reportingManager: "EMP003",
+        department: "Sales",
+        leaveType: "Sick Leave",
+        startDate: "2026-08-18",
+        endDate: "2026-08-19",
+        status: "Pending",
+        location: "Delhi"
+    },
+
+    // HR
+    {
+        id: "cal_3",
+        employeeId: "EMP006",
+        employeeName: "Neha Kumari",
+        role: "HR",
+        department: "Human Resource",
+        leaveType: "Earned Leave",
+        startDate: "2026-08-20",
+        endDate: "2026-08-22",
+        status: "Approved",
+        location: "Delhi"
+    },
+
+    // ASM
+    {
+        id: "cal_4",
+        employeeId: "EMP005",
+        employeeName: "Vikas Yadav",
+        role: "ASM",
+        department: "Sales",
+        leaveType: "Earned Leave",
+        startDate: "2026-08-25",
+        endDate: "2026-08-28",
+        status: "Approved",
+        location: "Delhi"
+    },
+
+    // Another Sales Executive
+    {
+        id: "cal_5",
+        employeeId: "EMP007",
+        employeeName: "Rohit Mehta",
+        role: "Sales Executive",
+        reportingManager: "EMP003",
+        department: "Sales",
+        leaveType: "Casual Leave",
+        startDate: "2026-08-29",
+        endDate: "2026-08-29",
+        status: "Approved",
+        location: "Delhi"
+    }
+];
+
+
+export const companyHolidaysData = [
+    {
+        id: "HOL001",
+        title: "Republic Day",
+        date: "2026-01-26",
+        type: "Public Holiday",
+        location: "All"
+    },
+    {
+        id: "HOL002",
+        title: "Holi",
+        date: "2026-03-04",
+        type: "Public Holiday",
+        location: "North India"
+    },
+    {
+        id: "HOL003",
+        title: "Independence Day",
+        date: "2026-08-15",
+        type: "Public Holiday",
+        location: "All"
+    },
+    {
+        id: "HOL004",
+        title: "Gandhi Jayanti",
+        date: "2026-10-02",
+        type: "Public Holiday",
+        location: "All"
+    },
+    {
+        id: "HOL005",
+        title: "Diwali",
+        date: "2026-11-08",
+        type: "Optional Holiday",
+        location: "All"
+    },
+    {
+        id: "HOL006",
+        title: "Christmas",
+        date: "2026-12-25",
+        type: "Company Holiday",
+        location: "All"
+    }
+];

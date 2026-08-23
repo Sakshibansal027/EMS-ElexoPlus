@@ -52,7 +52,7 @@ const LeaveCard = ({
                     group-hover:rotate-6
                 "
             >
-                <Icon size={30} />
+                {Icon ? <Icon size={30} /> : null}
             </div>
         </div>
     );

@@ -1,32 +1,37 @@
-import { useState, useMemo} from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import {
   getEmployees,
   createEmployee,
-  updateEmployee,
+  updateEmployee, deleteEmployee as removeEmployee,
 } from "../services/employeeService";
 
 const useEmployees = () => {
-  const [employeeList, setEmployeeList] = useState(getEmployees());
+  const [employeeList, setEmployeeList] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [department, setDepartment] = useState("");
 const [role, setRole] = useState("");
 const [status, setStatus] = useState("");
 const [search, setSearch] = useState("");
 
-  const addEmployee = (newEmployee) => {
-    setEmployeeList((prev) => {
-      const lastEmployee = prev[prev.length - 1];
-      const lastId = Number(lastEmployee.id.slice(3));
-      const nextId = `EMP${String(lastId + 1).padStart(3, "0")}`;
+  const refresh = useCallback(async () => {
+    try {
+      setLoading(true);
+      setEmployeeList(await getEmployees());
+      setError(null);
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || "Unable to load employees.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-      const employee = {
-        ...newEmployee,
-        id: nextId,
-      };
+  useEffect(() => { void Promise.resolve().then(refresh); }, [refresh]);
 
-      createEmployee(employee);
-
-      return [...prev, employee];
-    });
+  const addEmployee = async (newEmployee) => {
+    const employee = await createEmployee(newEmployee);
+    setEmployeeList((prev) => [employee, ...prev]);
+    return employee;
   };
 
   const filteredEmployees = useMemo(() => {
@@ -40,7 +45,7 @@ const [search, setSearch] = useState("");
       department === "" || employee.department === department;
 
     const matchRole =
-      role === "" || employee.role === role;
+      role === "" || employee.designation === role;
 
     const matchStatus =
       status === "" || employee.status === status;
@@ -84,26 +89,30 @@ const resetFilters = () => {
   setStatus("");
 };
 
-  const editEmployee = (updatedEmployee) => {
-    updateEmployee(updatedEmployee);
+  const editEmployee = async (updatedEmployee) => {
+    const employee = await updateEmployee(updatedEmployee);
 
     setEmployeeList((prev) =>
       prev.map((emp) =>
-        emp.id === updatedEmployee.id
-          ? { ...emp, ...updatedEmployee }
+        emp.id === employee.id
+          ? employee
           : emp
       )
     );
+    return employee;
   };
 
-  const deleteEmployee = (employeeId) => {
-  setEmployeeList((prev) =>
-    prev.filter((employee) => employee.id !== employeeId)
-  );
+  const deleteEmployee = async (employeeId) => {
+    if (!window.confirm("Deactivate this employee?")) return;
+    await removeEmployee(employeeId);
+    setEmployeeList((prev) => prev.map((employee) => employee.id === employeeId ? { ...employee, status: "Inactive" } : employee));
 };
 
   return {
   employeeList,
+  loading,
+  error,
+  refresh,
   filteredEmployees,
   stats,
   search,

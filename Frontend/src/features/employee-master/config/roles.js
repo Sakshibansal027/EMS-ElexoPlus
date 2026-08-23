@@ -4,35 +4,19 @@ export const roles = [
     value: "",
   },
   {
-    label: "Team Lead",
-    value: "Team Lead",
+    label: "Administrator",
+    value: "Administrator",
   },
   {
-    label: "QA Engineer",
-    value: "QA Engineer",
+    label: "HR Manager",
+    value: "HR Manager",
   },
   {
     label: "Sales Executive",
     value: "Sales Executive",
   },
   {
-    label: "UI/UX Designer",
-    value: "UI/UX Designer",
-  },
-  {
-    label: "Accountant",
-    value: "Accountant",
-  },
-  {
-    label: "Operations Executive",
-    value: "Operations Executive",
-  },
-  {
-    label: "HR Executive",
-    value: "HR Executive",
-  },
-  {
-    label: "Admin",
-    value: "Admin",
+    label: "Area Sales Manager",
+    value: "Area Sales Manager",
   },
 ];

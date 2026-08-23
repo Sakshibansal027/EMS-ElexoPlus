@@ -8,7 +8,10 @@
  * Usage: php Modules/Authentication/Database/seed.php
  */
 
-require __DIR__ . '/../../../vendor/autoload.php';
+$composerAutoload = __DIR__ . '/../../../vendor/autoload.php';
+require file_exists($composerAutoload)
+    ? $composerAutoload
+    : __DIR__ . '/../../../bootstrap/autoload.php';
 
 use Modules\Authentication\Repositories\UserRepository;
 
@@ -19,7 +22,7 @@ $demoUsers = [
         'name'        => 'Harshit Goel',
         'designation' => 'Administrator',
         'role'        => 'ADMIN',
-        'status'      => 'System Live',
+        'status'      => 'Active',
     ],
     [
         'username'    => 'sakshi.hr',
@@ -27,7 +30,7 @@ $demoUsers = [
         'name'        => 'Sakshi Bansal',
         'designation' => 'HR Manager',
         'role'        => 'HR',
-        'status'      => 'System Live',
+        'status'      => 'Active',
     ],
     [
         'username'    => 'gaurav.asm',
@@ -35,7 +38,7 @@ $demoUsers = [
         'name'        => 'Gaurav Kumar',
         'designation' => 'Area Sales Manager',
         'role'        => 'ASM',
-        'status'      => 'System Live',
+        'status'      => 'Active',
     ],
     [
         'username'    => 'nisha.se',
@@ -43,7 +46,7 @@ $demoUsers = [
         'name'        => 'Nisha Barnwal',
         'designation' => 'Sales Executive',
         'role'        => 'SALES_EXECUTIVE',
-        'status'      => 'System Live',
+        'status'      => 'Active',
     ],
     [
         'username'    => 'niyati.se',
@@ -51,7 +54,7 @@ $demoUsers = [
         'name'        => 'Niyati Kansal',
         'designation' => 'Sales Executive',
         'role'        => 'SALES_EXECUTIVE',
-        'status'      => 'System Live',
+        'status'      => 'Active',
     ],
 ];
 

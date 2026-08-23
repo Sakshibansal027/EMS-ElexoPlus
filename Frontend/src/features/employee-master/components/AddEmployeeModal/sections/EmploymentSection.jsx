@@ -81,30 +81,15 @@ const EmploymentSection = ({
          
         />
         <FormSelect
-          label="Role"
-          options={roles}
-          value={formData.role}
-          onChange={(value) =>{  setFormData((prev) => ({
-              ...prev,
-              role: value,
-            }))
-             setErrors((prev) => ({
-          ...prev,
-          role: "",
-  }));}
-          
-            
-          }
-        required
-        error={errors.role}
-        />
-
-        <FormInput
           label="Designation"
-          name="designation"
-          placeholder="Enter Designation"
+          options={roles}
           value={formData.designation}
-          onChange={handleChange}
+          onChange={(value) => { setFormData((prev) => ({
+              ...prev,
+              designation: value,
+            }));
+            setErrors((prev) => ({ ...prev, designation: "" }));
+          }}
           required
           error={errors.designation}
         />
@@ -146,12 +131,14 @@ const EmploymentSection = ({
           }
         />
 
-        <FormInput
+        <FormSelect
           label="Work Location"
-          name="location"
-          placeholder="Enter Work Location"
+          options={["Head Office", "Delhi", "Remote"]}
           value={formData.location}
-          onChange={handleChange}
+          onChange={(value) => {
+            setFormData((prev) => ({ ...prev, location: value }));
+            setErrors((prev) => ({ ...prev, location: "" }));
+          }}
           required
           error={errors.location}
         />
@@ -159,12 +146,10 @@ const EmploymentSection = ({
           label="Employee Status"
           options={employeeStatus}
           value={formData.status}
-          onChange={(value) =>
-            setFormData((prev) => ({
-              ...prev,
-              status: value,
-            }))
-          }
+          onChange={(value) => {
+            setFormData((prev) => ({ ...prev, status: value }));
+            setErrors((prev) => ({ ...prev, status: "" }));
+          }}
         />
       </div>
     </div>

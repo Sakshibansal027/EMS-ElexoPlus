@@ -37,7 +37,7 @@ class AuthController
             return ['success' => false, 'message' => $auth['error'], 'status' => $auth['status']];
         }
 
-        return $this->auth->me((int) $auth['user']['id']);
+        return $this->auth->me(\Modules\Authentication\Models\User::idOf($auth['user']));
     }
 
     public function logout(array $params): array

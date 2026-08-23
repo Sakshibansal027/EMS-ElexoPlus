@@ -5,6 +5,7 @@ import DashboardLayout from "../layouts/DashboardLayout";
 import Profile from "../features/profile/pages/Profile";
 import LoginPage from "../features/auth/pages/LoginPage";
 import ForgotPasswordPage from "../features/auth/pages/ForgotPasswordPage";
+import ResetPasswordPage from "../features/auth/pages/ResetPasswordPage";
 import ProtectedRoute from "../features/auth/components/ProtectedRoute";
 import SettingsPage from "../features/settings/pages/SettingsPage";
 import Dashboard from "../features/dashboard/pages/Dashboard";
@@ -32,6 +33,7 @@ const AppRoutes = () => {
 
         <Route path={ROUTES.LOGIN} element={<LoginPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
 
         <Route
           element={

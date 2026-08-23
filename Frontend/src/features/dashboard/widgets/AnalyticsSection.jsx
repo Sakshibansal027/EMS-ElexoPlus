@@ -1,6 +1,5 @@
 import { useNavigate } from "react-router-dom";
 
-import ANALYTICS_MOCK from "../mock/analyticsMock";
 import AreaChart from "../charts/AreaChart";
 import CHART_MAP from "../config/chartMap";
 
@@ -31,7 +30,7 @@ const AnalyticsSection = ({ data = [] }) => {
         {data.slice(0, 2).map((item) => {
           const Chart = CHART_MAP[item.chart] || AreaChart;
 
-          const chartData = ANALYTICS_MOCK[item.mock];
+          const chartData = item.data || [];
 
           return (
             <div
@@ -110,7 +109,7 @@ const AnalyticsSection = ({ data = [] }) => {
 
           const Chart = CHART_MAP[item.chart];
 
-          const chartData = ANALYTICS_MOCK[item.mock];
+          const chartData = item.data || [];
 
           return (
             <div className="dashboard-card p-6">

@@ -1,11 +1,6 @@
-import { medicalDocumentLeaveTypes } from "../../config/applyLeaveForm.js";
-
 const isTenDigitPhone = (value) => /^[0-9]{10}$/.test(value);
 
 export const sanitizePhoneNumber = (value) => value.replace(/\D/g, "");
-
-export const isMedicalDocumentRequired = (leaveTypeValue) =>
-    medicalDocumentLeaveTypes.includes(leaveTypeValue);
 
 export const validateLeaveApplication = ({
     leaveType,
@@ -15,6 +10,7 @@ export const validateLeaveApplication = ({
     reason,
     emergencyContact,
     document,
+    requiresDocument,
 }) => {
     const errors = {
         leaveType: !leaveType,
@@ -32,7 +28,7 @@ export const validateLeaveApplication = ({
         errors.dayType = true;
     }
 
-    if (isMedicalDocumentRequired(leaveType?.value) && !document) {
+    if (requiresDocument && !document) {
         errors.document = true;
     }
 
