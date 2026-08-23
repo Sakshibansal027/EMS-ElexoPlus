@@ -52,6 +52,38 @@ class AttendanceService
         ];
     }
 
+    public function findAll(): array
+    {
+        return [
+            'success' => true,
+            'data' => $this->attendance->findAll(),
+        ];
+    }
+
+    public function findByEmployee(string $employeeId): array
+    {
+        return [
+            'success' => true,
+            'data' => $this->attendance->findByEmployee($employeeId),
+        ];
+    }
+
+    public function findByEmployees(array $employeeIds): array
+    {
+        return [
+            'success' => true,
+            'data' => $this->attendance->findByEmployees($employeeIds),
+        ];
+    }
+
+    public function findByDate(string $attendanceDate): array
+    {
+        return [
+            'success' => true,
+            'data' => $this->attendance->findByDate($attendanceDate),
+        ];
+    }
+
     public function create(array $data): array
     {
         $existing = $this->attendance->findByEmployeeAndDate(
