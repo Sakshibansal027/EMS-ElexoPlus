@@ -2,15 +2,10 @@ import { useMemo, useState } from "react";
 
 import { submitLeaveApplication } from "../services/leaveService.js";
 import { getTodayInputValue } from "../shared/utils/date.js";
-import {
-    hasValidationErrors,
-    isMedicalDocumentRequired,
-    sanitizePhoneNumber,
-    validateLeaveApplication,
-} from "../shared/utils/validation.js";
+import { hasValidationErrors, sanitizePhoneNumber, validateLeaveApplication } from "../shared/utils/validation.js";
 import { applyLeaveMessages } from "../config/applyLeaveForm.js";
 
-export const useApplyLeaveForm = ({ employee, onSuccess }) => {
+export const useApplyLeaveForm = ({ employee, onSuccess, policies = [] }) => {
     const [leaveType, setLeaveType] = useState(null);
     const [dayType, setDayType] = useState("Full Day");
     const [fromDate, setFromDate] = useState("");
@@ -20,10 +15,19 @@ export const useApplyLeaveForm = ({ employee, onSuccess }) => {
     const [document, setDocument] = useState(null);
     const [errors, setErrors] = useState({});
     const [showValidationError, setShowValidationError] = useState(false);
+    const [submitError, setSubmitError] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const today = useMemo(() => getTodayInputValue(), []);
-    const requiresMedicalDocument = isMedicalDocumentRequired(leaveType?.value);
-    const isHalfDayDisabled = Boolean(fromDate && toDate && fromDate !== toDate);
+    const leaveTypeOptions = policies.map((policy) => ({
+        value: policy.leaveTypeCode,
+        label: policy.leaveTypeName,
+        id: policy.id,
+        allowHalfDay: policy.allowHalfDay,
+        requiresDocument: policy.requiresDocument,
+    }));
+    const requiresMedicalDocument = Boolean(leaveType?.requiresDocument);
+    const isHalfDayDisabled = !leaveType?.allowHalfDay || Boolean(fromDate && toDate && fromDate !== toDate);
     const showHalfDayUnavailable = Boolean(fromDate && toDate && fromDate !== toDate);
 
     const clearError = (field) => {
@@ -36,7 +40,7 @@ export const useApplyLeaveForm = ({ employee, onSuccess }) => {
     const updateLeaveType = (selected) => {
         setLeaveType(selected);
 
-        if (!isMedicalDocumentRequired(selected?.value)) {
+        if (!selected?.requiresDocument) {
             setDocument(null);
         }
 
@@ -78,6 +82,12 @@ export const useApplyLeaveForm = ({ employee, onSuccess }) => {
     };
 
     const submit = async () => {
+        if (leaveTypeOptions.length === 0) {
+            setSubmitError("No active leave policy is available. Please contact HR or an administrator.");
+            setShowValidationError(false);
+            return;
+        }
+
         const nextErrors = validateLeaveApplication({
             leaveType,
             dayType,
@@ -86,6 +96,7 @@ export const useApplyLeaveForm = ({ employee, onSuccess }) => {
             reason,
             emergencyContact,
             document,
+            requiresDocument: Boolean(leaveType?.requiresDocument),
         });
 
         setErrors(nextErrors);
@@ -97,23 +108,22 @@ export const useApplyLeaveForm = ({ employee, onSuccess }) => {
 
         setShowValidationError(false);
 
-        await submitLeaveApplication({
-            leaveType,
-            dayType,
-            fromDate,
-            toDate,
-            reason,
-            emergencyContact,
-            document,
-            employee,
-        });
-
-        alert(applyLeaveMessages.success);
-        onSuccess();
+        try {
+            setIsSubmitting(true);
+            setSubmitError("");
+            await submitLeaveApplication({ leaveType, dayType, fromDate, toDate, reason, emergencyContact, document, employee });
+            alert(applyLeaveMessages.success);
+            onSuccess();
+        } catch (error) {
+            setSubmitError(error?.response?.data?.message || error?.message || "Unable to submit the leave request.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return {
         leaveType,
+        leaveTypeOptions,
         dayType,
         fromDate,
         toDate,
@@ -122,6 +132,8 @@ export const useApplyLeaveForm = ({ employee, onSuccess }) => {
         document,
         errors,
         showValidationError,
+        submitError,
+        isSubmitting,
         today,
         requiresMedicalDocument,
         isHalfDayDisabled,

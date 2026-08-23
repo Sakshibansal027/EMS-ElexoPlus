@@ -65,9 +65,16 @@ class LeaveApproval
     public static function allPendingForApprover(string $approverEmployeeId): array
     {
         $stmt = Database::connection()->prepare(
-            "SELECT * FROM " . self::TABLE . "
-             WHERE approver_employee_id = ? AND decision = 'Pending'
-             ORDER BY created_at ASC"
+            "SELECT a.*, r.start_date, r.end_date, r.day_type, r.reason, r.status AS request_status, r.applied_at,
+                    e.full_name AS employee_name, e.employee_code, d.designation_name, p.leave_policy_code
+             FROM " . self::TABLE . " a
+             INNER JOIN leave_requests r ON r.leave_request_id=a.leave_request_id
+             INNER JOIN employees e ON e.employee_id=r.employee_id
+             LEFT JOIN designations d ON d.designation_id=e.designation_id
+             INNER JOIN leave_policies p ON p.leave_policy_id=r.leave_policy_id
+             WHERE a.approver_employee_id = ? AND a.decision = 'Pending'
+               AND r.status IN ('Pending', 'Under Review')
+             ORDER BY a.created_at ASC"
         );
         $stmt->execute([$approverEmployeeId]);
         return $stmt->fetchAll();
@@ -97,7 +104,9 @@ class LeaveApproval
             $data['decision'] ?? 'Pending',
         ]);
 
-        return self::find($id);
+        // The created id and payload are enough for the workflow. Avoid a
+        // fragile immediate read-after-write on the managed database.
+        return array_merge($data, ['approval_id' => $id]);
     }
 
     /**
@@ -113,10 +122,10 @@ class LeaveApproval
         $stmt = Database::connection()->prepare(
             "UPDATE " . self::TABLE . "
              SET decision = ?, remarks = ?, action_date = NOW()
-             WHERE approval_id = ?"
+             WHERE approval_id = ? AND decision = 'Pending'"
         );
         $stmt->execute([$decision, $remarks, $id]);
 
-        return self::find($id);
+        return ['approval_id' => $id, 'decision' => $decision, 'remarks' => $remarks, 'updated' => $stmt->rowCount() === 1];
     }
 }

@@ -37,7 +37,6 @@ export const useLeaveManagement = () => {
     const userId = normalizeEmployeeId(
         loggedInUser?.employeeCode
     );
-    console.log({ role, userId })
     const asmId =
         loggedInUser?.asmId ?? DEFAULT_LEAVE_USER.asmId;
 
@@ -211,23 +210,13 @@ export const useLeaveManagement = () => {
         leaveId,
         status
     ) => {
-        await updateLeaveApplicationStatus(
-            leaveId,
-            status
-        );
-
-        setData((prev) => ({
-            ...prev,
-            teamLeaves: prev.teamLeaves.map(
-                (leave) =>
-                    leave.id === leaveId
-                        ? {
-                              ...leave,
-                              status,
-                          }
-                        : leave
-            ),
-        }));
+        try {
+            await updateLeaveApplicationStatus(leaveId, status);
+            await fetchDashboard();
+        } catch (err) {
+            setError(err);
+            return null;
+        }
     };
 
     const cancelLeave = async (leaveId) => {
@@ -237,16 +226,13 @@ export const useLeaveManagement = () => {
 
         if (!confirmed) return;
 
-        await cancelLeaveApplication(leaveId);
-
-        setData((prev) => ({
-            ...prev,
-            leaveHistory:
-                prev.leaveHistory.filter(
-                    (leave) =>
-                        leave.id !== leaveId
-                ),
-        }));
+        try {
+            await cancelLeaveApplication(leaveId);
+            await fetchDashboard();
+        } catch (err) {
+            setError(err);
+            return null;
+        }
     };
 
     return {
@@ -275,6 +261,9 @@ export const useLeaveManagement = () => {
                 data.managementCards,
             summaryCards:
                 data.summaryCards,
+            // ApplyLeaveForm consumes this list. Keep it in the public hook
+            // result instead of dropping it after the API dashboard loads.
+            leavePolicies: data.leavePolicies,
             leaveBalanceData,
             leaveAnalytics,
             calendarData:

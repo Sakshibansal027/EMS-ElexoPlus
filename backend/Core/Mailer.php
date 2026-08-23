@@ -13,7 +13,7 @@ class Mailer
         $driver = $config['driver'] ?? 'log';
 
         if ($driver === 'log') {
-            self::log($to, $subject, $body);
+            self::log($to, $subject);
             return;
         }
 
@@ -21,7 +21,7 @@ class Mailer
         $username = $config['username'] ?? '';
 
         if (empty($host) || empty($username)) {
-            self::log($to, $subject, $body);
+            self::log($to, $subject);
             return;
         }
 
@@ -46,14 +46,15 @@ class Mailer
 
             $mail->send();
         } catch (MailerException $e) {
-            self::log($to, $subject, $body);
+            self::log($to, $subject);
             error_log('[ElexoPlus] Mailer error: ' . $e->getMessage());
         }
     }
 
-    private static function log(string $to, string $subject, string $body): void
+    private static function log(string $to, string $subject): void
     {
-        $line = '[' . date('Y-m-d H:i:s') . "] To: {$to} | Subject: {$subject} | Body: {$body}";
+        // Never log mail body: reset links contain one-time credentials.
+        $line = '[' . date('Y-m-d H:i:s') . "] To: {$to} | Subject: {$subject}";
         $logDir = __DIR__ . '/../storage/logs';
 
         if (!is_dir($logDir)) {

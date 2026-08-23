@@ -6,8 +6,9 @@ use Modules\Authentication\Middleware\AuthMiddleware;
 use Modules\Leave\Repositories\LeaveRequestDocumentRepository;
 use Modules\Leave\Repositories\LeaveRequestRepository;
 use Modules\Leave\Services\LeaveRequestDocumentService;
-use Modules\Leave\Support\Request;
+use Modules\Authentication\Support\Request;
 use Modules\Leave\Support\Uuid;
+use Core\Database;
 
 class LeaveRequestDocumentController
 {
@@ -31,6 +32,11 @@ class LeaveRequestDocumentController
             return ['success' => false, 'message' => $auth['error'], 'status' => $auth['status']];
         }
 
+        $request = (new LeaveRequestRepository())->findById($params['requestId']);
+        if (!$request) return ['success' => false, 'message' => 'Leave request not found.', 'status' => 404];
+        if (!$this->canViewRequest($auth['user'], $request)) {
+            return ['success' => false, 'message' => 'You do not have permission to view these documents.', 'status' => 403];
+        }
         return $this->documentService->listForRequest($params['requestId']);
     }
 
@@ -56,19 +62,54 @@ class LeaveRequestDocumentController
             return ['success' => false, 'message' => 'A document file is required.', 'status' => 422];
         }
 
+        $request = (new LeaveRequestRepository())->findById($params['requestId']);
+        if (!$request) return ['success' => false, 'message' => 'Leave request not found.', 'status' => 404];
+        if ($this->employeeIdForUser($auth['user']) !== $request['employee_id']) {
+            return ['success' => false, 'message' => 'Only the requesting employee can upload documents.', 'status' => 403];
+        }
+
         $fileExtension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        $fileSize = $file['size'];
+        $fileSize = (int) $file['size'];
+        if (!in_array($fileExtension, ['pdf', 'jpg', 'jpeg', 'png'], true) || $fileSize > 5 * 1024 * 1024) {
+            return ['success' => false, 'message' => 'Only PDF, JPG and PNG files up to 5 MB are allowed.', 'status' => 422];
+        }
+        $mime = (new \finfo(FILEINFO_MIME_TYPE))->file($file['tmp_name']);
+        $allowedMimes = ['application/pdf', 'image/jpeg', 'image/png'];
+        if (!in_array($mime, $allowedMimes, true)) {
+            return ['success' => false, 'message' => 'The uploaded file content is not a supported document type.', 'status' => 422];
+        }
 
         $moved = $this->moveUploadedFile($file, $params['requestId'], $fileExtension);
         if (isset($moved['error'])) {
             return ['success' => false, 'message' => $moved['error'], 'status' => 422];
         }
 
-        $data = Request::input();
+        $data = Request::all();
         $data['file_url'] = $moved['file_url'];
         $data['file_name'] = $file['name'];
 
-        return $this->documentService->attach($params['requestId'], $data, $fileSize, $fileExtension);
+        $result = $this->documentService->attach($params['requestId'], $data, $fileSize, $fileExtension);
+        if (empty($result['success'])) $this->deleteStoredFile($moved['file_url']);
+        return $result;
+    }
+
+    /** GET /leave/documents/{id}/download */
+    public function download(array $params): string|array
+    {
+        $auth = AuthMiddleware::handle();
+        if (isset($auth['error'])) return ['success' => false, 'message' => $auth['error'], 'status' => $auth['status']];
+        $document = (new LeaveRequestDocumentRepository())->findById($params['id']);
+        if (!$document) return ['success' => false, 'message' => 'Document not found.', 'status' => 404];
+        $request = (new LeaveRequestRepository())->findById($document['leave_request_id']);
+        if (!$request || !$this->canViewRequest($auth['user'], $request)) {
+            return ['success' => false, 'message' => 'You do not have permission to download this document.', 'status' => 403];
+        }
+        $path = $this->storedFilePath($document['file_url']);
+        if (!$path || !is_file($path)) return ['success' => false, 'message' => 'Document file is unavailable.', 'status' => 404];
+        header('Content-Type: ' . ((new \finfo(FILEINFO_MIME_TYPE))->file($path) ?: 'application/octet-stream'));
+        header('Content-Length: ' . filesize($path));
+        header('Content-Disposition: inline; filename="' . str_replace('"', '', basename((string) $document['file_name'])) . '"');
+        return (string) file_get_contents($path);
     }
 
     /**
@@ -117,6 +158,50 @@ class LeaveRequestDocumentController
             return ['success' => false, 'message' => $auth['error'], 'status' => $auth['status']];
         }
 
-        return $this->documentService->remove($params['id']);
+        $document = (new LeaveRequestDocumentRepository())->findById($params['id']);
+        if (!$document) return ['success' => false, 'message' => 'Document not found.', 'status' => 404];
+        $request = (new LeaveRequestRepository())->findById($document['leave_request_id']);
+        if (!$request || $this->employeeIdForUser($auth['user']) !== $request['employee_id']) {
+            return ['success' => false, 'message' => 'Only the requesting employee can remove this document.', 'status' => 403];
+        }
+        $result = $this->documentService->remove($params['id']);
+        if (!empty($result['success'])) $this->deleteStoredFile($document['file_url']);
+        return $result;
+    }
+
+    private function canViewRequest(array $user, array $request): bool
+    {
+        if (in_array(strtoupper((string) ($user['role'] ?? '')), ['ADMIN', 'HR'], true)) return true;
+        $employeeId = $this->employeeIdForUser($user);
+        if ($employeeId === $request['employee_id']) return true;
+        $stmt = Database::connection()->prepare('SELECT 1 FROM leave_approvals WHERE leave_request_id = ? AND approver_employee_id = ? LIMIT 1');
+        $stmt->execute([$request['leave_request_id'], $employeeId ?? '']);
+        return (bool) $stmt->fetchColumn();
+    }
+
+    private function storedFilePath(string $fileUrl): string|false
+    {
+        $storageRoot = realpath(rtrim((string) config('upload.path'), '/\\'));
+        $relativePath = preg_replace('#^/uploads/#', '', $fileUrl) ?? '';
+        $path = $storageRoot ? realpath($storageRoot . DIRECTORY_SEPARATOR . ltrim($relativePath, '/\\')) : false;
+        return ($storageRoot && $path && str_starts_with($path, $storageRoot . DIRECTORY_SEPARATOR)) ? $path : false;
+    }
+
+    private function deleteStoredFile(string $fileUrl): void
+    {
+        $path = $this->storedFilePath($fileUrl);
+        if ($path && is_file($path)) unlink($path);
+    }
+
+    private function employeeIdForUser(array $user): ?string
+    {
+        $email = trim((string) ($user['email'] ?? ''));
+        if ($email !== '') {
+            $stmt = Database::connection()->prepare('SELECT employee_id FROM employees WHERE email = ? LIMIT 1');
+            $stmt->execute([$email]);
+            $employeeId = $stmt->fetchColumn();
+            if ($employeeId) return (string) $employeeId;
+        }
+        return !empty($user['employee_id']) ? (string) $user['employee_id'] : null;
     }
 }

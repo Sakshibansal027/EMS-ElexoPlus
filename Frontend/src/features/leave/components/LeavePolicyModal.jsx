@@ -10,6 +10,9 @@ const LeavePolicyModal = ({ isOpen, onClose, policy, onSave, onDelete }) => {
         accrualMethod: "Pro-rata",
         carryForwardAllowed: false,
         maxCarryForwardDays: 0,
+        allowHalfDay: true,
+        requiresDocument: false,
+        isPaid: true,
         description: ""
     });
 
@@ -24,6 +27,9 @@ const LeavePolicyModal = ({ isOpen, onClose, policy, onSave, onDelete }) => {
                 accrualMethod: policy.accrualMethod || "Pro-rata",
                 carryForwardAllowed: policy.carryForwardAllowed || false,
                 maxCarryForwardDays: policy.maxCarryForwardDays || 0,
+                allowHalfDay: Boolean(policy.allowHalfDay),
+                requiresDocument: Boolean(policy.requiresDocument),
+                isPaid: policy.isPaid !== false,
                 description: policy.description || ""
             });
         } else {
@@ -35,6 +41,9 @@ const LeavePolicyModal = ({ isOpen, onClose, policy, onSave, onDelete }) => {
                 accrualMethod: "Pro-rata",
                 carryForwardAllowed: false,
                 maxCarryForwardDays: 0,
+                allowHalfDay: true,
+                requiresDocument: false,
+                isPaid: true,
                 description: ""
             });
         }
@@ -42,10 +51,14 @@ const LeavePolicyModal = ({ isOpen, onClose, policy, onSave, onDelete }) => {
 
     if (!isOpen) return null;
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        onSave(formData);
-        onClose();
+        try {
+            await onSave(formData);
+            onClose();
+        } catch {
+            // Parent displays the API error and keeps this form open.
+        }
     };
 
     return (
@@ -149,6 +162,19 @@ const LeavePolicyModal = ({ isOpen, onClose, policy, onSave, onDelete }) => {
                             />
                         </div>
                     )}
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        {[
+                            ["allowHalfDay", "Allow Half Day"],
+                            ["requiresDocument", "Require Document"],
+                            ["isPaid", "Paid Leave"],
+                        ].map(([field, label]) => (
+                            <label key={field} className="flex items-center gap-2 p-3 rounded-xl bg-muted/30 border border-border/50 text-sm cursor-pointer">
+                                <input type="checkbox" checked={formData[field]} onChange={(event) => setFormData({ ...formData, [field]: event.target.checked })} className="h-4 w-4 accent-yellow-400" />
+                                {label}
+                            </label>
+                        ))}
+                    </div>
 
                     <div>
                         <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">Description</label>

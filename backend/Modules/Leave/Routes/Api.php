@@ -24,16 +24,19 @@ Router::group('api', function () {
         // '{id}' would otherwise greedily match the literal string
         // "pending-approvals" as if it were an id.
         Router::get('/requests/pending-approvals', [LeaveRequestController::class, 'pendingApprovals']);
+        Router::get('/requests/management', [LeaveRequestController::class, 'managementIndex']);
         Router::get('/requests/calendar', [LeaveRequestController::class, 'calendar']);
         Router::get('/requests', [LeaveRequestController::class, 'index']);
         Router::get('/requests/{id}', [LeaveRequestController::class, 'show']);
         Router::post('/requests', [LeaveRequestController::class, 'store']);
+        Router::put('/requests/{id}', [LeaveRequestController::class, 'update']);
         Router::post('/requests/{id}/decision', [LeaveRequestController::class, 'decide']);
         Router::post('/requests/{id}/cancel', [LeaveRequestController::class, 'cancel']);
 
         // --- Leave Request Documents (LeaveRequestDocumentController) ---
         Router::get('/requests/{requestId}/documents', [LeaveRequestDocumentController::class, 'index']);
         Router::post('/requests/{requestId}/documents', [LeaveRequestDocumentController::class, 'store']);
+        Router::get('/documents/{id}/download', [LeaveRequestDocumentController::class, 'download']);
         Router::delete('/documents/{id}', [LeaveRequestDocumentController::class, 'destroy']);
 
         // --- Employee Leave Balances (EmployeeLeaveBalanceController) ---

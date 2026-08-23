@@ -85,20 +85,21 @@ class AuthService
         if (!$user) return ['success' => true, 'message' => 'If the account exists, password reset instructions have been sent.'];
 
         $token = bin2hex(random_bytes(32));
-        $this->resets->invalidateFor((int) $user['id']);
-        $this->resets->createFor((int) $user['id'], $token);
+        $userId = User::idOf($user);
+        $this->resets->invalidateFor($userId);
+        $this->resets->createFor($userId, $token);
 
         $frontend = config('frontend_url', 'http://localhost:5173');
         $link = $frontend . '/reset-password?token=' . $token;
 
-        $name = $user['name'] ?: $user['username'];
+        $name = (string) ($user['name'] ?: $user['username']);
         $subject = 'Reset your ElexoPlus password';
         $body = $this->resetEmailHtml($name, $link);
         $alt = "Hi {$name},\n\nWe received a request to reset your ElexoPlus password. Click the link below to choose a new one:\n\n{$link}\n\nIf you didn't request this, you can safely ignore this email.\n\nThanks,\nThe ElexoPlus Team";
 
         Mailer::send($email, $subject, $body, $alt);
 
-        return ['success' => true, 'message' => 'Password reset link sent to your email.'];
+        return ['success' => true, 'message' => 'If the account exists, password reset instructions have been sent.'];
     }
 
     public function resetPassword(string $token, string $password): array
@@ -159,5 +160,14 @@ class AuthService
                 <p style="margin: 0; line-height: 1.6; font-size: 13px; color: #94a3b8;">Thanks,<br />The ElexoPlus Team</p>
             </div>
         </div>';
+    }
+
+    private function isStrongPassword(string $password): bool
+    {
+        return strlen($password) >= 8
+            && preg_match('/[A-Z]/', $password)
+            && preg_match('/[a-z]/', $password)
+            && preg_match('/\d/', $password)
+            && preg_match('/[^A-Za-z0-9]/', $password);
     }
 }

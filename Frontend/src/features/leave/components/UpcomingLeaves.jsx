@@ -94,8 +94,7 @@ const UpcomingLeavesCard = ({
                                                 }
                                             </span>
 
-                                            {leave.status ===
-                                                "Pending" && (
+                                            {["Pending", "Under Review"].includes(leave.status) && (
                                                 <button
                                                     onClick={() =>
                                                         onCancelLeave(
@@ -264,8 +263,7 @@ const UpcomingLeavesCard = ({
                                                 }
                                             </span>
 
-                                            {leave.status ===
-                                                "Pending" && (
+                                            {["Pending", "Under Review"].includes(leave.status) && (
                                                 <button
                                                     onClick={() =>
                                                         onCancelLeave(

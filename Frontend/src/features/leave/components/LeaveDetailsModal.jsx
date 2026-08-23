@@ -11,6 +11,7 @@ const LeaveDetailsSidebar = ({
     leave,
     onClose,
     onCancelLeave,
+    onOpenDocument,
 }) => {
     const [isVisible, setIsVisible] = useState(false);
 
@@ -171,9 +172,9 @@ const LeaveDetailsSidebar = ({
                                 </div>
                                 <div className="min-w-0 flex-1">
                                     <p className="text-xs font-medium text-muted-foreground">Supporting Document</p>
-                                    <p className={`font-medium text-sm mt-0.5 truncate ${!leave.document || leave.document === "Not Attached" ? "text-muted-foreground italic" : "text-yellow-400 underline cursor-pointer"}`}>
+                                    <button type="button" onClick={() => leave.documents?.[0] && onOpenDocument?.(leave.documents[0].id)} disabled={!leave.documents?.[0]} className={`font-medium text-sm mt-0.5 truncate text-left ${!leave.document || leave.document === "Not Attached" ? "text-muted-foreground italic" : "text-yellow-400 underline cursor-pointer"}`}>
                                         {leave.document || "Not Attached"}
-                                    </p>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -182,7 +183,7 @@ const LeaveDetailsSidebar = ({
 
                     {/* Footer Actions */}
                     <div className="px-6 py-4 border-t border-border/60 bg-card/40 flex items-center justify-between">
-                        {leave.status === "Pending" ? (
+                        {["Pending", "Under Review"].includes(leave.status) ? (
                             <button
                                 onClick={() => onCancelLeave?.(leave.id)}
                                 className="

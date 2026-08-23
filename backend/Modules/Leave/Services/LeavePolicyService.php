@@ -61,6 +61,9 @@ class LeavePolicyService
             return ['success' => false, 'message' => 'A policy with this code already exists.', 'status' => 409];
         }
 
+        $error = $this->validatePolicy($data);
+        if ($error) return $error;
+
         $carryForwardAllowed = $data['carry_forward_allowed'] ?? false;
         $maxCarryForward = $data['max_carry_forward_days'] ?? 0;
 
@@ -109,6 +112,9 @@ class LeavePolicyService
 
         $merged = array_merge($existing, $data);
 
+        $error = $this->validatePolicy($merged);
+        if ($error) return $error;
+
         if (!$merged['carry_forward_allowed'] && $merged['max_carry_forward_days'] > 0) {
             return [
                 'success' => false,
@@ -147,5 +153,24 @@ class LeavePolicyService
         $this->policies->delete($id);
 
         return ['success' => true, 'message' => 'Leave policy deactivated.'];
+    }
+
+    private function validatePolicy(array $data): ?array
+    {
+        $quota = $data['annual_quota'] ?? null;
+        if (!is_numeric($quota) || (float) $quota < 0 || (float) $quota > 365) {
+            return ['success' => false, 'message' => 'annual_quota must be a number from 0 to 365.', 'status' => 422];
+        }
+        if (!in_array($data['accrual_frequency'] ?? null, ['Monthly', 'Quarterly', 'Yearly'], true)) {
+            return ['success' => false, 'message' => 'Invalid accrual_frequency.', 'status' => 422];
+        }
+        if (!in_array($data['accrual_method'] ?? null, ['Pro-rata', 'Upfront'], true)) {
+            return ['success' => false, 'message' => 'Invalid accrual_method.', 'status' => 422];
+        }
+        $maxCarry = $data['max_carry_forward_days'] ?? 0;
+        if (!is_numeric($maxCarry) || (float) $maxCarry < 0) {
+            return ['success' => false, 'message' => 'max_carry_forward_days must be a non-negative number.', 'status' => 422];
+        }
+        return null;
     }
 }

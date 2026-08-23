@@ -23,7 +23,7 @@ export const LEAVE_PERMISSIONS = Object.freeze({
         showUpcomingLeaves: true,
         showLeaveAnalytics: true,
         canReviewLeaves: true,
-        canManageLeavePolicies: false,
+        canManageLeavePolicies: true,
         showTeamCalendar: true
     },
 

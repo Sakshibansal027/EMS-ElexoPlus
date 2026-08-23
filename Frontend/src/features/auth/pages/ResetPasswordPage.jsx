@@ -39,8 +39,8 @@ function ResetPasswordPage() {
       setError("Password is required.");
       return false;
     }
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters.");
+    if (password.length < 8 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/\d/.test(password) || !/[^A-Za-z0-9]/.test(password)) {
+      setError("Use 8+ characters with uppercase, lowercase, number, and special character.");
       return false;
     }
     if (!confirm.trim()) {
@@ -228,7 +228,7 @@ function ResetPasswordPage() {
                 Create new password
               </h2>
               <p className="text-slate-500 text-sm">
-                Your password must be at least 6 characters.
+                Use 8+ characters with uppercase, lowercase, a number, and a special character.
               </p>
             </div>
 

@@ -74,12 +74,12 @@ class CompanyHoliday
             $data['location'] ?? 'All',
         ]);
 
-        return self::find($id);
+        return array_merge($data, ['holiday_id' => $id, 'location' => $data['location'] ?? 'All']);
     }
 
     public static function update(string $id, array $data): ?array
     {
-        unset($data['holiday_id']);
+        $data = array_intersect_key($data, array_flip(['title', 'holiday_date', 'holiday_type', 'location']));
 
         if (empty($data)) {
             return self::find($id);
@@ -98,7 +98,7 @@ class CompanyHoliday
         );
         $stmt->execute($values);
 
-        return self::find($id);
+        return array_merge($data, ['holiday_id' => $id]);
     }
 
     /**
