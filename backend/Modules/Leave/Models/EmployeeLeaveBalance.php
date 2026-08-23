@@ -75,7 +75,11 @@ class EmployeeLeaveBalance
             $allocated, // remaining = allocated - 0 used, at creation
         ]);
 
-        return self::find($id);
+        return array_merge($data, [
+            'leave_balance_id' => $id,
+            'used_days' => 0,
+            'remaining_days' => $allocated,
+        ]);
     }
 
     /**
@@ -95,7 +99,7 @@ class EmployeeLeaveBalance
         );
         $stmt->execute([$days, $days, $id]);
 
-        return self::find($id);
+        return ['leave_balance_id' => $id];
     }
 
     /**
@@ -111,6 +115,6 @@ class EmployeeLeaveBalance
         );
         $stmt->execute([$days, $days, $id]);
 
-        return self::find($id);
+        return ['leave_balance_id' => $id];
     }
 }

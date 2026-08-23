@@ -8,6 +8,12 @@ class Database
 {
     private static ?PDO $instance = null;
 
+    /** Start a web request with a fresh PDO handle. */
+    public static function reset(): void
+    {
+        self::$instance = null;
+    }
+
     public static function connection(): PDO
     {
         if (self::$instance === null) {

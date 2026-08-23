@@ -33,29 +33,44 @@ const requestToHistory = (request, policies) => ({
     document: "Not Attached",
 });
 
-export const getLeaveDashboard = async () => {
+export const getLeaveDashboard = async ({ role } = {}) => {
     const year = new Date().getFullYear();
-    const [requestsResponse, balancesResponse, policiesResponse, holidaysResponse, pendingResponse, calendarResponse] = await Promise.all([
+    const [requestsResponse, balancesResponse, policiesResponse, holidaysResponse, pendingResponse, calendarResponse, managementResponse] = await Promise.all([
         client.get("/leave/requests"), client.get(`/leave/balances?year=${year}`), client.get("/leave/policies"),
         client.get(`/leave/holidays?year=${year}`), client.get("/leave/requests/pending-approvals"),
         client.get(`/leave/requests/calendar?from=${year}-01-01&to=${year}-12-31`),
+        client.get("/leave/requests/management"),
     ]);
     const policies = (policiesResponse.data.policies || []).map(mapPolicy);
     const policyById = Object.fromEntries(policies.map((policy) => [policy.id, policy]));
     const history = (requestsResponse.data.requests || []).map((request) => requestToHistory(request, policyById));
     const balances = (balancesResponse.data.balances || []).map((balance) => ({ title: policyById[balance.leave_policy_id]?.leaveTypeName || "Leave", available: Number(balance.remaining_days), total: Number(balance.allocated_days), color: "bg-primary" }));
-    const teamLeaves = (pendingResponse.data.pending || []).map((approval) => ({
+    const actionableLeaves = (pendingResponse.data.pending || []).map((approval) => ({
         id: approval.leave_request_id, employeeName: approval.employee_name, employeeId: approval.employee_code,
         designation: approval.designation_name || "Employee", initials: (approval.employee_name || "?").split(" ").map((part) => part[0]).join("").slice(0, 2),
         leaveType: approval.leave_policy_code, fromDate: approval.start_date, toDate: approval.end_date,
         duration: approval.day_type === "Full Day" ? "Full Day" : "0.5 Day", reason: approval.reason,
         appliedOn: approval.applied_at, approvedBy: "Pending your decision", approverRole: approval.approval_level,
-        status: approval.request_status, dayType: approval.day_type,
+        status: approval.request_status, dayType: approval.day_type, canDecide: true,
     }));
+    const teamHistory = (managementResponse.data.requests || []).map((request) => ({
+        id: request.leave_request_id, employeeName: request.employee_name || request.employee_code || "Employee", employeeId: request.employee_code || "",
+        designation: request.designation_name || "Employee", initials: (request.employee_name || request.employee_code || "?").split(" ").map((part) => part[0]).join("").slice(0, 2),
+        leaveType: request.leave_policy_code || "Leave", fromDate: request.start_date, toDate: request.end_date,
+        duration: request.day_type === "Full Day" ? "Full Day" : "0.5 Day", reason: request.reason,
+        appliedOn: request.applied_at, approvedBy: request.status === "Approved" ? "Approved" : request.status === "Rejected" ? "Rejected" : "Awaiting approval",
+        approverRole: request.pending_approval_level ? `Awaiting ${request.pending_approval_level}` : "", status: request.status, dayType: request.day_type, canDecide: false,
+    }));
+    // Calendar is the role-scoped history; the approval endpoint contributes
+    // the subset that the current user may actually decide on.
+    const teamById = new Map(teamHistory.map((request) => [request.id, request]));
+    actionableLeaves.forEach((request) => teamById.set(request.id, { ...teamById.get(request.id), ...request }));
+    const teamLeaves = [...teamById.values()];
+    const managementRecords = ["ADMIN", "HR", "ASM"].includes(String(role || "").toUpperCase()) ? teamLeaves : history;
     return {
         managementCards: [
             { icon: ClipboardList, title: "Waiting on You", value: teamLeaves.length, description: "Approval queue" },
-            { icon: CalendarCheck, title: "Approved Requests", value: history.filter((item) => item.status === "Approved").length, description: "Your approved requests" },
+            { icon: CalendarCheck, title: "Approved Requests", value: managementRecords.filter((item) => item.status === "Approved").length, description: "Visible approved requests" },
             { icon: Tags, title: "Leave Types", value: policies.length, description: "Active leave policies" },
         ],
         summaryCards: [

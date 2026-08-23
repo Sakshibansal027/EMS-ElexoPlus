@@ -18,6 +18,7 @@ const LeaveApplicationRow = ({
     approvedBy,
     approverRole,
     status,
+    canDecide,
     onStatusChange,
 }) => {
     return (
@@ -172,7 +173,7 @@ const LeaveApplicationRow = ({
                         {status}
                     </span>
 
-                    {["Pending", "Under Review"].includes(status) && (
+                    {canDecide && ["Pending", "Under Review"].includes(status) && (
                         <div className="flex gap-2">
                             <button
                             onClick={() =>
@@ -212,6 +213,9 @@ const LeaveApplicationRow = ({
                             Reject
                         </button>
                         </div>
+                    )}
+                    {!canDecide && ["Pending", "Under Review"].includes(status) && (
+                        <p className="text-xs text-muted-foreground text-right">{approverRole || "Awaiting assigned approver"}</p>
                     )}
                     
                 </div>

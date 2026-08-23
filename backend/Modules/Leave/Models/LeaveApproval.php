@@ -104,7 +104,9 @@ class LeaveApproval
             $data['decision'] ?? 'Pending',
         ]);
 
-        return self::find($id);
+        // The created id and payload are enough for the workflow. Avoid a
+        // fragile immediate read-after-write on the managed database.
+        return array_merge($data, ['approval_id' => $id]);
     }
 
     /**
@@ -120,10 +122,10 @@ class LeaveApproval
         $stmt = Database::connection()->prepare(
             "UPDATE " . self::TABLE . "
              SET decision = ?, remarks = ?, action_date = NOW()
-             WHERE approval_id = ?"
+             WHERE approval_id = ? AND decision = 'Pending'"
         );
         $stmt->execute([$decision, $remarks, $id]);
 
-        return self::find($id);
+        return ['approval_id' => $id, 'decision' => $decision, 'remarks' => $remarks, 'updated' => $stmt->rowCount() === 1];
     }
 }

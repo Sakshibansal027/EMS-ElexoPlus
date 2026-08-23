@@ -64,7 +64,7 @@ class LeaveRequestDocumentController
 
         $request = (new LeaveRequestRepository())->findById($params['requestId']);
         if (!$request) return ['success' => false, 'message' => 'Leave request not found.', 'status' => 404];
-        if (($auth['user']['employee_id'] ?? null) !== $request['employee_id']) {
+        if ($this->employeeIdForUser($auth['user']) !== $request['employee_id']) {
             return ['success' => false, 'message' => 'Only the requesting employee can upload documents.', 'status' => 403];
         }
 
@@ -161,7 +161,7 @@ class LeaveRequestDocumentController
         $document = (new LeaveRequestDocumentRepository())->findById($params['id']);
         if (!$document) return ['success' => false, 'message' => 'Document not found.', 'status' => 404];
         $request = (new LeaveRequestRepository())->findById($document['leave_request_id']);
-        if (!$request || ($auth['user']['employee_id'] ?? null) !== $request['employee_id']) {
+        if (!$request || $this->employeeIdForUser($auth['user']) !== $request['employee_id']) {
             return ['success' => false, 'message' => 'Only the requesting employee can remove this document.', 'status' => 403];
         }
         $result = $this->documentService->remove($params['id']);
@@ -172,9 +172,10 @@ class LeaveRequestDocumentController
     private function canViewRequest(array $user, array $request): bool
     {
         if (in_array(strtoupper((string) ($user['role'] ?? '')), ['ADMIN', 'HR'], true)) return true;
-        if (($user['employee_id'] ?? null) === $request['employee_id']) return true;
+        $employeeId = $this->employeeIdForUser($user);
+        if ($employeeId === $request['employee_id']) return true;
         $stmt = Database::connection()->prepare('SELECT 1 FROM leave_approvals WHERE leave_request_id = ? AND approver_employee_id = ? LIMIT 1');
-        $stmt->execute([$request['leave_request_id'], $user['employee_id'] ?? '']);
+        $stmt->execute([$request['leave_request_id'], $employeeId ?? '']);
         return (bool) $stmt->fetchColumn();
     }
 
@@ -190,5 +191,17 @@ class LeaveRequestDocumentController
     {
         $path = $this->storedFilePath($fileUrl);
         if ($path && is_file($path)) unlink($path);
+    }
+
+    private function employeeIdForUser(array $user): ?string
+    {
+        $email = trim((string) ($user['email'] ?? ''));
+        if ($email !== '') {
+            $stmt = Database::connection()->prepare('SELECT employee_id FROM employees WHERE email = ? LIMIT 1');
+            $stmt->execute([$email]);
+            $employeeId = $stmt->fetchColumn();
+            if ($employeeId) return (string) $employeeId;
+        }
+        return !empty($user['employee_id']) ? (string) $user['employee_id'] : null;
     }
 }

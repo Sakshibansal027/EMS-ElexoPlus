@@ -36,6 +36,7 @@ const LeaveManagement = () => {
         teamLeaves,
         selfLeaves,
         refetch,
+        error,
     } = useLeaveManagement();
 
     const applyLeaveForm = useApplyLeaveForm({
@@ -104,7 +105,12 @@ const LeaveManagement = () => {
     const historyRecords = selfLeaves.pagination.records;
 
     return (
-        <div className="p-6 md:p-8 space-y-6">
+        <div className="p-6 md:p-8 space-y-6">
+            {error && (
+                <div role="alert" className="rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+                    {error?.response?.data?.message || error?.message || "Leave action could not be completed."}
+                </div>
+            )}
             <div className="mb-10 flex items-start justify-between">
                 <div>
                     <p className="mt-2 text-lg text-foreground-muted">

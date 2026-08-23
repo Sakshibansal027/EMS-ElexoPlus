@@ -210,11 +210,13 @@ export const useLeaveManagement = () => {
         leaveId,
         status
     ) => {
-        await updateLeaveApplicationStatus(
-            leaveId,
-            status
-        );
-        await fetchDashboard();
+        try {
+            await updateLeaveApplicationStatus(leaveId, status);
+            await fetchDashboard();
+        } catch (err) {
+            setError(err);
+            return null;
+        }
     };
 
     const cancelLeave = async (leaveId) => {
@@ -224,8 +226,13 @@ export const useLeaveManagement = () => {
 
         if (!confirmed) return;
 
-        await cancelLeaveApplication(leaveId);
-        await fetchDashboard();
+        try {
+            await cancelLeaveApplication(leaveId);
+            await fetchDashboard();
+        } catch (err) {
+            setError(err);
+            return null;
+        }
     };
 
     return {
@@ -254,6 +261,9 @@ export const useLeaveManagement = () => {
                 data.managementCards,
             summaryCards:
                 data.summaryCards,
+            // ApplyLeaveForm consumes this list. Keep it in the public hook
+            // result instead of dropping it after the API dashboard loads.
+            leavePolicies: data.leavePolicies,
             leaveBalanceData,
             leaveAnalytics,
             calendarData:

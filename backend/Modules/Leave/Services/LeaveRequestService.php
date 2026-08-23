@@ -2,6 +2,7 @@
 
 namespace Modules\Leave\Services;
 
+use Core\Database;
 use Modules\Leave\Repositories\LeaveRequestRepository;
 use Modules\Leave\Repositories\LeaveApprovalRepository;
 use Modules\Leave\Repositories\LeavePolicyRepository;
@@ -38,7 +39,7 @@ class LeaveRequestService
      * so Leave doesn't query it directly. Whatever the admin sets it to,
      * this Service just uses it — no weekend logic hardcoded anywhere here.
      */
-    public function apply(array $data, string $firstApproverEmployeeId, array $workingDays): array
+    public function apply(array $data, string $firstApproverEmployeeId, array $workingDays, string $firstApprovalLevel = 'ASM'): array
     {
         foreach (['employee_id', 'leave_policy_id', 'start_date', 'end_date', 'reason'] as $field) {
             if (empty($data[$field])) {
@@ -102,7 +103,10 @@ class LeaveRequestService
             ];
         }
 
-        $request = $this->requests->create([
+        $db = Database::connection();
+        try {
+            $db->beginTransaction();
+            $request = $this->requests->create([
             'employee_id' => $data['employee_id'],
             'leave_policy_id' => $data['leave_policy_id'],
             'start_date' => $data['start_date'],
@@ -111,15 +115,25 @@ class LeaveRequestService
             'reason' => $data['reason'],
             'emergency_contact' => $data['emergency_contact'] ?? null,
             'status' => 'Pending',
-        ]);
+            ]);
 
-        // First stage of the approval chain always starts at ASM level.
-        $this->approvals->create([
-            'leave_request_id' => $request['leave_request_id'],
-            'approver_employee_id' => $firstApproverEmployeeId,
-            'approval_level' => 'ASM',
+            // A request must never be persisted without its first stage.
+            $this->approvals->create([
+                'leave_request_id' => $request['leave_request_id'],
+                'approver_employee_id' => $firstApproverEmployeeId,
+                'approval_level' => $firstApprovalLevel,
             'decision' => 'Pending',
-        ]);
+            ]);
+            $db->commit();
+        } catch (\Throwable $exception) {
+            try {
+                if ($db->inTransaction()) $db->rollBack();
+            } catch (\Throwable) {
+                // Preserve the original database error; a dead connection can
+                // fail again while PDO tries to roll the transaction back.
+            }
+            throw $exception;
+        }
 
         return ['success' => true, 'message' => 'Leave request submitted.', 'request' => $request, 'requested_days' => $requestedDays];
     }
@@ -175,7 +189,11 @@ class LeaveRequestService
             return ['success' => false, 'message' => 'No active HR approver is configured to continue this request.', 'status' => 422];
         }
 
-        $this->approvals->recordDecision($pendingStage['approval_id'], $decision, $remarks);
+            $updatedStage = $this->approvals->recordDecision($pendingStage['approval_id'], $decision, $remarks);
+            if (!$updatedStage || empty($updatedStage['updated'])) {
+                $db->rollBack();
+                return ['success' => false, 'message' => 'This approval was already processed. Refresh the queue and try again.', 'status' => 409];
+            }
 
         if ($decision === 'Rejected') {
             $this->requests->setStatus($leaveRequestId, 'Rejected');
@@ -246,6 +264,43 @@ class LeaveRequestService
         }
 
         return ['success' => true, 'message' => 'Leave request cancelled.'];
+    }
+
+    /**
+     * An employee may correct the reason/contact details only while the
+     * request is still awaiting its first approver. Dates and policy affect
+     * balance/conflict calculations, so changing them requires cancellation
+     * and a fresh request rather than silently altering an approval record.
+     */
+    public function amend(string $leaveRequestId, string $employeeId, array $data): array
+    {
+        $request = $this->requests->findById($leaveRequestId);
+        if (!$request || $request['employee_id'] !== $employeeId) {
+            return ['success' => false, 'message' => 'Leave request not found.', 'status' => 404];
+        }
+        if ($request['status'] !== 'Pending') {
+            return ['success' => false, 'message' => 'Only a pending leave request can be amended.', 'status' => 409];
+        }
+
+        $updates = [];
+        if (array_key_exists('reason', $data)) {
+            $reason = trim((string) $data['reason']);
+            if ($reason === '' || mb_strlen($reason) > 1000) {
+                return ['success' => false, 'message' => 'Reason is required and must be at most 1000 characters.', 'status' => 422];
+            }
+            $updates['reason'] = $reason;
+        }
+        if (array_key_exists('emergency_contact', $data)) {
+            $contact = trim((string) $data['emergency_contact']);
+            if ($contact !== '' && !preg_match('/^[0-9+()\-\s]{7,25}$/', $contact)) {
+                return ['success' => false, 'message' => 'Provide a valid emergency contact number.', 'status' => 422];
+            }
+            $updates['emergency_contact'] = $contact ?: null;
+        }
+        if (!$updates) return ['success' => false, 'message' => 'Only reason and emergency_contact can be amended.', 'status' => 422];
+
+        $this->requests->update($leaveRequestId, $updates);
+        return ['success' => true, 'message' => 'Leave request updated.'];
     }
 
     /**

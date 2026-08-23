@@ -82,6 +82,12 @@ export const useApplyLeaveForm = ({ employee, onSuccess, policies = [] }) => {
     };
 
     const submit = async () => {
+        if (leaveTypeOptions.length === 0) {
+            setSubmitError("No active leave policy is available. Please contact HR or an administrator.");
+            setShowValidationError(false);
+            return;
+        }
+
         const nextErrors = validateLeaveApplication({
             leaveType,
             dayType,

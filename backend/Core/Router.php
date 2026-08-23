@@ -65,6 +65,10 @@ class Router
                 $handler = $route['handler'];
 
                 try {
+                    // PHP's development server keeps static state alive. Do
+                    // not reuse an idle remote-MySQL connection from a prior
+                    // HTTP request; reconnect once at the request boundary.
+                    Database::reset();
                     if (is_callable($handler)) {
                         $result = $handler($params);
                     } else {

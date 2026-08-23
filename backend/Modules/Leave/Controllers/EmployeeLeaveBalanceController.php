@@ -8,6 +8,7 @@ use Modules\Leave\Repositories\EmployeeLeaveBalanceRepository;
 use Modules\Leave\Repositories\LeavePolicyRepository;
 use Modules\Leave\Services\EmployeeLeaveBalanceService;
 use Modules\Authentication\Support\Request;
+use Core\Database;
 
 class EmployeeLeaveBalanceController
 {
@@ -33,7 +34,8 @@ class EmployeeLeaveBalanceController
             return ['success' => false, 'message' => $auth['error'], 'status' => $auth['status']];
         }
 
-        $employeeId = $auth['user']['employee_id'];
+        $employeeId = $this->employeeIdForUser($auth['user']);
+        if (!$employeeId) return ['success' => false, 'message' => 'Your employee profile is not linked to this account.', 'status' => 422];
         $year = (int) Request::input('year', date('Y'));
 
         return $this->balanceService->getForEmployee($employeeId, $year);
@@ -51,7 +53,8 @@ class EmployeeLeaveBalanceController
             return ['success' => false, 'message' => $auth['error'], 'status' => $auth['status']];
         }
 
-        $employeeId = $auth['user']['employee_id'];
+        $employeeId = $this->employeeIdForUser($auth['user']);
+        if (!$employeeId) return ['success' => false, 'message' => 'Your employee profile is not linked to this account.', 'status' => 422];
         $year = (int) Request::input('year', date('Y'));
 
         return $this->balanceService->getForEmployeePolicy($employeeId, $params['policyId'], $year);
@@ -104,5 +107,17 @@ class EmployeeLeaveBalanceController
         }
 
         return $this->balanceService->carryForward($employeeId, $leavePolicyId, $fromYear, $toYear);
+    }
+
+    private function employeeIdForUser(array $user): ?string
+    {
+        $email = trim((string) ($user['email'] ?? ''));
+        if ($email !== '') {
+            $stmt = Database::connection()->prepare('SELECT employee_id FROM employees WHERE email = ? LIMIT 1');
+            $stmt->execute([$email]);
+            $employeeId = $stmt->fetchColumn();
+            if ($employeeId) return (string) $employeeId;
+        }
+        return !empty($user['employee_id']) ? (string) $user['employee_id'] : null;
     }
 }
