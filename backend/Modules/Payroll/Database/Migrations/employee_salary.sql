@@ -46,3 +46,6 @@ CREATE INDEX idx_employee_salary_structure_structure
 
 CREATE INDEX idx_employee_salary_structure_status
     ON employee_salary_structures(status);
+
+CREATE UNIQUE INDEX uq_employee_salary_structure_effective_from
+    ON employee_salary_structures(employee_id, effective_from);

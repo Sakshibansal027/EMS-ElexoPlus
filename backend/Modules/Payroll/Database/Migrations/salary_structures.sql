@@ -23,6 +23,8 @@ CREATE TABLE salary_structures (
 
     bonus_frequency VARCHAR(50) NULL,
 
+    status ENUM('Active', 'Inactive') NOT NULL DEFAULT 'Active',
+
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
