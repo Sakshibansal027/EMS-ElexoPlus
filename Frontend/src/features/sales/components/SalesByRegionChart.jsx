@@ -8,8 +8,9 @@ import salesByRegionData from "../mock/salesRegionData";
 
 const COLORS = ["#facc15", "#eab308", "#ca8a04", "#a16207", "#713f12"];
 
-const SalesByRegionChart = () => {
-  const totalSales = "₹2.4 Cr";
+const SalesByRegionChart = ({ data = [], totalSales = 0 }) => {
+  const regionData = data.length ? data : salesByRegionData;
+  const formattedTotal = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(totalSales);
 
   return (
     <div className="bg-[#111] p-8 rounded-2xl shadow-lg border border-[#2a2a2a]  w-full h-[350px] flex flex-col justify-between">
@@ -27,7 +28,7 @@ const SalesByRegionChart = () => {
           <ResponsiveContainer>
             <PieChart>
               <Pie
-                data={salesByRegionData}
+                data={regionData}
                 cx="50%"
                 cy="50%"
                 innerRadius={60}
@@ -35,7 +36,7 @@ const SalesByRegionChart = () => {
                 paddingAngle={3}
                 dataKey="value"
               >
-                {salesByRegionData.map((entry, index) => (
+                {regionData.map((entry, index) => (
                   <Cell key={index} fill={COLORS[index]} />
                 ))}
               </Pie>
@@ -45,7 +46,7 @@ const SalesByRegionChart = () => {
 
         {/* Legend */}
         <div className="space-y-3">
-          {salesByRegionData.map((item, index) => (
+          {regionData.map((item, index) => (
             <div key={index} className="flex items-center justify-between gap-6">
               <div className="flex items-center gap-2">
                 <div
@@ -69,7 +70,7 @@ const SalesByRegionChart = () => {
       <div className="flex justify-between items-center mt-4">
         <span className="text-gray-400 text-sm">Total Sales</span>
         <span className="text-yellow-400 font-semibold text-lg">
-          {totalSales}
+          {totalSales ? formattedTotal : "—"}
         </span>
       </div>
 

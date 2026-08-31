@@ -1,5 +1,5 @@
 // src/features/sales/components/SETodaySummaryAndVisits.jsx
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { 
   MapPin, 
   Users, 
@@ -18,7 +18,7 @@ import { seMockData, mockVisitsData } from '../mock/seMockData';
 const SETodaySummaryAndVisits = ({ summaryData, visitsData }) => {
   // Direct Data Resolution: Prop -> Mock Data (Taaki loading me kabhi na atke)
   const summary = summaryData || seMockData.mockSummaryData;
-  const visitsList = (visitsData && visitsData.length > 0) ? visitsData : mockVisitsData;
+  const visitsList = visitsData || mockVisitsData;
 
   const [selectedVisit, setSelectedVisit] = useState(null);
   const [isVisitsDirectoryOpen, setIsVisitsDirectoryOpen] = useState(false);

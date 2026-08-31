@@ -2,31 +2,32 @@ import StatsCard from "../components/StatCard";
 import SalesTrendChart from "../components/SalesTrendChart.jsx";
 import SalesByRegionChart from "../components/SalesByRegionChart.jsx";
 import TopASM from "../components/LeadManagement.jsx";
-import salesData from "../mock/salesData.js";  
+import useSalesStats from "../hooks/useSalesStats";
 const AdminSalesDashboard = () => {
+    const { stats, dashboard, loading } = useSalesStats();
 
     const cards = [
         {
             title: "Total ASM",
-            value: "12",
+            value: loading ? "…" : stats.totalASM,
             change: "+9.09%",
             icon: "users"
         },
         {
             title: "Sales Executives",
-            value: "48",
+            value: loading ? "…" : stats.totalSE,
             change: "+14.29%",
             icon: "users"
         },
         {
             title: "Total Sales",
-            value: "₹2.4 Cr",
+            value: loading ? "…" : new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(stats.totalSales),
             change: "+18.75%",
             icon: "rupee"
         },
         {
             title: "Target Achievement",
-            value: "78%",
+            value: loading ? "…" : `${stats.targetAchieved}%`,
             change: "+6.25%",
             icon: "target"
         }
@@ -53,16 +54,16 @@ const AdminSalesDashboard = () => {
 
       {/* Wide Trend Chart */}
       <div className="col-span-2 h-[350px]">
-        <SalesTrendChart />
+        <SalesTrendChart data={dashboard.trend} />
       </div>
 
       {/* Compact Region Chart */}
       <div className="col-span-1 h-[350px]">
-        <SalesByRegionChart />
+        <SalesByRegionChart data={dashboard.regions} totalSales={stats.totalSales} />
       </div>
 
     </div>
-<TopASM data={salesData} />
+<TopASM />
         </div>
     );
 };

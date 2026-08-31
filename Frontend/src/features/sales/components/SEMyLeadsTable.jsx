@@ -1,6 +1,5 @@
 // src/features/sales/components/SEMyLeadsTable.jsx
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { 
   ArrowRight, 
   UserCheck, 
@@ -20,7 +19,6 @@ import {
 } from 'lucide-react';
 
 const SEMyLeadsTable = ({ leads = [], onViewDirectory }) => {
-  const navigate = useNavigate();
 
   // View States
   const [viewMode, setViewMode] = useState('table'); // 'table' | 'pipeline'

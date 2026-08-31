@@ -1,6 +1,4 @@
 // src/features/sales/components/SESalesDashboard.jsx
-import React from 'react';
-import { Calendar } from 'lucide-react';
 import { useSEDashboardData } from '../hooks/useSEDashboardData';
 import SETopMetrics from '../components/SETopMetrics';
 import SETargetChart from '../components/SETargetChart';
@@ -51,8 +49,8 @@ const SESalesDashboard = ({ executiveId = 'SE001' }) => {
         </div>
       </div>
       <SEMyLeadsTable leads={data.myLeads} />
-      <SEMyOrdersTable/>
-     <SETodaySummaryAndVisits/>
+      <SEMyOrdersTable orders={data.myOrders} />
+     <SETodaySummaryAndVisits summaryData={data.mockSummaryData} visitsData={data.visitsData} />
 
       {/* 3. Performance, Expenses & DAR Ledger */}
 

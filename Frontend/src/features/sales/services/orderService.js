@@ -1,32 +1,21 @@
 // src/features/sales/services/orderService.js
-import { mockOrdersData, availableTerritories } from '../mock/mockOrders';
-
-let localOrdersCache = [...mockOrdersData];
+import { salesApi } from './salesApi';
 
 export const orderService = {
-  getTeamOrders: () => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve([...localOrdersCache]);
-      }, 200);
-    });
+  getTeamOrders: async () => {
+    const orders = await salesApi.orders();
+    return orders.map((order) => ({ ...order, id: order.order_id, orderNo: order.order_no, seName: order.employee_name, value: Number(order.order_value), status: order.order_status, territory: order.territory_name || "Unassigned" }));
   },
 
-  getTerritories: () => {
-    return new Promise((resolve) => {
-      resolve([...availableTerritories]);
-    });
+  getTerritories: async () => {
+    return salesApi.territories();
   },
 
   // ASM assigns territory to a particular SE
   assignTerritoryToSE: (seId, newTerritory) => {
-    return new Promise((resolve) => {
-      localOrdersCache = localOrdersCache.map(order => 
-        order.id === seId ? { ...order, territory: newTerritory } : order
-      );
-      setTimeout(() => {
-        resolve({ success: true, updatedOrders: [...localOrdersCache] });
-      }, 150);
-    });
+    return salesApi.assignOrderTerritory(seId, newTerritory).then(async () => ({
+      success: true,
+      updatedOrders: await orderService.getTeamOrders(),
+    }));
   }
 };

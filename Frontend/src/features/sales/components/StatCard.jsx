@@ -33,6 +33,7 @@ const StatsCard = ({ title, value, change, icon = "users" }) => {
           <h2 className="text-white text-2xl font-semibold">
             {value}
           </h2>
+          {change && <span className="text-[10px] text-emerald-400">{change}</span>}
 
 
         </div>

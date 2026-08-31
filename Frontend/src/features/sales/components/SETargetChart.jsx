@@ -1,5 +1,4 @@
 // src/features/sales/components/SETargetChart.jsx
-import React from 'react';
 import { 
   ResponsiveContainer, 
   ComposedChart, 

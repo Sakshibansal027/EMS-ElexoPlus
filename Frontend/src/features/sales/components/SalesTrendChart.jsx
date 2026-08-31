@@ -1,5 +1,4 @@
 import {
-  LineChart,
   Line,
   XAxis,
   YAxis,
@@ -9,7 +8,7 @@ import {
   Area,
   AreaChart,
 } from "recharts";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 // IMPORT FROM MOCK
 import {
@@ -32,14 +31,12 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null;
 };
 
-const SalesTrendChart = () => {
+const SalesTrendChart = ({ data = [] }) => {
   const [view, setView] = useState("monthly");
 
   //  CLEAN DATA SOURCE
-  const chartData =
-    view === "monthly"
-      ? monthlySalesData
-      : getQuarterlySales(monthlySalesData);
+  const sourceData = useMemo(() => data.length ? data.map((item) => ({ name: item.period, sales: Number(item.sales) })) : monthlySalesData, [data]);
+  const chartData = useMemo(() => view === "monthly" ? sourceData : getQuarterlySales(sourceData), [view, sourceData]);
 
   return (
     <div className="bg-[#0f0f0f] border border-[#2a2a2a] rounded-2xl p-6">

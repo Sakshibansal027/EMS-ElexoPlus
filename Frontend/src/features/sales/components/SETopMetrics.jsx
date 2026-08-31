@@ -1,5 +1,4 @@
 // src/features/sales/components/SETopMetrics.jsx
-import React from 'react';
 import { Target, TrendingUp, ShoppingBag, Award } from 'lucide-react';
 
 const SETopMetrics = ({ metrics }) => {

@@ -46,8 +46,13 @@ CREATE TABLE leads (
         'Contacted',
         'Proposal Sent',
         'In Negotiation',
-        'Closed'
+        'Closed',
+        'Archived'
     ) NOT NULL DEFAULT 'New Lead',
+
+    region VARCHAR(100) NULL,
+
+    next_follow_up_date DATE NULL,
 
     remarks TEXT NULL,
 

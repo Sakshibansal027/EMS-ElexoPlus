@@ -1,8 +1,7 @@
 // src/features/sales/components/SEPerformanceWidgets.jsx
-import React from 'react';
 import { PieChart } from 'lucide-react';
 
-const SEPerformanceWidgets = ({ darLogs = [], expenses = [], performance }) => {
+const SEPerformanceWidgets = ({ performance }) => {
   if (!performance) return null;
 
   return (

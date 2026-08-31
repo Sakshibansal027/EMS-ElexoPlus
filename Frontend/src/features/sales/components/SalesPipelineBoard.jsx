@@ -1,4 +1,3 @@
-import React from "react";
 
 export default function SalesPipelineBoard({ leads, onSelectLead }) {
   const stages = ["New", "Contacted", "Proposal Sent", "Converted"];

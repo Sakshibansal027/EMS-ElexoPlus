@@ -1,9 +1,9 @@
 // src/features/sales/components/TeamOrders.jsx
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useTeamOrders } from '../hooks/useTeamOrders';
 import CustomSelect from "../../../features/employee-master/components/ui/CustomSelect"
 const TeamOrders = () => {
-    const { orders, territories, isLoading, error, allocateTerritory } = useTeamOrders();
+    const { orders, territories, isLoading, allocateTerritory } = useTeamOrders();
     const [isAllOrdersOpen, setIsAllOrdersOpen] = useState(false);
     const [activeAssigneeId, setActiveAssigneeId] = useState(null); // Track custom select dropdown display
 

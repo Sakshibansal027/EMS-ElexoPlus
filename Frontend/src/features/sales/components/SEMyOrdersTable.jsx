@@ -1,5 +1,5 @@
 // src/features/sales/components/SEMyOrdersTable.jsx
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { 
   ShoppingBag, 
   ArrowRight, 
@@ -16,17 +16,7 @@ import {
 } from 'lucide-react';
 
 const SEMyOrdersTable = ({ orders: initialOrders = [] }) => {
-  // Sample Data with B2B / B2C distinction
-  const defaultOrders = [
-    { id: 'ORD-1052', customer: 'ABC Distributors', type: 'B2B', value: 125000, status: 'Confirmed', date: '18 May 2026', items: 12, paymentStatus: 'Paid', address: 'Mumbai, MH' },
-    { id: 'ORD-1051', customer: 'PQR Traders', type: 'B2B', value: 95000, status: 'Packed', date: '18 May 2026', items: 8, paymentStatus: 'Pending', address: 'Delhi, DL' },
-    { id: 'ORD-1050', customer: 'Rahul Sharma', type: 'B2C', value: 4500, status: 'Delivered', date: '17 May 2026', items: 2, paymentStatus: 'Paid', address: 'Jaipur, RJ' },
-    { id: 'ORD-1049', customer: 'XYZ Retailers', type: 'B2B', value: 60000, status: 'Confirmed', date: '17 May 2026', items: 4, paymentStatus: 'Paid', address: 'Ahemdabad, GJ' },
-    { id: 'ORD-1048', customer: 'Ananya Verma', type: 'B2C', value: 2800, status: 'Pending', date: '16 May 2026', items: 1, paymentStatus: 'Pending', address: 'Chandigarh, PB' },
-    { id: 'ORD-1047', customer: 'Super Market', type: 'B2B', value: 55000, status: 'Pending', date: '16 May 2026', items: 6, paymentStatus: 'Pending', address: 'Chandigarh, PB' },
-  ];
-
-  const [ordersList, setOrdersList] = useState(initialOrders.length > 0 ? initialOrders : defaultOrders);
+  const [ordersList, setOrdersList] = useState(initialOrders);
   
   // Tab State: 'B2B' | 'B2C'
   const [activeTab, setActiveTab] = useState('B2B');
