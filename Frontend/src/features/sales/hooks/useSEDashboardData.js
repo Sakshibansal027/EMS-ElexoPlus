@@ -13,7 +13,7 @@ export const useSEDashboardData = (executiveId) => {
         setIsLoading(true);
         const result = await fetchSEDashboardData(executiveId);
         setData(result);
-      } catch (err) {
+      } catch {
         setError('Failed to sync executive metrics');
       } finally {
         setIsLoading(false);

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useSalesData } from "../hooks/useSalesData";
 import { SalesCards } from "../components/SalesCards";
 import LeadManagement from "./LeadManagement"; 

@@ -1,11 +1,12 @@
 // src/features/sales/pages/AsmSalesDashboard.jsx
-import React, { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useSalesData } from '../hooks/useSalesData';
 import StatsCard from '../components/StatCard';
 import SalesTrendChart from '../components/SalesTrendChart';
 import TeamVisitsTracker from '../components/TeamVisitsTracker';
 import TeamOrders from '../components/TeamOrders';
 import CustomSelect from '../../employee-master/components/ui/CustomSelect';
+import { salesApi } from '../services/salesApi';
 const AsmSalesDashboard = () => {
   const { cards, data: initialData, loading, error } = useSalesData();
   const asmAssignedTerritory = "North Zone";
@@ -52,6 +53,8 @@ const AsmSalesDashboard = () => {
           feedback: se.feedback || ''
         };
       });
+      // Hydrate the existing dashboard state from the API response.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLocalSePerformanceList(enrichedSeList);
     }
     if (initialData?.leadsPipeline) {
@@ -79,21 +82,27 @@ const AsmSalesDashboard = () => {
     });
   }, [allLeads, activePipelineTab, selectedSeFilter, searchQuery]);
 
-  const handleLeadSubmit = (e) => {
+  const handleLeadSubmit = async (e) => {
     e.preventDefault();
     const targetSe = filteredSePerformanceList.find(se => se.id === leadForm.assignedSeId) || { name: 'Unassigned SE' };
-
-    const newLeadObj = {
-      id: `LD-${Math.floor(100 + Math.random() * 900)}`,
-      segment: leadFormType,
-      name: leadFormType === 'B2B' ? leadForm.companyName : leadForm.customerName,
-      contact: leadFormType === 'B2B' ? leadForm.contactPerson : leadForm.customerName,
-      phone: leadForm.phone,
-      value: Number(leadForm.estimatedValue) || 0,
-      assignedSeId: leadForm.assignedSeId,
-      assignedSeName: targetSe.name,
-      status: 'New Lead'
-    };
+    let newLeadObj;
+    try {
+      const created = await salesApi.createLead({
+        segment: leadFormType,
+        lead_name: leadFormType === 'B2B' ? leadForm.companyName : leadForm.customerName,
+        company_name: leadFormType === 'B2B' ? leadForm.companyName : '',
+        contact_person: leadForm.contactPerson || leadForm.customerName,
+        phone_number: leadForm.phone,
+        email: leadForm.email,
+        requirement: leadForm.requirement,
+        estimated_value: Number(leadForm.estimatedValue) || 0,
+        gst_number: leadForm.gstNumber,
+        assigned_employee_id: leadForm.assignedSeId,
+      });
+      newLeadObj = { ...created, name: created.name || created.lead_name, segment: created.segment || leadFormType, status: created.status || 'New Lead', value: Number(created.value || leadForm.estimatedValue || 0), assignedSeId: leadForm.assignedSeId, assignedSeName: targetSe.name };
+    } catch {
+      return;
+    }
 
     setAllLeads(prevLeads => [newLeadObj, ...prevLeads]);
     setActivePipelineTab(leadFormType);
@@ -101,9 +110,14 @@ const AsmSalesDashboard = () => {
     setLeadForm({ companyName: '', customerName: '', contactPerson: '', phone: '', email: '', requirement: '', estimatedValue: '', assignedSeId: 'SE001', gstNumber: '' });
   };
 
-  const handleTargetSubmit = (e) => {
+  const handleTargetSubmit = async (e) => {
     e.preventDefault();
     const updatedTargetValue = Number(e.target.targetAmount.value);
+    try {
+      await salesApi.createTarget({ assigned_to_employee_id: selectedSeForTarget.id, target_value: updatedTargetValue });
+    } catch {
+      return;
+    }
     setLocalSePerformanceList(prevList =>
       prevList.map(se => {
         if (se.id === selectedSeForTarget.id) {
@@ -167,7 +181,7 @@ const AsmSalesDashboard = () => {
       </div>
 
       {/* 2. SALES TREND CHART SECTION */}
-      <div className="w-full grid grid-cols-1 gap-6"><SalesTrendChart /></div>
+      <div className="w-full grid grid-cols-1 gap-6"><SalesTrendChart data={initialData?.apiDashboard?.trend || []} /></div>
 
       {/* 3. TEAM PERFORMANCE TABLE */}
       <div className="bg-[#0f0f0f] border border-[#1f1f1f] rounded-2xl p-6 shadow-xl w-full">

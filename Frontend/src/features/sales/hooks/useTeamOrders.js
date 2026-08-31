@@ -15,7 +15,7 @@ export const useTeamOrders = () => {
       const territoriesData = await orderService.getTerritories();
       setOrders(ordersData);
       setTerritories(territoriesData);
-    } catch (err) {
+    } catch {
       setError('Failed to fetch data updates');
     } finally {
       setIsLoading(false);
@@ -23,6 +23,8 @@ export const useTeamOrders = () => {
   };
 
   useEffect(() => {
+    // Initial API hydration is the purpose of this effect.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadAllData();
   }, []);
 
@@ -32,8 +34,8 @@ export const useTeamOrders = () => {
       if (response.success) {
         setOrders(response.updatedOrders);
       }
-    } catch (err) {
-      console.error("Allocation failed", err);
+    } catch (error) {
+      console.error("Allocation failed", error);
     }
   };
 

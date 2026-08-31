@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Trash2 } from "lucide-react"; 
 import CustomSelect from "../../employee-master/components/ui/CustomSelect"; 
 
-export function ActivityTimeline({ activities, onActivitiesChange }) {
+export function ActivityTimeline({ activities, onActivitiesChange, onActivityAdded }) {
   const [newNote, setNewNote] = useState("");
   const [logType, setLogType] = useState("Call");
 
@@ -20,6 +20,7 @@ export function ActivityTimeline({ activities, onActivitiesChange }) {
     };
 
     onActivitiesChange([manualLog, ...activities]);
+    onActivityAdded?.(manualLog);
     setNewNote("");
   };
 

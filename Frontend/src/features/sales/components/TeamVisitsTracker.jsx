@@ -1,5 +1,5 @@
 // src/features/sales/components/TeamVisitsTracker.jsx
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 
 const TeamVisitsTracker = () => {
   const [activeTab, setActiveTab] = useState('today');

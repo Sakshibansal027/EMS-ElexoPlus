@@ -1,4 +1,3 @@
-import React from "react";
 
 export function SalesAnalytics({ leads }) {
     // Pure numbers extract karne ke liye helper logic

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import { ActivityTimeline } from "./ActivityTimeline";
 import { SalesAnalytics } from "./SalesAnalytics";
 import { PDFDownloadLink } from "@react-pdf/renderer";
@@ -6,15 +6,11 @@ import { LeadsPDFDocument } from "../../../../src/utils/pdfGenerator";
 import { ArrowDownToLine } from "lucide-react";
 import { SalesTargets } from "./SalesTargets";
 import CustomSelect from "../../employee-master/components/ui/CustomSelect";
+import { salesApi } from "../services/salesApi";
 
 // static configurations for re-assignment drop-downs
 const REGIONS_LIST = ["North", "West", "East", "South", "Central"];
 const EXECUTIVES_LIST = ["Harshit Goel", "Rohit Verma", "Neha Raj", "Amit", "Unassigned"];
-const segmentOptions = [
-  { label: "All Segments", value: "All" },
-  { label: "B2B Only", value: "B2B" },
-  { label: "B2C Only", value: "B2C" },
-];
 
 export default function LeadManagement({ role = "Admin" }) { // taking role from props, default to Admin
   const currentRole = role.toLowerCase(); // Consistent lower-case handling for safety
@@ -57,9 +53,20 @@ export default function LeadManagement({ role = "Admin" }) { // taking role from
     { id: 3, name: "Sanjay Gupta", company: "Balaji Traders", type: "B2B", phone: "7654321098", email: "sanjay@balajicorp.in", source: "Website Portal", region: "Central", assignedTo: "Neha Raj", status: "Proposal Sent", value: "₹12,50,000", nextFollowUp: "2026-07-11", activities: [] },
     { id: 4, name: "Ananya Das", company: "—", type: "B2C", phone: "6543210987", email: "ananya.das@outlook.com", source: "Walk-in", region: "South", assignedTo: "Amit", status: "Converted", value: "₹35,000", nextFollowUp: "", activities: [] },
   ]);
+  const [isLoadingLeads, setIsLoadingLeads] = useState(true);
+  const [apiError, setApiError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    salesApi.listLeads()
+      .then((data) => { if (active) setLeads(data.map((lead) => ({ ...lead, nextFollowUp: lead.next_follow_up_date || "" }))); })
+      .catch((error) => { if (active) setApiError(error.response?.data?.message || "Unable to load sales leads."); })
+      .finally(() => { if (active) setIsLoadingLeads(false); });
+    return () => { active = false; };
+  }, []);
 
   // Dummy Handler for Appraisal Dashboard Link
-  const triggerAppraisalModal = (state) => {
+  const triggerAppraisalModal = () => {
     alert("Appraisal Hub Integration View Triggered!");
   };
 
@@ -71,11 +78,10 @@ export default function LeadManagement({ role = "Admin" }) { // taking role from
   const [viewMode, setViewMode] = useState("table");
   const [showModal, setShowModal] = useState(false);
   const [selectedLead, setSelectedLead] = useState(null);
-  const [showArchivedOnly, setShowArchivedOnly] = useState(false);
+  const [showArchivedOnly] = useState(false);
   const [newLead, setNewLead] = useState({ name: "", company: "", type: "B2B", phone: "", email: "", source: "Website", region: "North", assignedTo: "", value: "", nextFollowUp: "" });
   const [selectedRegionFilter, setSelectedRegionFilter] = useState("All");
   const stages = ["New", "Contacted", "Proposal Sent", "Converted"];
-  const allStatuses = ["New", "Contacted", "Proposal Sent", "Converted", "Archived"];
 
   const formatCurrency = (val) => {
     if (!val) return "—";
@@ -157,25 +163,26 @@ export default function LeadManagement({ role = "Admin" }) { // taking role from
     }
   };
 
-  const handleAddLead = (e) => {
+  const handleAddLead = async (e) => {
     e.preventDefault();
-    const formattedValue = formatCurrency(newLead.value);
-    const initialLog = {
-      id: Date.now(),
-      type: "System",
-      note: `Lead successfully created manually. Assigned Agent: ${newLead.assignedTo || "Unassigned"}.`,
-      user: "System Log",
-      time: getSystemTime()
-    };
-
-    setLeads([...leads, {
-      ...newLead,
-      id: Date.now(),
-      status: "New",
-      value: formattedValue,
-      activities: [initialLog],
-      company: newLead.type === "B2C" ? "—" : newLead.company
-    }]);
+    try {
+      const created = await salesApi.createLead({
+        segment: newLead.type,
+        lead_name: newLead.name,
+        company_name: newLead.type === "B2C" ? "" : newLead.company,
+        phone_number: newLead.phone,
+        email: newLead.email,
+        lead_source: newLead.source,
+        region: newLead.region,
+        estimated_value: String(newLead.value).replace(/[^0-9.]/g, "") || 0,
+        next_follow_up_date: newLead.nextFollowUp,
+        assigned_to: newLead.assignedTo,
+      });
+      setLeads((current) => [normalizeLead(created), ...current]);
+    } catch (error) {
+      setApiError(error.response?.data?.message || "Unable to create lead.");
+      return;
+    }
 
     setShowModal(false);
     setNewLead({ name: "", company: "", type: "B2B", phone: "", email: "", source: "Website", region: "North", assignedTo: "", value: "", nextFollowUp: "" });
@@ -186,6 +193,32 @@ export default function LeadManagement({ role = "Admin" }) { // taking role from
     setLeads(updatedLeads);
     if (selectedLead && selectedLead.id === leadId) {
       setSelectedLead({ ...selectedLead, activities: updatedActivities });
+    }
+  };
+
+  function normalizeLead(lead) {
+    return {
+    ...lead,
+    name: lead.name || lead.lead_name || "Unnamed lead",
+    company: lead.company || lead.company_name || "—",
+    type: lead.type || lead.segment,
+    phone: lead.phone || lead.phone_number || "",
+    email: lead.email || "",
+    source: lead.source || lead.lead_source || "Website",
+    value: formatCurrency(lead.value ?? lead.estimated_value),
+    nextFollowUp: lead.nextFollowUp || lead.next_follow_up_date || "",
+    activities: lead.activities || [],
+    };
+  }
+
+  const updateLead = async (leadId, payload) => {
+    try {
+      const updated = await salesApi.updateLead(leadId, payload);
+      const normalized = normalizeLead(updated);
+      setLeads((current) => current.map((lead) => lead.id === leadId ? { ...lead, ...normalized } : lead));
+      setSelectedLead((current) => current?.id === leadId ? { ...current, ...normalized } : current);
+    } catch (error) {
+      setApiError(error.response?.data?.message || "Unable to update lead.");
     }
   };
 
@@ -209,6 +242,8 @@ export default function LeadManagement({ role = "Admin" }) { // taking role from
 
   return (
     <div className="mt-6 relative min-h-[600px]">
+      {apiError && <div className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2 text-xs text-red-300">{apiError}</div>}
+      {isLoadingLeads && <div className="mb-4 text-xs text-zinc-500">Loading sales data...</div>}
 
       <SalesAnalytics leads={leads} />
       <SalesTargets leads={leads} />
@@ -496,6 +531,7 @@ export default function LeadManagement({ role = "Admin" }) { // taking role from
                     onValueChange={(newRegion) => {
                       setSelectedLead({ ...selectedLead, region: newRegion });
                       setLeads(leads.map(l => l.id === selectedLead.id ? { ...l, region: newRegion } : l));
+                      updateLead(selectedLead.id, { region: newRegion });
                       triggerSystemLog(selectedLead.id, `Region remapped to [${newRegion}].`);
                     }}
                     variant="pill"
@@ -521,6 +557,7 @@ export default function LeadManagement({ role = "Admin" }) { // taking role from
                     onValueChange={(newAgent) => {
                       setSelectedLead({ ...selectedLead, assignedTo: newAgent });
                       setLeads(leads.map(l => l.id === selectedLead.id ? { ...l, assignedTo: newAgent } : l));
+                      updateLead(selectedLead.id, { assigned_to: newAgent });
                       triggerSystemLog(selectedLead.id, `Account reassigned to ${newAgent}.`);
                     }}
                     variant="pill"
@@ -546,6 +583,7 @@ export default function LeadManagement({ role = "Admin" }) { // taking role from
                     if (oldVal !== formatted) {
                       setSelectedLead({ ...selectedLead, value: formatted });
                       setLeads(leads.map(l => l.id === selectedLead.id ? { ...l, value: formatted } : l));
+                      updateLead(selectedLead.id, { estimated_value: String(e.target.value).replace(/[^0-9.]/g, "") || 0 });
                       triggerSystemLog(selectedLead.id, `Deal estimated value adjusted from ${oldVal} to ${formatted}.`);
                     }
                   }}
@@ -570,6 +608,7 @@ export default function LeadManagement({ role = "Admin" }) { // taking role from
                     const oldDate = selectedLead.nextFollowUp || "Not Set";
                     setSelectedLead({ ...selectedLead, nextFollowUp: newDate });
                     setLeads(leads.map(l => l.id === selectedLead.id ? { ...l, nextFollowUp: newDate } : l));
+                    updateLead(selectedLead.id, { next_follow_up_date: newDate });
                     triggerSystemLog(selectedLead.id, `Follow-up timeline shifted from [${oldDate}] to [${newDate || "Cleared"}].`);
                   }}
                 />
@@ -591,6 +630,7 @@ export default function LeadManagement({ role = "Admin" }) { // taking role from
                     onValueChange={(newStatus) => {
                       setSelectedLead({ ...selectedLead, status: newStatus });
                       setLeads(leads.map(l => l.id === selectedLead.id ? { ...l, status: newStatus } : l));
+                      updateLead(selectedLead.id, { current_status: newStatus });
                     }}
                     variant="pill"
                     width="w-40"
@@ -621,6 +661,7 @@ export default function LeadManagement({ role = "Admin" }) { // taking role from
                   if (currentRole === "hr") return;
                   handleUpdateActivities(selectedLead.id, updatedLogs);
                 }}
+                onActivityAdded={(activity) => salesApi.addActivity(selectedLead.id, { type: activity.type, note: activity.note })}
               />
             </div>
           </div>

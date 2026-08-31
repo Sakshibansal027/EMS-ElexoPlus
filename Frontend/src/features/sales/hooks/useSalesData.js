@@ -1,12 +1,14 @@
 // src/features/sales/hooks/useSalesData.js
 import { useState, useEffect, useMemo } from 'react';
 import { salesService } from '../services/salesService';
+import authStorage from '../../auth/utils/authStorage';
 
 // Temporary Mock/Auth user fetcher (Change role to test: 'SE' | 'ASM' | 'HR' | 'ADMIN')
 const useUser = () => {
+  const storedUser = authStorage.getCurrentUser();
   return {
-    role: "SE", 
-    id: "SE001", 
+    role: String(storedUser?.role || window.currentUser?.role || "SE").toUpperCase(),
+    id: storedUser?.employeeId || storedUser?.employee_id || storedUser?.id || "SE001",
   };
 };
 
@@ -62,7 +64,7 @@ export const useSalesData = () => {
         }
 
         setData(result);
-      } catch (err) {
+      } catch {
         setError('Failed to fetch sales performance data');
       } finally { // <--- Fixed line 69 here (flex -> finally)
         setLoading(false);
