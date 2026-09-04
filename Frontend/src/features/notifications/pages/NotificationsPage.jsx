@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Check,
@@ -39,7 +39,7 @@ const relativeTime = (iso) => {
 
 const NotificationsPage = () => {
   const navigate = useNavigate();
-  const { markAsRead, markAllAsRead, archive, deleteNotification, refresh } =
+  const { markAsRead, markAllAsRead, archive, deleteNotification, refresh, error: contextError } =
     useNotifications();
 
   const [category, setCategory] = useState("all");
@@ -49,16 +49,30 @@ const NotificationsPage = () => {
 
   const [viewArchived, setViewArchived] = useState(false);
   const [list, setList] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  useEffect(() => {
-    let cancelled = false;
-    filterNotifications({ category, type, status, search }).then((all) => {
-      if (!cancelled) {
-        setList(all.filter((n) => (viewArchived ? n.isArchived : !n.isArchived)));
-      }
-    });
-    return () => { cancelled = true; };
-  }, [category, type, status, search, viewArchived, refresh]);
+  const loadList = useCallback(async () => {
+    setLoading(true);
+    try {
+      setError("");
+      const all = await filterNotifications({ category, type, status, search, archived: viewArchived });
+      setList(all);
+    } catch (requestError) {
+      setList([]);
+      setError(requestError.message || "Unable to load notifications.");
+    } finally {
+      setLoading(false);
+    }
+  }, [category, type, status, search, viewArchived]);
+
+  useEffect(() => { loadList(); }, [loadList, refresh]);
+
+  const apply = async (action) => {
+    setError("");
+    const success = await action();
+    if (success) await loadList();
+  };
 
   const unreadInView = list.filter((n) => !n.isRead).length;
 
@@ -102,7 +116,7 @@ const NotificationsPage = () => {
 
           {!viewArchived && unreadInView > 0 && (
             <button
-              onClick={markAllAsRead}
+            onClick={() => apply(markAllAsRead)}
               className="
                 flex items-center gap-2 rounded-xl border
                 border-border px-4 py-2.5 text-sm
@@ -172,7 +186,15 @@ const NotificationsPage = () => {
         </div>
       </div>
 
-      {list.length === 0 ? (
+      {(error || contextError) && (
+        <p className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+          {error || contextError}
+        </p>
+      )}
+
+      {loading ? (
+        <div className="card py-16 text-center text-sm text-muted-foreground">Loading notifications…</div>
+      ) : list.length === 0 ? (
         <div className="card flex flex-col items-center justify-center py-20">
           <Bell size={48} className="mb-4 text-muted-foreground/40" />
           <p className="text-lg font-medium text-foreground-muted">
@@ -249,7 +271,7 @@ const NotificationsPage = () => {
 
                     {!notif.isRead && (
                       <button
-                        onClick={() => markAsRead(notif.id)}
+                        onClick={() => apply(() => markAsRead(notif.id))}
                         className="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
                       >
                         <Check size={12} />
@@ -259,7 +281,7 @@ const NotificationsPage = () => {
 
                     {!notif.isArchived && (
                       <button
-                        onClick={() => archive(notif.id)}
+                        onClick={() => apply(() => archive(notif.id))}
                         className="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
                       >
                         <Archive size={12} />
@@ -269,7 +291,7 @@ const NotificationsPage = () => {
 
                     <button
                       onClick={() => {
-                        deleteNotification(notif.id);
+                        apply(() => deleteNotification(notif.id));
                       }}
                       className="flex items-center gap-1 text-xs text-danger/60 transition-colors hover:text-danger"
                     >

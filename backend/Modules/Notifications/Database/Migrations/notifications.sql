@@ -1,7 +1,7 @@
-CREATE TABLE notifications (
+CREATE TABLE IF NOT EXISTS notifications (
     notification_id CHAR(36) PRIMARY KEY,
 
-    user_id INT UNSIGNED NOT NULL,
+    user_id {{USER_ID_TYPE}} NOT NULL,
 
     title VARCHAR(255) NOT NULL,
 
@@ -39,7 +39,7 @@ CREATE TABLE notifications (
 
     CONSTRAINT fk_notification_user
         FOREIGN KEY (user_id)
-        REFERENCES users(id)
+        REFERENCES users({{USER_PRIMARY_KEY}})
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );

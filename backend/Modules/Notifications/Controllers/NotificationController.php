@@ -30,12 +30,6 @@ class NotificationController
         return $auth['user']['user_id'] ?? $auth['user']['id'] ?? '';
     }
 
-    private function userRole(): string
-    {
-        $auth = AuthMiddleware::handle();
-        return $auth['user']['role'] ?? '';
-    }
-
     public function index(array $params): array
     {
         if ($denied = $this->auth()) return $denied;
@@ -91,6 +85,6 @@ class NotificationController
     public function destroy(array $params): array
     {
         if ($denied = $this->auth()) return $denied;
-        return $this->service->delete($params['id'], $this->userId(), $this->userRole());
+        return $this->service->delete($params['id'], $this->userId());
     }
 }

@@ -29,10 +29,13 @@ class NotificationService
     {
         $validated = $this->validate($data);
         if (isset($validated['error'])) return $validated;
+        if (!$this->notifications->userExists((string) $validated['user_id'])) {
+            return ['success' => false, 'message' => 'Recipient user was not found.', 'status' => 422];
+        }
 
-        $data['notification_id'] = Uuid::generate();
-        $notification = $this->notifications->create($data);
-        return ['success' => true, 'message' => 'Notification created.', 'notification' => $this->present($notification)];
+        $validated['notification_id'] = Uuid::generate();
+        $notification = $this->notifications->create($validated);
+        return ['success' => true, 'message' => 'Notification created.', 'notification' => $this->present($notification), 'status' => 201];
     }
 
     public function markAsRead(string $id, string $userId): array
@@ -59,11 +62,11 @@ class NotificationService
         return ['success' => true, 'message' => 'Notification archived.'];
     }
 
-    public function delete(string $id, string $userId, string $role): array
+    public function delete(string $id, string $userId): array
     {
         $ownerId = $this->notifications->ownerUserId($id);
         if (!$ownerId) return ['success' => false, 'message' => 'Notification not found.', 'status' => 404];
-        if ($ownerId !== $userId && !in_array(strtoupper($role), ['ADMIN', 'HR'], true)) {
+        if ($ownerId !== $userId) {
             return ['success' => false, 'message' => 'You do not have permission to delete this notification.', 'status' => 403];
         }
         $this->notifications->delete($id);
@@ -77,15 +80,21 @@ class NotificationService
 
     public function recentUnread(string $userId, int $limit = 5): array
     {
+        $limit = max(1, min($limit, 20));
         $notifications = $this->notifications->recentUnread($userId, $limit);
         return ['success' => true, 'notifications' => array_map(fn(array $n) => $this->present($n), $notifications)];
     }
 
     private function validate(array $data): array
     {
-        if (empty($data['user_id'])) return ['error' => true, 'success' => false, 'message' => 'user_id is required.', 'status' => 422];
-        if (empty($data['title']) || trim($data['title']) === '') return ['error' => true, 'success' => false, 'message' => 'title is required.', 'status' => 422];
-        if (empty($data['message']) || trim($data['message']) === '') return ['error' => true, 'success' => false, 'message' => 'message is required.', 'status' => 422];
+        $data['user_id'] = trim((string) ($data['user_id'] ?? ''));
+        $data['title'] = trim((string) ($data['title'] ?? ''));
+        $data['message'] = trim((string) ($data['message'] ?? ''));
+        $data['link'] = trim((string) ($data['link'] ?? ''));
+        if ($data['user_id'] === '') return ['error' => true, 'success' => false, 'message' => 'user_id is required.', 'status' => 422];
+        if ($data['title'] === '' || strlen($data['title']) > 255) return ['error' => true, 'success' => false, 'message' => 'title is required and must be at most 255 characters.', 'status' => 422];
+        if ($data['message'] === '' || strlen($data['message']) > 5000) return ['error' => true, 'success' => false, 'message' => 'message is required and must be at most 5000 characters.', 'status' => 422];
+        if ($data['link'] !== '' && (!str_starts_with($data['link'], '/') || strlen($data['link']) > 500)) return ['error' => true, 'success' => false, 'message' => 'link must be an internal path and at most 500 characters.', 'status' => 422];
         $type = ucfirst(strtolower($data['type'] ?? 'Info'));
         if (!in_array($type, self::VALID_TYPES, true)) return ['error' => true, 'success' => false, 'message' => 'type must be one of: Success, Warning, Info, Error.', 'status' => 422];
         $data['type'] = $type;

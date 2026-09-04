@@ -7,11 +7,21 @@ export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
   const [toasts, setToasts] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [error, setError] = useState("");
 
   const refresh = useCallback(async () => {
-    const all = await notificationService.getAllNotifications();
-    setNotifications(all);
-    setUnreadCount(all.filter((n) => !n.isRead && !n.isArchived).length);
+    try {
+      setError("");
+      const all = await notificationService.getAllNotifications();
+      setNotifications(all);
+      setUnreadCount(all.filter((n) => !n.isRead && !n.isArchived).length);
+      return all;
+    } catch (requestError) {
+      setNotifications([]);
+      setUnreadCount(0);
+      setError(requestError.message || "Unable to load notifications.");
+      return [];
+    }
   }, []);
 
   useEffect(() => {
@@ -34,46 +44,51 @@ export const NotificationProvider = ({ children }) => {
 
   const addNotification = useCallback(
     async (notification) => {
-      const saved = await notificationService.addNotification(notification);
-      await refresh();
+      try {
+        const saved = await notificationService.addNotification(notification);
+        await refresh();
 
-      addToast({
-        title: notification.title,
-        message: notification.message,
-        type: notification.type || "info",
-        duration: notification.toastDuration || 4000,
-      });
+        addToast({
+          title: notification.title,
+          message: notification.message,
+          type: notification.type || "info",
+          duration: notification.toastDuration || 4000,
+        });
 
-      return saved;
+        return saved;
+      } catch (requestError) {
+        setError(requestError.message || "Unable to create notification.");
+        return null;
+      }
     },
     [refresh, addToast]
   );
 
   const markAsRead = useCallback(
     async (id) => {
-      await notificationService.markAsRead(id);
-      await refresh();
+      try { await notificationService.markAsRead(id); await refresh(); return true; }
+      catch (requestError) { setError(requestError.message || "Unable to update notification."); return false; }
     },
     [refresh]
   );
 
   const markAllAsRead = useCallback(async () => {
-    await notificationService.markAllAsRead();
-    await refresh();
+    try { await notificationService.markAllAsRead(); await refresh(); return true; }
+    catch (requestError) { setError(requestError.message || "Unable to update notifications."); return false; }
   }, [refresh]);
 
   const archive = useCallback(
     async (id) => {
-      await notificationService.archiveNotification(id);
-      await refresh();
+      try { await notificationService.archiveNotification(id); await refresh(); return true; }
+      catch (requestError) { setError(requestError.message || "Unable to archive notification."); return false; }
     },
     [refresh]
   );
 
   const del = useCallback(
     async (id) => {
-      await notificationService.deleteNotification(id);
-      await refresh();
+      try { await notificationService.deleteNotification(id); await refresh(); return true; }
+      catch (requestError) { setError(requestError.message || "Unable to delete notification."); return false; }
     },
     [refresh]
   );
@@ -98,6 +113,7 @@ export const NotificationProvider = ({ children }) => {
         addToast,
         removeToast,
         refresh,
+        error,
       }}
     >
       {children}
