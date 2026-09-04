@@ -1,7 +1,7 @@
 CREATE TABLE notifications (
     notification_id CHAR(36) PRIMARY KEY,
 
-    user_id CHAR(36) NOT NULL,
+    user_id INT UNSIGNED NOT NULL,
 
     title VARCHAR(255) NOT NULL,
 
@@ -14,7 +14,21 @@ CREATE TABLE notifications (
         'Error'
     ) NOT NULL DEFAULT 'Info',
 
+    category ENUM(
+        'leave',
+        'attendance',
+        'sales',
+        'employee',
+        'payroll',
+        'task',
+        'system'
+    ) NOT NULL DEFAULT 'system',
+
     is_read BOOLEAN NOT NULL DEFAULT FALSE,
+
+    is_archived BOOLEAN NOT NULL DEFAULT FALSE,
+
+    link VARCHAR(500) NULL,
 
     read_at DATETIME NULL,
 
@@ -25,7 +39,7 @@ CREATE TABLE notifications (
 
     CONSTRAINT fk_notification_user
         FOREIGN KEY (user_id)
-        REFERENCES users(user_id)
+        REFERENCES users(id)
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );
