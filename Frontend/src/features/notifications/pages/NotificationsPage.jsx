@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Check,
@@ -48,14 +48,17 @@ const NotificationsPage = () => {
   const [search, setSearch] = useState("");
 
   const [viewArchived, setViewArchived] = useState(false);
+  const [list, setList] = useState([]);
 
-  const list = useMemo(
-    () =>
-      filterNotifications({ category, type, status, search }).filter(
-        (n) => (viewArchived ? n.isArchived : !n.isArchived)
-      ),
-    [category, type, status, search, viewArchived, refresh]
-  );
+  useEffect(() => {
+    let cancelled = false;
+    filterNotifications({ category, type, status, search }).then((all) => {
+      if (!cancelled) {
+        setList(all.filter((n) => (viewArchived ? n.isArchived : !n.isArchived)));
+      }
+    });
+    return () => { cancelled = true; };
+  }, [category, type, status, search, viewArchived, refresh]);
 
   const unreadInView = list.filter((n) => !n.isRead).length;
 

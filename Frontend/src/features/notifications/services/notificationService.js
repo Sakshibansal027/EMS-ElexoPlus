@@ -1,109 +1,91 @@
-const STORAGE_KEY = "elexoplus_notifications";
+import client from "../../../api/client";
 
-const load = () => {
+export const getAllNotifications = async () => {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
+    const { data } = await client.get("/notifications");
+    return data.notifications || [];
   } catch {
     return [];
   }
 };
 
-const save = (notifications) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(notifications));
-};
-
-export const getAllNotifications = () => load();
-
-export const getUnreadCount = () => {
-  return load().filter((n) => !n.isRead && !n.isArchived).length;
-};
-
-export const getRecentUnread = (limit = 5) => {
-  return load()
-    .filter((n) => !n.isRead && !n.isArchived)
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-    .slice(0, limit);
-};
-
-export const markAsRead = (id) => {
-  const list = load();
-  const idx = list.findIndex((n) => n.id === id);
-  if (idx !== -1) {
-    list[idx].isRead = true;
-    save(list);
+export const getUnreadCount = async () => {
+  try {
+    const { data } = await client.get("/notifications/unread-count");
+    return data.count || 0;
+  } catch {
+    return 0;
   }
-  return list;
 };
 
-export const markAllAsRead = () => {
-  const list = load();
-  list.forEach((n) => {
-    if (!n.isRead) n.isRead = true;
-  });
-  save(list);
-  return list;
-};
-
-export const archiveNotification = (id) => {
-  const list = load();
-  const idx = list.findIndex((n) => n.id === id);
-  if (idx !== -1) {
-    list[idx].isArchived = true;
-    save(list);
+export const getRecentUnread = async (limit = 5) => {
+  try {
+    const { data } = await client.get("/notifications/recent-unread", {
+      params: { limit },
+    });
+    return data.notifications || [];
+  } catch {
+    return [];
   }
-  return list;
 };
 
-export const addNotification = (notification) => {
-  const list = load();
-  const newNotif = {
-    id: `n${Date.now()}`,
-    isRead: false,
-    isArchived: false,
-    createdAt: new Date().toISOString(),
-    ...notification,
-  };
-  list.unshift(newNotif);
-  save(list);
-  return newNotif;
+export const markAsRead = async (id) => {
+  try {
+    await client.patch(`/notifications/${id}/read`);
+  } catch {
+    // silently fail
+  }
 };
 
-export const deleteNotification = (id) => {
-  const list = load().filter((n) => n.id !== id);
-  save(list);
-  return list;
+export const markAllAsRead = async () => {
+  try {
+    await client.patch("/notifications/read-all");
+  } catch {
+    // silently fail
+  }
 };
 
-export const filterNotifications = ({
+export const archiveNotification = async (id) => {
+  try {
+    await client.patch(`/notifications/${id}/archive`);
+  } catch {
+    // silently fail
+  }
+};
+
+export const addNotification = async (notification) => {
+  try {
+    const { data } = await client.post("/notifications", notification);
+    return data.notification;
+  } catch {
+    return null;
+  }
+};
+
+export const deleteNotification = async (id) => {
+  try {
+    await client.delete(`/notifications/${id}`);
+  } catch {
+    // silently fail
+  }
+};
+
+export const filterNotifications = async ({
   category = "all",
   type = "all",
   status = "all",
   search = "",
 } = {}) => {
-  let list = load().filter((n) => !n.isArchived);
+  try {
+    const params = {};
+    if (category !== "all") params.category = category;
+    if (type !== "all") params.type = type;
+    if (status !== "all") params.status = status;
+    if (search.trim()) params.search = search;
 
-  if (category !== "all") {
-    list = list.filter((n) => n.category === category);
+    const { data } = await client.get("/notifications", { params });
+    return data.notifications || [];
+  } catch {
+    return [];
   }
-  if (type !== "all") {
-    list = list.filter((n) => n.type === type);
-  }
-  if (status === "unread") {
-    list = list.filter((n) => !n.isRead);
-  } else if (status === "read") {
-    list = list.filter((n) => n.isRead);
-  }
-
-  if (search.trim()) {
-    const q = search.toLowerCase();
-    list = list.filter(
-      (n) =>
-        n.title.toLowerCase().includes(q) || n.message.toLowerCase().includes(q)
-    );
-  }
-
-  return list.sort(
-    (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-  );
 };

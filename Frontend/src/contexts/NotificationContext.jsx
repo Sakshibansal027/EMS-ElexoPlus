@@ -8,8 +8,8 @@ export const NotificationProvider = ({ children }) => {
   const [toasts, setToasts] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  const refresh = useCallback(() => {
-    const all = notificationService.getAllNotifications();
+  const refresh = useCallback(async () => {
+    const all = await notificationService.getAllNotifications();
     setNotifications(all);
     setUnreadCount(all.filter((n) => !n.isRead && !n.isArchived).length);
   }, []);
@@ -33,9 +33,9 @@ export const NotificationProvider = ({ children }) => {
   }, []);
 
   const addNotification = useCallback(
-    (notification) => {
-      const saved = notificationService.addNotification(notification);
-      refresh();
+    async (notification) => {
+      const saved = await notificationService.addNotification(notification);
+      await refresh();
 
       addToast({
         title: notification.title,
@@ -50,31 +50,33 @@ export const NotificationProvider = ({ children }) => {
   );
 
   const markAsRead = useCallback(
-    (id) => {
-      const updated = notificationService.markAsRead(id);
-      setNotifications(updated);
-      setUnreadCount(updated.filter((n) => !n.isRead && !n.isArchived).length);
+    async (id) => {
+      await notificationService.markAsRead(id);
+      await refresh();
     },
-    []
+    [refresh]
   );
 
-  const markAllAsRead = useCallback(() => {
-    const updated = notificationService.markAllAsRead();
-    setNotifications(updated);
-    setUnreadCount(0);
-  }, []);
+  const markAllAsRead = useCallback(async () => {
+    await notificationService.markAllAsRead();
+    await refresh();
+  }, [refresh]);
 
-  const archive = useCallback((id) => {
-    const updated = notificationService.archiveNotification(id);
-    setNotifications(updated);
-    setUnreadCount(updated.filter((n) => !n.isRead && !n.isArchived).length);
-  }, []);
+  const archive = useCallback(
+    async (id) => {
+      await notificationService.archiveNotification(id);
+      await refresh();
+    },
+    [refresh]
+  );
 
-  const del = useCallback((id) => {
-    const updated = notificationService.deleteNotification(id);
-    setNotifications(updated);
-    setUnreadCount(updated.filter((n) => !n.isRead && !n.isArchived).length);
-  }, []);
+  const del = useCallback(
+    async (id) => {
+      await notificationService.deleteNotification(id);
+      await refresh();
+    },
+    [refresh]
+  );
 
   const recentUnread = notifications
     .filter((n) => !n.isRead && !n.isArchived)
