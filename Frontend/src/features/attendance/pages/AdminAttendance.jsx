@@ -20,15 +20,16 @@ import {
   DepartmentBarChart,
 } from "../components/AttendanceCharts";
 import { AttendanceLoading } from "../components/AttendanceStates";
+import AttendanceRecordModal from "../components/AttendanceRecordModal";
 
 import { attendanceService } from "../services/attendanceService";
 import { ATTENDANCE_STATUS } from "../config/attendanceStatus";
+import { buildWeeklyTrend } from "../utils/analytics";
 
 const TABS = ["Overview", "All Records", "Corrections", "Reports"];
 
 // Static UI defaults extracted to remove magic strings from JSX.
 const FILTER_ALL = "All";
-const WEEK_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 const AdminAttendance = () => {
   const [tab, setTab] = useState("Overview");
@@ -42,10 +43,15 @@ const AdminAttendance = () => {
   const [records, setRecords] = useState([]);
   const [todays, setTodays] = useState([]);
   const [corrections, setCorrections] = useState([]);
+  const [actionError, setActionError] = useState("");
+  const [selectedRecord, setSelectedRecord] = useState(null);
+  const [editingRecord, setEditingRecord] = useState(false);
+  const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
+    setLoadError("");
     Promise.all([
       attendanceService.getEmployees(),
       attendanceService.getAllRecords(),
@@ -57,7 +63,10 @@ const AdminAttendance = () => {
       setRecords(recs);
       setTodays(today);
       setCorrections(corrs);
-      setLoading(false);
+    }).catch((error) => {
+      if (!cancelled) setLoadError(error.message || "Unable to load organization attendance.");
+    }).finally(() => {
+      if (!cancelled) setLoading(false);
     });
     return () => {
       cancelled = true;
@@ -79,7 +88,7 @@ const AdminAttendance = () => {
       if (
         q &&
         !r.employeeName.toLowerCase().includes(q) &&
-        !r.employeeId.toLowerCase().includes(q)
+        !(r.employeeCode || "").toLowerCase().includes(q)
       )
         return false;
       if (status !== FILTER_ALL && r.status !== status) return false;
@@ -117,16 +126,7 @@ const AdminAttendance = () => {
     [totals],
   );
 
-  const trend = useMemo(
-    () =>
-      WEEK_LABELS.map((d, i) => ({
-        day: d,
-        present: 8 + ((i * 5) % 4),
-        late: (i * 2) % 3,
-        absent: i >= 5 ? 0 : (i * 3) % 2,
-      })),
-    [],
-  );
+  const trend = useMemo(() => buildWeeklyTrend(records), [records]);
 
   const deptData = useMemo(
     () =>
@@ -148,15 +148,23 @@ const AdminAttendance = () => {
   );
 
   const handleApproveCorrection = async (r) => {
-    const updated = await attendanceService.approveCorrection(r.id);
-    setCorrections((prev) => prev.map((c) => (c.id === r.id ? updated : c)));
+    setActionError("");
+    try { const updated = await attendanceService.approveCorrection(r.id); setCorrections((prev) => prev.map((c) => (c.id === r.id ? updated : c))); }
+    catch (error) { setActionError(error.message || "Unable to approve correction."); }
   };
   const handleRejectCorrection = async (r) => {
-    const updated = await attendanceService.rejectCorrection(r.id);
-    setCorrections((prev) => prev.map((c) => (c.id === r.id ? updated : c)));
+    setActionError("");
+    try { const updated = await attendanceService.rejectCorrection(r.id); setCorrections((prev) => prev.map((c) => (c.id === r.id ? updated : c))); }
+    catch (error) { setActionError(error.message || "Unable to reject correction."); }
+  };
+  const handleSaveRecord = async (id, payload) => {
+    const updated = await attendanceService.updateRecord(id, payload);
+    setRecords((current) => current.map((record) => record.id === id ? updated : record));
+    setTodays((current) => current.map((record) => record.id === id ? updated : record));
   };
 
   if (loading) return <AttendanceLoading label="Loading organization attendance…" />;
+  if (loadError) return <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-5 text-sm text-red-400">{loadError}</div>;
 
   return (
     <div className="page-enter">
@@ -223,17 +231,15 @@ const AdminAttendance = () => {
             onBranchChange={setBranch}
             branches={branches}
           />
-          <AttendanceTable records={filtered} showActions onView={() => {}} onEdit={() => {}} />
+          <AttendanceTable records={filtered} showActions onView={(record) => { setSelectedRecord(record); setEditingRecord(false); }} onEdit={(record) => { setSelectedRecord(record); setEditingRecord(true); }} />
         </div>
       )}
 
       {tab === "Corrections" && (
-        <CorrectionsTable
-          requests={corrections}
-          canApprove
-          onApprove={handleApproveCorrection}
-          onReject={handleRejectCorrection}
-        />
+        <div className="space-y-3">
+          {actionError && <p className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-400">{actionError}</p>}
+          <CorrectionsTable requests={corrections} canApprove onApprove={handleApproveCorrection} onReject={handleRejectCorrection} />
+        </div>
       )}
 
       {tab === "Reports" && (
@@ -248,6 +254,7 @@ const AdminAttendance = () => {
           <AttendanceTable records={filtered.slice(0, 50)} />
         </div>
       )}
+      {selectedRecord && <AttendanceRecordModal record={selectedRecord} editable={editingRecord} onClose={() => setSelectedRecord(null)} onSave={handleSaveRecord} />}
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import authStorage from "../features/auth/utils/authStorage";
-import AttendancePage from "../features/attendance/pages/AttendancePage";
+import AttendanceRouter from "../features/attendance/pages/AttendanceRouter";
 import DashboardLayout from "../layouts/DashboardLayout";
 import Profile from "../features/profile/pages/Profile";
 import LoginPage from "../features/auth/pages/LoginPage";
@@ -50,7 +50,7 @@ const AppRoutes = () => {
 
           <Route
             path={ROUTES.ATTENDANCE}
-            element={<AttendancePage />}
+            element={<AttendanceRouter />}
           />
 
           <Route

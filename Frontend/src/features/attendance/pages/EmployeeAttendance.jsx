@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useOutletContext } from "react-router-dom";
+import useAuth from "../../auth/hooks/useAuth";
 import {
   ClipboardList,
   Clock,
@@ -25,12 +25,10 @@ import { AttendanceLoading } from "../components/AttendanceStates";
 
 import { attendanceService } from "../services/attendanceService";
 import { ATTENDANCE_STATUS } from "../config/attendanceStatus";
-
-const WEEK_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-const FALLBACK_EMPLOYEE_ID = "EMP004"; // demo fallback used only when no matching user
+import { buildWeeklyTrend } from "../utils/analytics";
 
 const EmployeeAttendance = () => {
-  const ctx = useOutletContext() || {};
+  const { user } = useAuth();
 
   const [loading, setLoading] = useState(true);
   const [employee, setEmployee] = useState(null);
@@ -38,16 +36,15 @@ const EmployeeAttendance = () => {
   const [corrections, setCorrections] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [showCorrection, setShowCorrection] = useState(false);
+  const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     (async () => {
-      const employees = await attendanceService.getEmployees();
-      const emp =
-        employees.find((e) => e.name === ctx.user?.name) ||
-        employees.find((e) => e.id === FALLBACK_EMPLOYEE_ID) ||
-        null;
+      try {
+      const overview = await attendanceService.getOverview();
+      const emp = overview.currentEmployee || null;
 
       const [records, corrs, notifs] = await Promise.all([
         emp ? attendanceService.getRecordsForEmployee(emp.id) : Promise.resolve([]),
@@ -60,12 +57,16 @@ const EmployeeAttendance = () => {
       setMyRecords(records);
       setCorrections(corrs);
       setNotifications(notifs);
-      setLoading(false);
+      } catch (error) {
+        if (!cancelled) setLoadError(error.message || "Unable to load attendance.");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     })();
     return () => {
       cancelled = true;
     };
-  }, [ctx.user?.name]);
+  }, [user?.employeeCode]);
 
   const monthly = useMemo(() => {
     const now = new Date();
@@ -96,16 +97,8 @@ const EmployeeAttendance = () => {
     return { present, workingDays, late, absent, totalHours, overtime, percentage };
   }, [myRecords]);
 
-  const trend = useMemo(
-    () =>
-      WEEK_LABELS.map((d, i) => ({
-        day: d,
-        present: 5 + ((i * 7) % 3),
-        late: (i * 3) % 2,
-        absent: i === 5 || i === 6 ? 0 : (i * 2) % 2,
-      })),
-    [],
-  );
+  const trend = useMemo(() => buildWeeklyTrend(myRecords), [myRecords]);
+  const todayRecord = useMemo(() => myRecords.find((record) => String(record.date).slice(0, 10) === new Date().toISOString().slice(0, 10)) || null, [myRecords]);
 
   const submitCorrection = async (form) => {
     const created = await attendanceService.submitCorrection({ employee, form });
@@ -113,6 +106,7 @@ const EmployeeAttendance = () => {
   };
 
   if (loading) return <AttendanceLoading label="Loading your attendance…" />;
+  if (loadError) return <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-5 text-sm text-red-400">{loadError}</div>;
 
   return (
     <div className="page-enter">
@@ -128,7 +122,7 @@ const EmployeeAttendance = () => {
       <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
         <LiveClockCard />
         <CheckInPanel />
-        <TodayShiftCard />
+        <TodayShiftCard employee={employee} record={todayRecord} />
       </div>
 
       <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
@@ -161,7 +155,7 @@ const EmployeeAttendance = () => {
           <AttendanceCalendar records={myRecords} />
         </div>
         <div className="flex flex-col gap-6">
-          <QuickActions />
+          <QuickActions records={myRecords} />
           <NotificationsList notifications={notifications} />
         </div>
       </div>

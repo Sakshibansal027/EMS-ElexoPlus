@@ -1,117 +1,44 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { LogIn, LogOut, Coffee, Play } from "lucide-react";
 import { formatHours } from "../utils/date";
+import { attendanceService } from "../services/attendanceService";
 
-const STORAGE_KEY = "elexoplus_attendance_state";
-
-const loadState = () => {
-  try {
-    const raw = sessionStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : {};
-  } catch {
-    return {};
-  }
-};
+const time = (value) => value ? new Date(value).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—";
 
 const CheckInPanel = () => {
-  const [state, setState] = useState(loadState);
+  const [record, setRecord] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
 
-  useEffect(() => {
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }, [state]);
+  useEffect(() => { attendanceService.getTodayState().then(setRecord).catch((e) => setError(e.message)); }, []);
+  const worked = useMemo(() => {
+    if (!record?.checkIn) return 0;
+    const end = record.checkOut ? new Date(record.checkOut) : new Date();
+    return Math.max(0, (end - new Date(record.checkIn)) / 3600000 - (record.breakMinutes || 0) / 60);
+  }, [record]);
+  const act = async (fn) => {
+    setBusy(true); setError("");
+    try { setRecord(await fn()); } catch (e) { setError(e.message); } finally { setBusy(false); }
+  };
+  const checkedIn = Boolean(record?.checkIn);
+  const checkedOut = Boolean(record?.checkOut);
+  const onBreak = Boolean(record?.breakStartedAt);
 
-  const checkIn = () => setState({ ...state, checkInAt: new Date().toISOString() });
-  const checkOut = () =>
-    setState({ ...state, checkOutAt: new Date().toISOString(), onBreak: false });
-  const toggleBreak = () => setState({ ...state, onBreak: !state.onBreak });
-  const reset = () => setState({});
-
-  const worked = state.checkInAt
-    ? ((state.checkOutAt ? new Date(state.checkOutAt) : new Date()) -
-        new Date(state.checkInAt)) /
-      3600000
-    : 0;
-
-  return (
-    <div className="card p-6">
-      <div className="mb-4 flex items-center justify-between">
-        <div>
-          <p className="card-title">Attendance Actions</p>
-          <p className="card-subtitle">Mark your attendance for today</p>
-        </div>
-        {state.checkInAt && (
-          <button
-            onClick={reset}
-            className="text-xs font-semibold text-muted-foreground hover:text-primary"
-          >
-            Reset
-          </button>
-        )}
-      </div>
-
-      <div className="mb-5 grid grid-cols-3 gap-3 text-center">
-        <div className="rounded-lg border border-border bg-background-elevated p-3">
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-            Check In
-          </p>
-          <p className="mt-1 text-sm font-bold text-foreground">
-            {state.checkInAt
-              ? new Date(state.checkInAt).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
-              : "—"}
-          </p>
-        </div>
-        <div className="rounded-lg border border-border bg-background-elevated p-3">
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-            Check Out
-          </p>
-          <p className="mt-1 text-sm font-bold text-foreground">
-            {state.checkOutAt
-              ? new Date(state.checkOutAt).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
-              : "—"}
-          </p>
-        </div>
-        <div className="rounded-lg border border-border bg-background-elevated p-3">
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-            Working
-          </p>
-          <p className="mt-1 text-sm font-bold text-primary">
-            {state.checkInAt ? formatHours(worked) : "—"}
-          </p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
-        <button
-          onClick={checkIn}
-          disabled={!!state.checkInAt}
-          className="btn-primary flex items-center justify-center gap-2 px-4 py-3 font-semibold transition-all hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          <LogIn size={16} /> Check In
-        </button>
-        <button
-          onClick={checkOut}
-          disabled={!state.checkInAt || !!state.checkOutAt}
-          className="flex items-center justify-center gap-2 rounded-md border border-border bg-background-elevated px-4 py-3 font-semibold text-foreground transition-all hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          <LogOut size={16} /> Check Out
-        </button>
-        <button
-          onClick={toggleBreak}
-          disabled={!state.checkInAt || !!state.checkOutAt}
-          className="col-span-2 flex items-center justify-center gap-2 rounded-md border border-border bg-background-elevated px-4 py-3 text-sm font-semibold text-foreground transition-all hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          {state.onBreak ? <Play size={16} /> : <Coffee size={16} />}
-          {state.onBreak ? "Resume Work" : "Start Break"}
-        </button>
-      </div>
+  return <div className="card p-6">
+    <div className="mb-4"><p className="card-title">Attendance Actions</p><p className="card-subtitle">Mark your attendance for today</p></div>
+    {error && <p className="mb-3 rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-400">{error}</p>}
+    <div className="mb-5 grid grid-cols-3 gap-3 text-center">
+      <Metric label="Check In" value={time(record?.checkIn)} />
+      <Metric label="Check Out" value={time(record?.checkOut)} />
+      <Metric label="Working" value={checkedIn ? formatHours(worked) : "—"} primary />
     </div>
-  );
+    <div className="grid grid-cols-2 gap-3">
+      <button onClick={() => act(attendanceService.checkIn)} disabled={busy || checkedIn} className="btn-primary flex items-center justify-center gap-2 px-4 py-3 font-semibold disabled:cursor-not-allowed disabled:opacity-40"><LogIn size={16} /> Check In</button>
+      <button onClick={() => act(attendanceService.checkOut)} disabled={busy || !checkedIn || checkedOut || onBreak} className="flex items-center justify-center gap-2 rounded-md border border-border bg-background-elevated px-4 py-3 font-semibold text-foreground disabled:cursor-not-allowed disabled:opacity-40"><LogOut size={16} /> Check Out</button>
+      <button onClick={() => act(onBreak ? attendanceService.endBreak : attendanceService.startBreak)} disabled={busy || !checkedIn || checkedOut} className="col-span-2 flex items-center justify-center gap-2 rounded-md border border-border bg-background-elevated px-4 py-3 text-sm font-semibold text-foreground disabled:cursor-not-allowed disabled:opacity-40">{onBreak ? <Play size={16} /> : <Coffee size={16} />}{onBreak ? "Resume Work" : "Start Break"}</button>
+    </div>
+  </div>;
 };
 
+const Metric = ({ label, value, primary = false }) => <div className="rounded-lg border border-border bg-background-elevated p-3"><p className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</p><p className={`mt-1 text-sm font-bold ${primary ? "text-primary" : "text-foreground"}`}>{value}</p></div>;
 export default CheckInPanel;

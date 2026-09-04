@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS attendance (
 
     working_hours  DECIMAL(5,2) NOT NULL DEFAULT 0.00,
     overtime       DECIMAL(5,2) NOT NULL DEFAULT 0.00,
+    break_started_at DATETIME NULL,
 
     status ENUM(
         'Present',
@@ -81,6 +82,9 @@ CREATE TABLE IF NOT EXISTS attendance_corrections (
     ) NOT NULL DEFAULT 'Pending',
 
     submitted_on        DATE NOT NULL,
+    approver_employee_id CHAR(36) NULL,
+    review_remarks      TEXT NULL,
+    reviewed_at         DATETIME NULL,
 
     created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -100,3 +104,15 @@ CREATE TABLE IF NOT EXISTS attendance_corrections (
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS attendance_notifications (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    employee_id CHAR(36) NOT NULL,
+    title VARCHAR(180) NOT NULL,
+    message VARCHAR(500) NOT NULL,
+    notification_type ENUM('success','warning','info') NOT NULL DEFAULT 'info',
+    is_read BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    KEY idx_attendance_notification_employee (employee_id, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

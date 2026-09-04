@@ -1,0 +1,19 @@
+import { useState } from "react";
+import { X } from "lucide-react";
+
+const STATUSES = ["Present", "Absent", "Late", "Half Day", "Work From Home", "Leave", "Holiday", "Weekend"];
+const time = (value) => value ? new Date(value).toTimeString().slice(0, 5) : "";
+
+const AttendanceRecordModal = ({ record, editable = false, onClose, onSave }) => {
+  const [form, setForm] = useState({ check_in: time(record.checkIn), check_out: time(record.checkOut), break_minutes: record.breakMinutes || 0, status: record.status, remarks: record.remarks || "" });
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const save = async (event) => {
+    event.preventDefault(); setError("");
+    if (form.check_in && form.check_out && form.check_in >= form.check_out) { setError("Check-out time must be after check-in time."); return; }
+    setSaving(true); try { await onSave(record.id, { ...form, break_minutes: Number(form.break_minutes) }); onClose(); } catch (requestError) { setError(requestError.message || "Unable to save attendance record."); } finally { setSaving(false); }
+  };
+  return <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"><div className="card w-full max-w-xl p-6"><div className="mb-5 flex items-start justify-between"><div><p className="card-title">{editable ? "Edit Attendance Record" : "Attendance Record"}</p><p className="card-subtitle">{record.employeeName} · {record.employeeCode} · {String(record.date).slice(0, 10)}</p></div><button onClick={onClose} className="rounded-md p-2 text-muted-foreground hover:bg-background-elevated"><X size={17} /></button></div>{error && <p className="mb-3 rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-400">{error}</p>}<form onSubmit={save} className="space-y-4"><div className="grid grid-cols-2 gap-3"><Field label="Check In" type="time" value={form.check_in} disabled={!editable} onChange={(value) => setForm({ ...form, check_in: value })}/><Field label="Check Out" type="time" value={form.check_out} disabled={!editable} onChange={(value) => setForm({ ...form, check_out: value })}/><Field label="Break (minutes)" type="number" min="0" max="720" value={form.break_minutes} disabled={!editable} onChange={(value) => setForm({ ...form, break_minutes: value })}/><div><label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">Status</label><select disabled={!editable} value={form.status} onChange={(event) => setForm({ ...form, status: event.target.value })} className="input w-full rounded-md px-3 py-2.5 text-sm outline-none disabled:opacity-70">{STATUSES.map((status) => <option key={status}>{status}</option>)}</select></div></div><div><label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">Remarks</label><textarea disabled={!editable} value={form.remarks} maxLength="1000" rows="3" onChange={(event) => setForm({ ...form, remarks: event.target.value })} className="input w-full rounded-md px-3 py-2.5 text-sm outline-none disabled:opacity-70" /></div><div className="flex justify-end gap-3"><button type="button" onClick={onClose} className="rounded-md border border-border bg-background-elevated px-4 py-2 text-sm font-semibold">Close</button>{editable && <button disabled={saving} type="submit" className="btn-primary px-5 py-2 text-sm font-semibold disabled:opacity-50">{saving ? "Saving…" : "Save Changes"}</button>}</div></form></div></div>;
+};
+const Field = ({ label, onChange, ...props }) => <div><label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</label><input {...props} onChange={(event) => onChange(event.target.value)} className="input w-full rounded-md px-3 py-2.5 text-sm outline-none disabled:opacity-70" /></div>;
+export default AttendanceRecordModal;

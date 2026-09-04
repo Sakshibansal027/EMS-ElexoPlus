@@ -1,28 +1,31 @@
 import { useEffect, useMemo, useState } from "react";
-import { useOutletContext } from "react-router-dom";
 import { Users, UserCheck, Clock, UserX } from "lucide-react";
+import useAuth from "../../auth/hooks/useAuth";
 
 import AttendanceStatCard from "../components/AttendanceStatCard";
 import AttendanceFilters from "../components/AttendanceFilters";
 import AttendanceTable from "../components/AttendanceTable";
 import { AttendanceTrendChart } from "../components/AttendanceCharts";
 import AttendanceTimeline from "../components/AttendanceTimeline";
+import CorrectionsTable from "../components/CorrectionsTable";
 import { AttendanceLoading } from "../components/AttendanceStates";
 
 import { attendanceService } from "../services/attendanceService";
 import { ATTENDANCE_STATUS } from "../config/attendanceStatus";
+import { buildWeeklyTrend } from "../utils/analytics";
 
 const FILTER_ALL = "All";
-const WEEK_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const DEFAULT_MANAGER_BRANCH = "Delhi";
 const EXCLUDED_TEAM_ROLES = ["Area Sales Manager"];
 
 const ManagerAttendance = () => {
-  const ctx = useOutletContext() || {};
+  const { user } = useAuth();
 
   const [loading, setLoading] = useState(true);
   const [team, setTeam] = useState([]);
   const [teamRecords, setTeamRecords] = useState([]);
+  const [corrections, setCorrections] = useState([]);
+  const [actionError, setActionError] = useState("");
 
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState(FILTER_ALL);
@@ -33,22 +36,36 @@ const ManagerAttendance = () => {
     setLoading(true);
     (async () => {
       const employees = await attendanceService.getEmployees();
-      const me = employees.find((e) => e.name === ctx.user?.name);
+      const me = employees.find((e) => e.name === user?.name);
       const branch = me?.branch || DEFAULT_MANAGER_BRANCH;
       const teamMembers = employees.filter(
         (e) => e.branch === branch && !EXCLUDED_TEAM_ROLES.includes(e.role),
       );
       const teamIds = teamMembers.map((t) => t.id);
-      const records = await attendanceService.getRecordsForTeam(teamIds);
+      const [records, correctionRequests] = await Promise.all([
+        attendanceService.getRecordsForTeam(teamIds),
+        attendanceService.getCorrections(),
+      ]);
       if (cancelled) return;
       setTeam(teamMembers);
       setTeamRecords(records);
+      setCorrections(correctionRequests.filter((request) => request.employeeId !== me?.id));
       setLoading(false);
     })();
     return () => {
       cancelled = true;
     };
-  }, [ctx.user?.name]);
+  }, [user?.name]);
+
+  const decide = async (request, decision) => {
+    setActionError("");
+    try {
+      const updated = decision === "Approved"
+        ? await attendanceService.approveCorrection(request.id)
+        : await attendanceService.rejectCorrection(request.id);
+      setCorrections((current) => current.map((item) => item.id === request.id ? updated : item));
+    } catch (error) { setActionError(error.message || "Unable to update correction."); }
+  };
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -56,7 +73,7 @@ const ManagerAttendance = () => {
       if (
         q &&
         !r.employeeName.toLowerCase().includes(q) &&
-        !r.employeeId.toLowerCase().includes(q)
+        !(r.employeeCode || "").toLowerCase().includes(q)
       )
         return false;
       if (status !== FILTER_ALL && r.status !== status) return false;
@@ -82,16 +99,7 @@ const ManagerAttendance = () => {
     };
   }, [teamRecords, team]);
 
-  const trend = useMemo(
-    () =>
-      WEEK_LABELS.map((d, i) => ({
-        day: d,
-        present: Math.max(0, team.length - ((i * 2) % (team.length || 1))),
-        late: (i * 2) % 2,
-        absent: i >= 5 ? 0 : i % 2,
-      })),
-    [team.length],
-  );
+  const trend = useMemo(() => buildWeeklyTrend(teamRecords), [teamRecords]);
 
   const departments = useMemo(
     () => [...new Set(team.map((t) => t.department))],
@@ -131,13 +139,13 @@ const ManagerAttendance = () => {
         />
       </div>
 
-      <AttendanceTable
-        records={filtered}
-        showActions
-        onApprove={() => {}}
-        onReject={() => {}}
-        onView={() => {}}
-      />
+      <AttendanceTable records={filtered} />
+
+      <div className="mt-6">
+        <div className="mb-4"><h2 className="section-title">Team Correction Requests</h2><p className="text-sm text-muted-foreground">Approve or reject requests assigned to you.</p></div>
+        {actionError && <p className="mb-3 rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-400">{actionError}</p>}
+        <CorrectionsTable requests={corrections} canApprove onApprove={(request) => decide(request, "Approved")} onReject={(request) => decide(request, "Rejected")} />
+      </div>
     </div>
   );
 };
