@@ -3,6 +3,7 @@
 namespace Modules\Settings\Controllers;
 
 use Modules\Leave\Middleware\RoleMiddleware;
+use Modules\Authentication\Middleware\AuthMiddleware;
 use Modules\Authentication\Support\Request;
 use Modules\Settings\Repositories\CompanySettingsRepository;
 use Modules\Settings\Repositories\DepartmentRepository;
@@ -158,7 +159,7 @@ class SettingsController
 
     public function getPreferences(array $params): array
     {
-        $auth = RoleMiddleware::handle([]);
+        $auth = AuthMiddleware::handle();
         if (isset($auth['error'])) return ['success' => false, 'message' => $auth['error'], 'status' => $auth['status']];
         $userId = $auth['user']['user_id'] ?? $auth['user']['id'];
         return $this->userPreferenceService->get((string) $userId);
@@ -166,7 +167,7 @@ class SettingsController
 
     public function updatePreferences(array $params): array
     {
-        $auth = RoleMiddleware::handle([]);
+        $auth = AuthMiddleware::handle();
         if (isset($auth['error'])) return ['success' => false, 'message' => $auth['error'], 'status' => $auth['status']];
         $userId = $auth['user']['user_id'] ?? $auth['user']['id'];
         return $this->userPreferenceService->update((string) $userId, Request::all());

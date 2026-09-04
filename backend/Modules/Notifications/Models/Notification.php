@@ -71,6 +71,15 @@ class Notification
         return self::find($data['notification_id']);
     }
 
+    public static function userExists(string $userId): bool
+    {
+        $columns = Database::connection()->query('SHOW COLUMNS FROM users')->fetchAll(\PDO::FETCH_COLUMN);
+        $userKey = in_array('user_id', $columns, true) ? 'user_id' : 'id';
+        $stmt = Database::connection()->prepare("SELECT 1 FROM users WHERE {$userKey} = ? LIMIT 1");
+        $stmt->execute([$userId]);
+        return (bool) $stmt->fetchColumn();
+    }
+
     public static function markAsRead(string $id): bool
     {
         $stmt = Database::connection()->prepare(
@@ -112,10 +121,11 @@ class Notification
 
     public static function recentUnread(string $userId, int $limit = 5): array
     {
+        $limit = max(1, min($limit, 20));
         $stmt = Database::connection()->prepare(
-            'SELECT n.* FROM notifications n WHERE n.user_id = ? AND n.is_read = 0 AND n.is_archived = 0 ORDER BY n.created_at DESC LIMIT ?'
+            "SELECT n.* FROM notifications n WHERE n.user_id = ? AND n.is_read = 0 AND n.is_archived = 0 ORDER BY n.created_at DESC LIMIT {$limit}"
         );
-        $stmt->execute([$userId, $limit]);
+        $stmt->execute([$userId]);
         return $stmt->fetchAll();
     }
 

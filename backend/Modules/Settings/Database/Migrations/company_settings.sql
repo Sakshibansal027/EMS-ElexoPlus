@@ -1,4 +1,4 @@
-CREATE TABLE company_settings (
+CREATE TABLE IF NOT EXISTS company_settings (
     company_setting_id CHAR(36) PRIMARY KEY,
 
     company_name VARCHAR(150) NOT NULL,

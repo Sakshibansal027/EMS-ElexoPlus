@@ -1,7 +1,7 @@
-CREATE TABLE user_preferences (
+CREATE TABLE IF NOT EXISTS user_preferences (
     user_preference_id CHAR(36) PRIMARY KEY,
 
-    user_id CHAR(36) NOT NULL UNIQUE,
+    user_id {{USER_ID_TYPE}} NOT NULL UNIQUE,
 
     email_notifications BOOLEAN NOT NULL DEFAULT TRUE,
 
@@ -20,7 +20,7 @@ CREATE TABLE user_preferences (
 
     CONSTRAINT fk_user_preferences_user
         FOREIGN KEY (user_id)
-        REFERENCES users(user_id)
+        REFERENCES users({{USER_PRIMARY_KEY}})
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );

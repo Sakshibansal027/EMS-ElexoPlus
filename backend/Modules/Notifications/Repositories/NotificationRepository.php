@@ -21,6 +21,11 @@ class NotificationRepository
         return Notification::create($data);
     }
 
+    public function userExists(string $userId): bool
+    {
+        return Notification::userExists($userId);
+    }
+
     public function markAsRead(string $id): bool
     {
         return Notification::markAsRead($id);

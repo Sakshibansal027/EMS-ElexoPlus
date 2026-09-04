@@ -71,16 +71,29 @@ const AppPreferences = () => {
     const fetchPrefs = async () => {
       try {
         const prefs = await getPreferences();
+        if (prefs.appearance) {
+          updateTheme(prefs.appearance.theme || "dark");
+          updateFontSize(prefs.appearance.fontSize || "medium");
+          updateCompactMode(Boolean(prefs.appearance.compactMode));
+          updateReducedMotion(Boolean(prefs.appearance.reducedMotion));
+        }
         if (prefs.notifications) setNotifications(prefs.notifications);
         if (prefs.language) setLanguage(prefs.language);
       } catch (err) {
         console.error("Failed to load preferences:", err);
+        setError(err.response?.data?.message || "Failed to load preferences.");
       } finally {
         setLoading(false);
       }
     };
     fetchPrefs();
-  }, []);
+  }, [updateTheme, updateFontSize, updateCompactMode, updateReducedMotion]);
+
+  const updateAppearance = (updater) => {
+    updater();
+    setSaved(false);
+    setError(null);
+  };
 
   const updateNotification = (channel, field, value) => {
     setNotifications((prev) => ({ ...prev, [channel]: { ...prev[channel], [field]: value } }));
@@ -104,7 +117,11 @@ const AppPreferences = () => {
     setSaving(true);
     setError(null);
     try {
-      await updatePreferences({ notifications, language });
+      await updatePreferences({
+        appearance: { theme, fontSize, compactMode, reducedMotion },
+        notifications,
+        language,
+      });
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (err) {
@@ -132,14 +149,14 @@ const AppPreferences = () => {
         <div className="mb-6">
           <p className="mb-3 text-sm font-medium text-foreground-muted uppercase tracking-wider">Theme</p>
           <div className="flex gap-3">
-            <button onClick={() => updateTheme("dark")}
+            <button onClick={() => updateAppearance(() => updateTheme("dark"))}
               className={`flex items-center gap-3 rounded-2xl border px-6 py-4 text-sm font-medium transition-all duration-300 cursor-pointer flex-1 ${
                 theme === "dark" ? "border-primary bg-primary text-primary-foreground shadow-[var(--shadow-primary)]"
                   : "border-border bg-card text-foreground-muted hover:border-primary hover:text-primary"
               }`}>
               <Moon size={20} /> Dark Mode
             </button>
-            <button onClick={() => updateTheme("light")}
+            <button onClick={() => updateAppearance(() => updateTheme("light"))}
               className={`flex items-center gap-3 rounded-2xl border px-6 py-4 text-sm font-medium transition-all duration-300 cursor-pointer flex-1 ${
                 theme === "light" ? "border-primary bg-primary text-primary-foreground shadow-[var(--shadow-primary)]"
                   : "border-border bg-card text-foreground-muted hover:border-primary hover:text-primary"
@@ -152,10 +169,10 @@ const AppPreferences = () => {
         <div className="space-y-5">
           <div>
             <CustomSelect label="Font Size" placeholder="Select font size" options={FONT_SIZES}
-              value={fontSize} onValueChange={(val) => updateFontSize(val)} width="w-full" />
+              value={fontSize} onValueChange={(val) => updateAppearance(() => updateFontSize(val))} width="w-full" />
           </div>
-          <Toggle enabled={compactMode} onChange={() => updateCompactMode(!compactMode)} label="Compact Mode" description="Reduce spacing for a denser layout" />
-          <Toggle enabled={reducedMotion} onChange={() => updateReducedMotion(!reducedMotion)} label="Reduced Motion" description="Minimize animations and transitions" />
+          <Toggle enabled={compactMode} onChange={() => updateAppearance(() => updateCompactMode(!compactMode))} label="Compact Mode" description="Reduce spacing for a denser layout" />
+          <Toggle enabled={reducedMotion} onChange={() => updateAppearance(() => updateReducedMotion(!reducedMotion))} label="Reduced Motion" description="Minimize animations and transitions" />
         </div>
       </SettingsSection>
 

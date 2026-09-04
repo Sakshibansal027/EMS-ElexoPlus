@@ -31,6 +31,7 @@ const CompanySettings = () => {
         setForm(settings);
       } catch (err) {
         console.error("Failed to load company settings:", err);
+        setError(err.response?.data?.message || "Failed to load company settings.");
       } finally {
         setLoading(false);
       }
@@ -187,6 +188,11 @@ const CompanySettings = () => {
           <div>
             <label className="mb-1.5 block text-sm font-medium text-foreground-muted">Pincode</label>
             <input type="text" value={form.pincode} onChange={handleChange("pincode")}
+              className="input w-full rounded-xl px-4 py-3 text-sm outline-none transition-all duration-300 focus:border-primary" />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-foreground-muted">Country</label>
+            <input type="text" value={form.country} onChange={handleChange("country")}
               className="input w-full rounded-xl px-4 py-3 text-sm outline-none transition-all duration-300 focus:border-primary" />
           </div>
         </div>
