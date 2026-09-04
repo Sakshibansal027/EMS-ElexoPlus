@@ -9,10 +9,14 @@ const CorrectionModal = ({ onClose, onSubmit }) => {
     reason: "",
   });
 
-  const submit = (e) => {
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const submit = async (e) => {
     e.preventDefault();
-    onSubmit?.(form);
-    onClose();
+    setError("");
+    if (form.checkIn >= form.checkOut) { setError("Check-out time must be after check-in time."); return; }
+    setSubmitting(true);
+    try { await onSubmit?.(form); onClose(); } catch (requestError) { setError(requestError.message || "Unable to submit correction request."); } finally { setSubmitting(false); }
   };
 
   return (
@@ -31,6 +35,7 @@ const CorrectionModal = ({ onClose, onSubmit }) => {
           </button>
         </div>
         <form onSubmit={submit} className="space-y-4">
+          {error && <p className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-400">{error}</p>}
           <div>
             <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Date
@@ -92,9 +97,10 @@ const CorrectionModal = ({ onClose, onSubmit }) => {
             </button>
             <button
               type="submit"
+              disabled={submitting}
               className="btn-primary px-5 py-2 text-sm font-semibold transition-all hover:scale-105"
             >
-              Submit Request
+              {submitting ? "Submitting…" : "Submit Request"}
             </button>
           </div>
         </form>

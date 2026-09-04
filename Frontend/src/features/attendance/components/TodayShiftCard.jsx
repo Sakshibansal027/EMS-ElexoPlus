@@ -1,6 +1,6 @@
 import { Sun, MapPin } from "lucide-react";
 
-const TodayShiftCard = () => (
+const TodayShiftCard = ({ employee, record }) => (
   <div className="card p-6">
     <p className="card-title">Today's Shift</p>
     <p className="card-subtitle">Your assigned schedule</p>
@@ -9,7 +9,7 @@ const TodayShiftCard = () => (
         <Sun className="text-primary" size={22} />
       </div>
       <div>
-        <p className="text-lg font-bold text-foreground">General Shift</p>
+        <p className="text-lg font-bold text-foreground">{record?.shift || "General Shift"}</p>
         <p className="text-sm text-muted-foreground">09:00 AM — 06:00 PM</p>
       </div>
     </div>
@@ -25,7 +25,7 @@ const TodayShiftCard = () => (
           Location
         </p>
         <p className="mt-1 flex items-center gap-1 text-sm font-semibold text-foreground">
-          <MapPin size={12} className="text-primary" /> Head Office
+          <MapPin size={12} className="text-primary" /> {employee?.branch || "Not assigned"}
         </p>
       </div>
     </div>

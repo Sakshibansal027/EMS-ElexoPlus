@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowUpDown, Eye, Pencil, Check, X } from "lucide-react";
 import StatusBadge from "./StatusBadge";
 import Pagination from "./Pagination";
@@ -6,7 +6,7 @@ import { formatHours } from "../utils/date";
 
 const COLUMNS = [
   { key: "employeeName", label: "Employee" },
-  { key: "employeeId", label: "ID" },
+  { key: "employeeCode", label: "Employee Code" },
   { key: "department", label: "Department" },
   { key: "role", label: "Role" },
   { key: "date", label: "Date" },
@@ -49,6 +49,7 @@ const AttendanceTable = ({
   }, [records, sortKey, sortDir]);
 
   const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
+  useEffect(() => { if (page > totalPages) setPage(totalPages); }, [page, totalPages]);
   const start = (page - 1) * pageSize;
   const rows = sorted.slice(start, start + pageSize);
 
@@ -115,7 +116,7 @@ const AttendanceTable = ({
                   </div>
                 </td>
                 <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-muted-foreground">
-                  {r.employeeId}
+                  {r.employeeCode || "—"}
                 </td>
                 <td className="whitespace-nowrap px-4 py-3">{r.department}</td>
                 <td className="whitespace-nowrap px-4 py-3">{r.role}</td>
@@ -147,7 +148,7 @@ const AttendanceTable = ({
                 {showActions && (
                   <td className="whitespace-nowrap px-4 py-3 text-right">
                     <div className="inline-flex items-center gap-1">
-                      {onView && (
+                      {!r.isVirtual && onView && (
                         <button
                           onClick={() => onView(r)}
                           className="rounded-md p-2 text-muted-foreground hover:bg-background-elevated hover:text-primary"
@@ -156,7 +157,7 @@ const AttendanceTable = ({
                           <Eye size={14} />
                         </button>
                       )}
-                      {onEdit && (
+                      {!r.isVirtual && onEdit && (
                         <button
                           onClick={() => onEdit(r)}
                           className="rounded-md p-2 text-muted-foreground hover:bg-background-elevated hover:text-primary"
