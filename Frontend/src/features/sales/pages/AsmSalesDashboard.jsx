@@ -9,7 +9,7 @@ import CustomSelect from '../../employee-master/components/ui/CustomSelect';
 import { salesApi } from '../services/salesApi';
 const AsmSalesDashboard = () => {
   const { cards, data: initialData, loading, error } = useSalesData();
-  const asmAssignedTerritory = "North Zone";
+  const asmAssignedTerritory = "All Assigned Territories";
 
   // Modals & Feedback States
   const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
@@ -17,6 +17,7 @@ const AsmSalesDashboard = () => {
   const [selectedSeForFeedback, setSelectedSeForFeedback] = useState(null);
   const [isFullPerformanceOpen, setIsFullPerformanceOpen] = useState(false); // View Full Performance Modal State
   const [feedbackText, setFeedbackText] = useState('');
+  const [actionError, setActionError] = useState('');
 
   // Form Lead Type State
   const [leadFormType, setLeadFormType] = useState('B2B');
@@ -63,8 +64,8 @@ const AsmSalesDashboard = () => {
   }, [initialData]);
 
   const filteredSePerformanceList = useMemo(() => {
-    return localSePerformanceList.filter(se => se.territory === asmAssignedTerritory);
-  }, [localSePerformanceList, asmAssignedTerritory]);
+    return localSePerformanceList;
+  }, [localSePerformanceList]);
 
   const filteredLeadsForAsm = useMemo(() => {
     return allLeads.filter(lead => {
@@ -134,13 +135,24 @@ const AsmSalesDashboard = () => {
     setSelectedSeForTarget(null);
   };
 
-  const handleFeedbackSubmit = (e) => {
+  const handleFeedbackSubmit = async (e) => {
     e.preventDefault();
+    if (!selectedSeForFeedback?.feedbackReportId) {
+      setActionError('No daily report is available for this executive yet.');
+      return;
+    }
+    try {
+      await salesApi.updateDailyReportFeedback(selectedSeForFeedback.feedbackReportId, feedbackText);
+    } catch (requestError) {
+      setActionError(requestError.response?.data?.message || 'Unable to save feedback.');
+      return;
+    }
     setLocalSePerformanceList(prevList =>
       prevList.map(se => se.id === selectedSeForFeedback.id ? { ...se, feedback: feedbackText } : se)
     );
     setSelectedSeForFeedback(null);
     setFeedbackText('');
+    setActionError('');
   };
 
   if (loading) return <div className="p-6 text-yellow-500 bg-[#141414] min-h-screen">Loading KPI Metrics...</div>;
@@ -154,6 +166,7 @@ const AsmSalesDashboard = () => {
   ];
   return (
     <div className="w-full text-gray-200 px-2 py-4 flex flex-col gap-6 select-none relative min-h-screen">
+      {actionError && <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">{actionError}</div>}
 
       {/* HEADER SECTION */}
       <div className="w-full flex justify-between items-center border-b border-[#1f1f1f] pb-4">
@@ -353,7 +366,7 @@ const AsmSalesDashboard = () => {
         )}
       </div>
 
-      <TeamVisitsTracker />
+      <TeamVisitsTracker visits={initialData?.visits || []} />
       <TeamOrders />
 
       {/* 4. MODAL: FULL PERFORMANCE DETAILED REPORT */}

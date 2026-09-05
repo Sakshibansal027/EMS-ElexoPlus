@@ -1,5 +1,6 @@
 // src/features/sales/components/SEMyOrdersTable.jsx
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { salesApi } from '../services/salesApi';
 import { 
   ShoppingBag, 
   ArrowRight, 
@@ -17,6 +18,8 @@ import {
 
 const SEMyOrdersTable = ({ orders: initialOrders = [] }) => {
   const [ordersList, setOrdersList] = useState(initialOrders);
+  const [apiError, setApiError] = useState('');
+  useEffect(() => setOrdersList(initialOrders), [initialOrders]);
   
   // Tab State: 'B2B' | 'B2C'
   const [activeTab, setActiveTab] = useState('B2B');
@@ -45,10 +48,12 @@ const SEMyOrdersTable = ({ orders: initialOrders = [] }) => {
     }
   };
 
-  const handleStatusChange = (orderId, newStatus) => {
-    setOrdersList(prev => prev.map(order => 
-      order.id === orderId ? { ...order, status: newStatus } : order
-    ));
+  const handleStatusChange = async (orderId, newStatus) => {
+    const order = ordersList.find((item) => item.id === orderId);
+    try {
+      const updated = await salesApi.updateOrderStatus(order?.orderId || orderId, newStatus);
+      setOrdersList((prev) => prev.map((item) => item.id === orderId ? { ...item, status: updated.order_status || newStatus } : item));
+    } catch (error) { setApiError(error.response?.data?.message || 'Unable to update order status.'); }
   };
 
   // Filter orders by active tab (B2B or B2C)
@@ -65,6 +70,7 @@ const SEMyOrdersTable = ({ orders: initialOrders = [] }) => {
 
   return (
     <div className="w-full bg-[#0c0b09] border border-[#1d170e] rounded-2xl p-5 shadow-xl flex flex-col justify-between relative">
+      {apiError && <p className="mb-3 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">{apiError}</p>}
       
       {/* 1. Header Section with B2B / B2C Tabs */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#1f1b14] pb-3 mb-3">

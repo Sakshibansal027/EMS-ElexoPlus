@@ -1,11 +1,9 @@
 // src/features/sales/services/seSalesService.js
-import { seMockData } from '../mock/seMockData.js';
 import { salesApi } from './salesApi';
 
-// Simulating Async API Promise Call
-export const fetchSEDashboardData = async (executiveId) => {
+export const fetchSEDashboardData = async () => {
   const [leads, orders, dashboard, targets, visits, expenses, reports] = await Promise.all([
-    salesApi.listLeads({ employee_id: executiveId }),
+    salesApi.listLeads(),
     salesApi.orders(),
     salesApi.dashboard(),
     salesApi.targets(),
@@ -14,7 +12,8 @@ export const fetchSEDashboardData = async (executiveId) => {
     salesApi.dailyReports(),
   ]);
   const myOrders = orders.map((order) => ({
-    id: order.order_id,
+    id: order.order_no || order.order_id,
+    orderId: order.order_id,
     customer: order.client_name || "Unknown customer",
     type: order.order_type || "B2B",
     value: Number(order.order_value || 0),
@@ -37,11 +36,22 @@ export const fetchSEDashboardData = async (executiveId) => {
   const activeTarget = targets.find((target) => target.status === "Active") || targets[0];
   const achievement = myOrders.filter((order) => order.status === "Delivered").reduce((sum, order) => sum + order.value, 0);
   const targetValue = Number(activeTarget?.target_value || 0);
-  const liveMetrics = { target: targetValue, achievement, achievementPercentage: targetValue ? Math.round((achievement / targetValue) * 100) : 0, totalOrders: myOrders.length, ordersSubText: "Orders from live database", projectedIncentive: 0, incentiveSubText: "Calculated from active target" };
+  const achievementPercentage = targetValue ? Math.round((achievement / targetValue) * 100) : 0;
+  const liveMetrics = { target: targetValue, achievement, achievementPercentage, totalOrders: myOrders.length, ordersSubText: "Orders from live database", projectedIncentive: 0, incentiveSubText: "Calculated from active target" };
   const visitsData = visits.map((visit) => ({
     ...visit,
     location: [visit.address, visit.city].filter(Boolean).join(", ") || "—",
+    id: visit.visit_id,
+    customer: visit.customer || "Unknown client",
+    checkIn: "—",
+    checkOut: "—",
     status: visit.outcome ? "Completed" : "Scheduled",
   }));
-  return { ...seMockData, profile: { ...seMockData.profile, id: executiveId }, topMetrics: liveMetrics, performanceGauge: { target: targetValue, achieved: achievement, balance: Math.max(targetValue - achievement, 0), percentage: liveMetrics.achievementPercentage }, mockSummaryData: { ...seMockData.mockSummaryData, totalOrderValue: myOrders.reduce((sum, order) => sum + order.value, 0), totalVisits: visitsData.length, newLeads: myLeads.filter((lead) => lead.stage === "New").length, ordersCreated: myOrders.length, leadExpenses: expenses.map((expense) => ({ id: expense.expense_id, leadName: expense.description || "Sales expense", amount: Number(expense.amount || 0), category: expense.expense_type, status: expense.status })) }, myLeads, myOrders, targets, visitsData, expenses, dailyReports: reports, apiDashboard: dashboard };
+  return {
+    topMetrics: liveMetrics,
+    targetTrend: { timeframe: "Current target period", data: [{ date: "Current", target: targetValue, achievement }] },
+    performanceGauge: { target: targetValue, achieved: achievement, balance: Math.max(targetValue - achievement, 0), percentage: achievementPercentage },
+    mockSummaryData: { totalOrderValue: myOrders.reduce((sum, order) => sum + order.value, 0), paymentCollected: myOrders.filter((order) => order.paymentStatus === "Paid").reduce((sum, order) => sum + order.value, 0), productiveVisits: visitsData.filter((visit) => visit.status === "Completed").length, totalVisits: visitsData.length, newLeads: myLeads.filter((lead) => lead.stage === "New").length, ordersCreated: myOrders.length, leadExpenses: expenses.map((expense) => ({ id: expense.expense_id, leadName: expense.description || "Sales expense", amount: Number(expense.amount || 0), category: expense.expense_type, status: expense.status })) },
+    myLeads, myOrders, targets, visitsData, expenses, dailyReports: reports, apiDashboard: dashboard,
+  };
 };

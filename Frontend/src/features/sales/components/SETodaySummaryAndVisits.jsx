@@ -13,12 +13,10 @@ import {
   CreditCard,
   Target
 } from 'lucide-react';
-import { seMockData, mockVisitsData } from '../mock/seMockData';
 
 const SETodaySummaryAndVisits = ({ summaryData, visitsData }) => {
-  // Direct Data Resolution: Prop -> Mock Data (Taaki loading me kabhi na atke)
-  const summary = summaryData || seMockData.mockSummaryData;
-  const visitsList = visitsData || mockVisitsData;
+  const summary = summaryData || {};
+  const visitsList = visitsData || [];
 
   const [selectedVisit, setSelectedVisit] = useState(null);
   const [isVisitsDirectoryOpen, setIsVisitsDirectoryOpen] = useState(false);

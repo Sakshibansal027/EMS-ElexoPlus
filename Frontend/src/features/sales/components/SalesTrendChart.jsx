@@ -10,11 +10,14 @@ import {
 } from "recharts";
 import { useMemo, useState } from "react";
 
-// IMPORT FROM MOCK
-import {
-  monthlySalesData,
-  getQuarterlySales,
-} from "../mock/salesTrendData";
+const getQuarterlySales = (rows) => rows.reduce((quarters, row) => {
+  const date = new Date(`${row.name}-01`);
+  const name = `Q${Math.floor(date.getMonth() / 3) + 1} ${date.getFullYear()}`;
+  const current = quarters.find((quarter) => quarter.name === name);
+  if (current) current.sales += row.sales;
+  else quarters.push({ name, sales: row.sales });
+  return quarters;
+}, []);
 
 // CUSTOM TOOLTIP
 const CustomTooltip = ({ active, payload, label }) => {
@@ -35,7 +38,7 @@ const SalesTrendChart = ({ data = [] }) => {
   const [view, setView] = useState("monthly");
 
   //  CLEAN DATA SOURCE
-  const sourceData = useMemo(() => data.length ? data.map((item) => ({ name: item.period, sales: Number(item.sales) })) : monthlySalesData, [data]);
+  const sourceData = useMemo(() => data.map((item) => ({ name: item.period, sales: Number(item.sales) })), [data]);
   const chartData = useMemo(() => view === "monthly" ? sourceData : getQuarterlySales(sourceData), [view, sourceData]);
 
   return (
@@ -74,7 +77,9 @@ const SalesTrendChart = ({ data = [] }) => {
       </div>
 
       {/* 🔥 CHART */}
-      <ResponsiveContainer width="100%" height={250}>
+      {chartData.length === 0 ? (
+        <div className="flex h-[250px] items-center justify-center text-sm text-gray-500">No sales data available.</div>
+      ) : <ResponsiveContainer width="100%" height={250}>
         <AreaChart data={chartData}>
           {/* Gradient */}
           <defs>
@@ -120,7 +125,7 @@ const SalesTrendChart = ({ data = [] }) => {
             dot={{ r: 5 }}
           />
         </AreaChart>
-      </ResponsiveContainer>
+      </ResponsiveContainer>}
     </div>
   );
 };

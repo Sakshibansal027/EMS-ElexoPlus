@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Pencil } from 'lucide-react';
 import CustomSelect from "../../employee-master/components/ui/CustomSelect";
+import { salesApi } from '../services/salesApi';
 
-export function SalesTargets({ leads }) {
+export function SalesTargets({ leads = [], targets = [], readOnly = false }) {
   const [activeView, setActiveView] = useState("asm");
   const [searchTerm, setSearchTerm] = useState("");
   
@@ -11,21 +12,24 @@ export function SalesTargets({ leads }) {
   const [segmentFilter, setSegmentFilter] = useState("All");
   const [editingId, setEditingId] = useState(null);
   const [newTargetVal, setNewTargetVal] = useState("");
+  const [apiError, setApiError] = useState("");
 
  
-  const [regionQuotas, setRegionQuotas] = useState([
-    { id: "reg-1", region: "North", asm: "Vikram Malhotra", target: 8000000, activeAgents: ["Harshit Goel"] },
-    { id: "reg-2", region: "West", asm: "Rajesh Clarke", target: 5000000, activeAgents: ["Rohit Verma"] },
-    { id: "reg-3", region: "Central", asm: "Sanjana Sen", target: 6000000, activeAgents: ["Neha Raj"] },
-    { id: "reg-4", region: "South", asm: "Karthik Raja", target: 4000000, activeAgents: ["Amit"] }
-  ]);
+  const [regionQuotas, setRegionQuotas] = useState([]);
+  const [seQuotas, setSeQuotas] = useState([]);
 
-  const [seQuotas, setSeQuotas] = useState([
-    { id: "se-1", name: "Harshit Goel", target: 5000000, role: "Senior Consultant", region: "North", reportingTo: "Vikram Malhotra" },
-    { id: "se-2", name: "Rohit Verma", target: 3000000, role: "Sales Executive", region: "West", reportingTo: "Rajesh Clarke" },
-    { id: "se-3", name: "Neha Raj", target: 4000000, role: "Account Manager", region: "Central", reportingTo: "Sanjana Sen" },
-    { id: "se-4", name: "Amit", target: 2000000, role: "Junior Executive", region: "South", reportingTo: "Karthik Raja" }
-  ]);
+  useEffect(() => {
+    const byRegion = new Map();
+    targets.forEach((target) => {
+      const region = target.territory_name || "Unassigned";
+      const current = byRegion.get(region) || { id: `region-${region}`, region, asm: "Assigned sales team", target: 0, activeAgents: [] };
+      current.target += Number(target.target_value || 0);
+      if (target.employee_name && !current.activeAgents.includes(target.employee_name)) current.activeAgents.push(target.employee_name);
+      byRegion.set(region, current);
+    });
+    setRegionQuotas(Array.from(byRegion.values()));
+    setSeQuotas(targets.map((target) => ({ id: target.target_id, employeeId: target.assigned_to_employee_id, name: target.employee_name || "Unassigned", target: Number(target.target_value || 0), role: "Sales Executive", region: target.territory_name || "Unassigned", reportingTo: "—" })));
+  }, [targets]);
 
  
   const parseCurrencyToNumber = (valStr) => {
@@ -43,17 +47,19 @@ export function SalesTargets({ leads }) {
   };
 
  
-  const handleSaveQuota = (id, type) => {
+  const handleSaveQuota = async (id, type) => {
     const numericVal = parseInt(newTargetVal.replace(/[^0-9]/g, ""), 10);
     if (isNaN(numericVal) || numericVal <= 0) return;
-
-    if (type === "asm") {
-      setRegionQuotas(prev => prev.map(item => item.id === id ? { ...item, target: numericVal } : item));
-    } else {
-      setSeQuotas(prev => prev.map(item => item.id === id ? { ...item, target: numericVal } : item));
+    if (type === "asm") return;
+    try {
+      const updated = await salesApi.updateTarget(id, { target_value: numericVal });
+      setSeQuotas(prev => prev.map(item => item.id === id ? { ...item, target: Number(updated.target_value || numericVal) } : item));
+      setEditingId(null);
+      setNewTargetVal("");
+      setApiError("");
+    } catch (error) {
+      setApiError(error.response?.data?.message || "Unable to update target.");
     }
-    setEditingId(null);
-    setNewTargetVal("");
   };
 
   
@@ -102,6 +108,7 @@ export function SalesTargets({ leads }) {
 
   return (
     <div className="bg-[#141414] border border-zinc-800 rounded-xl p-5 mb-6">
+      {apiError && <p className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">{apiError}</p>}
       
       {/* Component Header Controls */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-zinc-900 pb-4 mb-5">
@@ -212,29 +219,7 @@ export function SalesTargets({ leads }) {
                 
                 <div className="flex justify-between items-center text-[11px] font-mono border-b border-zinc-900 pb-2">
                   <span className="text-zinc-500">Territory Target:</span>
-                  {editingId === item.id ? (
-                    <div className="flex items-center gap-1">
-                      <input 
-                        type="text"
-                        value={newTargetVal}
-                        onChange={(e) => setNewTargetVal(e.target.value)}
-                        placeholder="e.g. 5000000"
-                        className="bg-[#1a1a1b] border border-zinc-700 text-[10px] text-white rounded px-1.5 py-0.5 w-24 text-right focus:outline-none"
-                      />
-                      <button onClick={() => handleSaveQuota(item.id, "asm")} className="text-[10px] text-emerald-400 font-bold hover:underline">Set</button>
-                      <button onClick={() => setEditingId(null)} className="text-[10px] text-zinc-500 font-bold hover:underline">X</button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-zinc-400">{formatToINR(item.target)}</span>
-                      <button 
-                        onClick={() => { setEditingId(item.id); setNewTargetVal(String(item.target)); }}
-                        className="text-[9px] text-[#FFC107]/70 hover:text-[#FFC107] font-semibold"
-                      >
-                       <Pencil size={14}/>
-                      </button>
-                    </div>
-                  )}
+                  <span className="text-zinc-400">{formatToINR(item.target)}</span>
                 </div>
 
                 <div className="space-y-1.5 pt-1">
@@ -296,12 +281,12 @@ export function SalesTargets({ leads }) {
                   ) : (
                     <div className="flex items-center gap-1.5">
                       <span className="text-zinc-400">{formatToINR(item.target)}</span>
-                      <button 
+                      {!readOnly && <button
                         onClick={() => { setEditingId(item.id); setNewTargetVal(String(item.target)); }}
                         className="text-[9px] text-[#FFC107]/70 hover:text-[#FFC107] font-semibold"
                       >
                        <Pencil size={14}/>
-                      </button>
+                      </button>}
                     </div>
                   )}
                 </div>

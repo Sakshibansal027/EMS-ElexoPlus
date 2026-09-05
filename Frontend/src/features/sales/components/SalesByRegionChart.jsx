@@ -4,12 +4,11 @@ import {
   Cell,
   ResponsiveContainer,
 } from "recharts";
-import salesByRegionData from "../mock/salesRegionData";
 
 const COLORS = ["#facc15", "#eab308", "#ca8a04", "#a16207", "#713f12"];
 
 const SalesByRegionChart = ({ data = [], totalSales = 0 }) => {
-  const regionData = data.length ? data : salesByRegionData;
+  const regionData = data;
   const formattedTotal = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(totalSales);
 
   return (
@@ -25,7 +24,7 @@ const SalesByRegionChart = ({ data = [], totalSales = 0 }) => {
 
         {/* Donut Chart */}
         <div className="w-[55%] h-[220px]">
-          <ResponsiveContainer>
+          {regionData.length === 0 ? <div className="flex h-full items-center justify-center text-xs text-gray-500">No region data</div> : <ResponsiveContainer>
             <PieChart>
               <Pie
                 data={regionData}
@@ -41,7 +40,7 @@ const SalesByRegionChart = ({ data = [], totalSales = 0 }) => {
                 ))}
               </Pie>
             </PieChart>
-          </ResponsiveContainer>
+          </ResponsiveContainer>}
         </div>
 
         {/* Legend */}

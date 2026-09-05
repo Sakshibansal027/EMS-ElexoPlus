@@ -8,7 +8,7 @@ const useUser = () => {
   const storedUser = authStorage.getCurrentUser();
   return {
     role: String(storedUser?.role || window.currentUser?.role || "SE").toUpperCase(),
-    id: storedUser?.employeeId || storedUser?.employee_id || storedUser?.id || "SE001",
+    id: storedUser?.employeeId || storedUser?.employee_id || storedUser?.id || "",
   };
 };
 
@@ -31,7 +31,7 @@ export const useSalesData = () => {
       case "HR":
         return {
           cards: ["activeASM", "activeSE", "performanceSummary", "monthlyAchievement"],
-          permissions: { viewAll: true, canAssignTarget: true, readOnlyOps: true },
+          permissions: { viewAll: true, canAssignTarget: false, readOnlyOps: true },
         };
       case "ASM":
         return {
@@ -39,6 +39,7 @@ export const useSalesData = () => {
           permissions: { viewTeamOnly: true, canAssignSE: true, canSetTarget: true },
         };
       case "SE":
+      case "SALES_EXECUTIVE":
         return {
           cards: ["myTarget", "achievement", "orders", "incentive"],
           permissions: { selfOnly: true, canCreateLead: true, canCreateOrder: true },
@@ -55,7 +56,7 @@ export const useSalesData = () => {
         setLoading(true);
         let result = null;
 
-        if (role === 'SE') {
+        if (role === 'SE' || role === 'SALES_EXECUTIVE') {
           result = await salesService.getSeDashboardData(userId);
         } else if (role === 'ASM') {
           result = await salesService.getAsmDashboardData(userId);

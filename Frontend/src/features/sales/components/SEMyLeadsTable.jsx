@@ -1,5 +1,6 @@
 // src/features/sales/components/SEMyLeadsTable.jsx
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { salesApi } from '../services/salesApi';
 import { 
   ArrowRight, 
   UserCheck, 
@@ -19,6 +20,12 @@ import {
 } from 'lucide-react';
 
 const SEMyLeadsTable = ({ leads = [], onViewDirectory }) => {
+  const toUiStage = (status) => ({
+    'Proposal Sent': 'Proposal',
+    'In Negotiation': 'Negotiation',
+    Closed: 'Converted',
+    'New Lead': 'New',
+  }[status] || status || 'New');
 
   // View States
   const [viewMode, setViewMode] = useState('table'); // 'table' | 'pipeline'
@@ -28,6 +35,9 @@ const SEMyLeadsTable = ({ leads = [], onViewDirectory }) => {
   
   // Data State
   const [leadsList, setLeadsList] = useState(leads);
+  const [apiError, setApiError] = useState('');
+
+  useEffect(() => setLeadsList(leads), [leads]);
   
   // Modals State
   const [activeNoteLead, setActiveNoteLead] = useState(null);
@@ -91,34 +101,32 @@ const SEMyLeadsTable = ({ leads = [], onViewDirectory }) => {
   ];
 
   // Handlers
-  const handleStatusChange = (leadId, newStage) => {
-    setLeadsList(prev => prev.map(lead => 
-      lead.id === leadId 
-        ? { ...lead, stage: newStage, lastActivity: 'Stage updated (Just now)' } 
-        : lead
-    ));
+  const handleStatusChange = async (leadId, newStage) => {
+    try {
+      const backendStage = { Proposal: 'Proposal Sent', Negotiation: 'In Negotiation' }[newStage] || newStage;
+      const updated = await salesApi.updateLead(leadId, { current_status: backendStage });
+      const stage = toUiStage(updated.status || newStage);
+      setLeadsList((prev) => prev.map((lead) => lead.id === leadId ? { ...lead, stage, status: stage } : lead));
+    } catch (error) { setApiError(error.response?.data?.message || 'Unable to update lead status.'); }
   };
 
-  const toggleArchiveLead = (leadId) => {
-    setLeadsList(prev => prev.map(lead => 
-      lead.id === leadId ? { ...lead, isArchived: !lead.isArchived } : lead
-    ));
+  const toggleArchiveLead = async (leadId) => {
+    const lead = leadsList.find((item) => item.id === leadId);
+    try {
+      const nextStatus = lead?.isArchived ? 'New Lead' : 'Archived';
+      const updated = await salesApi.updateLead(leadId, { current_status: nextStatus });
+      const stage = toUiStage(updated.status || nextStatus);
+      setLeadsList((prev) => prev.map((item) => item.id === leadId ? { ...item, isArchived: nextStatus === 'Archived', stage, status: stage } : item));
+    } catch (error) { setApiError(error.response?.data?.message || 'Unable to archive lead.'); }
   };
 
-  const handleSaveNote = () => {
+  const handleSaveNote = async () => {
     if (!noteInput.trim()) return;
-    setLeadsList(prev => prev.map(lead => {
-      if (lead.id === activeNoteLead.id) {
-        return {
-          ...lead,
-          notes: [...(lead.notes || []), { text: noteInput, time: 'Just now' }],
-          lastActivity: 'Note added (Just now)'
-        };
-      }
-      return lead;
-    }));
-    setNoteInput('');
-    setActiveNoteLead(null);
+    try {
+      const activity = await salesApi.addActivity(activeNoteLead.id, { type: 'Note', note: noteInput.trim() });
+      setLeadsList((prev) => prev.map((lead) => lead.id === activeNoteLead.id ? { ...lead, notes: [activity, ...(lead.notes || [])] } : lead));
+      setNoteInput(''); setActiveNoteLead(null);
+    } catch (error) { setApiError(error.response?.data?.message || 'Unable to save note.'); }
   };
 
   const handleOpenEdit = (lead) => {
@@ -134,29 +142,24 @@ const SEMyLeadsTable = ({ leads = [], onViewDirectory }) => {
     });
   };
 
-  const handleUpdateLead = (e) => {
+  const handleUpdateLead = async (e) => {
     e.preventDefault();
-    setLeadsList(prev => prev.map(l => 
-      l.id === editingLead.id ? { ...l, ...leadForm, lastActivity: 'Updated just now' } : l
-    ));
-    setEditingLead(null);
+    try {
+      const backendStage = { Proposal: 'Proposal Sent', Negotiation: 'In Negotiation' }[leadForm.stage] || leadForm.stage;
+      const updated = await salesApi.updateLead(editingLead.id, { lead_name: leadForm.leadName, phone_number: leadForm.phone, email: leadForm.email, estimated_value: leadForm.value, segment: leadForm.type, current_status: backendStage });
+      setLeadsList((prev) => prev.map((lead) => lead.id === editingLead.id ? { ...lead, leadName: updated.name || leadForm.leadName, stage: toUiStage(updated.status || leadForm.stage), value: Number(updated.value ?? leadForm.value) } : lead));
+      setEditingLead(null);
+    } catch (error) { setApiError(error.response?.data?.message || 'Unable to update lead.'); }
   };
 
-  const handleCreateLead = (e) => {
+  const handleCreateLead = async (e) => {
     e.preventDefault();
     if (!leadForm.leadName) return;
-
-    const created = {
-      id: Date.now().toString(),
-      ...leadForm,
-      isArchived: false,
-      lastActivity: 'Created today',
-      notes: []
-    };
-
-    setLeadsList([created, ...leadsList]);
-    setIsAddLeadOpen(false);
-    setLeadForm({ leadName: '', customer: '', type: 'B2B', stage: 'New', value: '', phone: '', email: '' });
+    try {
+      const created = await salesApi.createLead({ segment: leadForm.type, lead_name: leadForm.leadName, contact_person: leadForm.customer, phone_number: leadForm.phone, email: leadForm.email, estimated_value: leadForm.value || 0 });
+      setLeadsList((prev) => [{ ...created, id: created.id || created.lead_id, leadName: created.name || created.lead_name, customer: created.contact_person || created.company || '', type: created.type || created.segment, stage: toUiStage(created.status), value: Number(created.value || created.estimated_value || 0), isArchived: false, notes: created.activities || [] }, ...prev]);
+      setIsAddLeadOpen(false); setLeadForm({ leadName: '', customer: '', type: 'B2B', stage: 'New', value: '', phone: '', email: '' });
+    } catch (error) { setApiError(error.response?.data?.message || 'Unable to create lead.'); }
   };
 
   // View All Directory Click Handler
@@ -176,6 +179,7 @@ const SEMyLeadsTable = ({ leads = [], onViewDirectory }) => {
 
   return (
     <div className="w-full bg-[#0c0b09] border border-[#1d170e] rounded-2xl p-5 shadow-xl flex flex-col justify-between relative">
+      {apiError && <p className="mb-3 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">{apiError}</p>}
       
       {/* 1. Top Header Controls */}
       <div>

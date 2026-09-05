@@ -6,8 +6,8 @@ import SEPerformanceWidgets from '../components/SEPerformanceWidgets';
 import SEMyLeadsTable from '../components/SEMyLeadsTable';
 import SEMyOrdersTable from '../components/SEMyOrdersTable';
 import SETodaySummaryAndVisits from '../components/SETodaySummaryAndVisits';
-const SESalesDashboard = ({ executiveId = 'SE001' }) => {
-  const { data, isLoading, error } = useSEDashboardData(executiveId);
+const SESalesDashboard = () => {
+  const { data, isLoading, error } = useSEDashboardData();
 
   if (isLoading) {
     return (
