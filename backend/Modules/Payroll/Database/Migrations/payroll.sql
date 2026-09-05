@@ -39,17 +39,11 @@ CREATE TABLE payroll_periods (
     CONSTRAINT chk_payroll_period_dates
         CHECK (period_end >= period_start),
 
-    CONSTRAINT fk_payroll_period_processed_by
-        FOREIGN KEY (processed_by)
-        REFERENCES users(user_id)
-        ON DELETE RESTRICT
-        ON UPDATE CASCADE,
-
-    CONSTRAINT fk_payroll_period_locked_by
-        FOREIGN KEY (locked_by)
-        REFERENCES users(user_id)
-        ON DELETE RESTRICT
-        ON UPDATE CASCADE
+    -- Users may use either the legacy integer primary key or UUID user_id.
+    -- Audit identifiers are intentionally stored without a foreign key so the
+    -- Payroll schema works with both supported authentication schemas.
+    INDEX idx_payroll_period_processed_by (processed_by),
+    INDEX idx_payroll_period_locked_by (locked_by)
 );
 
 CREATE INDEX idx_payroll_period_status
@@ -135,24 +129,6 @@ CREATE TABLE payrolls (
     CONSTRAINT fk_payroll_salary_structure
         FOREIGN KEY (salary_structure_id)
         REFERENCES salary_structures(salary_structure_id)
-        ON DELETE RESTRICT
-        ON UPDATE CASCADE,
-
-    CONSTRAINT fk_payroll_verified_by
-        FOREIGN KEY (verified_by)
-        REFERENCES users(user_id)
-        ON DELETE RESTRICT
-        ON UPDATE CASCADE,
-
-    CONSTRAINT fk_payroll_processed_by
-        FOREIGN KEY (processed_by)
-        REFERENCES users(user_id)
-        ON DELETE RESTRICT
-        ON UPDATE CASCADE,
-
-    CONSTRAINT fk_payroll_approved_by
-        FOREIGN KEY (approved_by)
-        REFERENCES users(user_id)
         ON DELETE RESTRICT
         ON UPDATE CASCADE,
 

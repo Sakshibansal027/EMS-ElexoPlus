@@ -12,6 +12,11 @@ $files = [
     'incentives.sql' => 'incentives',
     'deductions.sql' => 'deductions',
     'payslips.sql' => 'payslips',
+    'salary_revisions.sql' => 'salary_revisions',
+    'lop_cases.sql' => 'lop_cases',
+    'payroll_holds.sql' => 'payroll_holds',
+    'expense_reimbursements.sql' => 'expense_reimbursements',
+    'payroll_bank_transfers.sql' => 'payroll_bank_transfers',
 ];
 foreach ($files as $file => $table) {
     $exists = \Core\Database::connection()->prepare('SHOW TABLES LIKE ?');

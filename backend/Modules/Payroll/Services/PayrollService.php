@@ -11,7 +11,7 @@ use Modules\Payroll\Repositories\SalaryStructureRepository;
 class PayrollService
 {
     public function __construct(private PayrollRepository $payrolls, private PayrollPeriodRepository $periods, private SalaryStructureRepository $structures, private PayslipRepository $payslips) {}
-    public function list(?string $periodId=null,?string $employeeId=null): array { return ['success'=>true,'payrolls'=>$this->payrolls->all($periodId,$employeeId),'summary'=>$this->payrolls->summary($periodId)]; }
+    public function list(?string $periodId=null,?string $employeeId=null): array { return ['success'=>true,'payrolls'=>$this->payrolls->all($periodId,$employeeId),'summary'=>$this->payrolls->summary($periodId,$employeeId)]; }
     public function dashboard(?string $periodId=null): array
     {
         $period=$periodId ? $this->periods->find($periodId) : null;
