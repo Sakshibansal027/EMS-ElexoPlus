@@ -17,14 +17,14 @@ import ReportPieChart from "../charts/ReportPieChart";
 const AdminReports = () => {
   const {
     activeTab, setActiveTab,
-    loading, metrics, chartData,
+    loading, error, metrics, chartData,
     filters, setSearch, setDateFrom, setDateTo, setEmployee, setDepartment, setStatus, setRegion,
     filteredAttendance, filteredSales, filteredAsm, filteredEmployees, employeeRecords,
     handleExportCSV, handleExportPDF, handlePrint,
   } = useReports();
 
   const allEmployees = useMemo(() => ["All", ...Array.from(new Set(employeeRecords.map(e => e.name)))], [employeeRecords]);
-  const allAsms = useMemo(() => ["All", ...Array.from(new Set(employeeRecords.filter(e => e.designation === "ASM").map(e => e.name)))], [employeeRecords]);
+  const allAsms = useMemo(() => ["All", ...Array.from(new Set(employeeRecords.filter(e => e.designation === "Area Sales Manager").map(e => e.name)))], [employeeRecords]);
 
   const statusDist = useMemo(() => {
     const counts = {};
@@ -42,7 +42,7 @@ const AdminReports = () => {
     return Object.values(grouped).map(g => ({ name: g.name, value: g.value / g.count }));
   }, [filteredAsm]);
 
-  if (loading || !metrics || !chartData) {
+  if (loading) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
         <div className="flex flex-col items-center gap-4">
@@ -52,6 +52,9 @@ const AdminReports = () => {
       </div>
     );
   }
+
+  if (error) return <div className="p-6 text-red-500">{error}</div>;
+  if (!metrics || !chartData) return <div className="p-6 text-muted-foreground">No report data is available yet.</div>;
 
   const renderOverviewTab = () => (
     <div className="space-y-6 page-enter">

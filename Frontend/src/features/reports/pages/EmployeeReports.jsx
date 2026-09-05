@@ -6,10 +6,10 @@ import ExportOptions from "../components/ExportOptions";
 
 const EmployeeReports = () => {
   const {
-    loading, metrics, filteredAttendance, handleExportCSV, handleExportPDF, handlePrint,
+    loading, error, filteredAttendance, handleExportCSV, handleExportPDF, handlePrint,
   } = useReports();
 
-  if (loading || !metrics) {
+  if (loading) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
         <div className="flex flex-col items-center gap-4">
@@ -19,6 +19,12 @@ const EmployeeReports = () => {
       </div>
     );
   }
+
+  if (error) return <div className="p-6 text-red-500">{error}</div>;
+
+  const presentDays = filteredAttendance.filter((row) => ["Present", "Late", "WFH"].includes(row.status)).length;
+  const leaveDays = filteredAttendance.filter((row) => row.status === "Leave").length;
+  const averageHours = filteredAttendance.length ? (filteredAttendance.reduce((total, row) => total + Number(row.workingHours || 0), 0) / filteredAttendance.length).toFixed(1) : "0.0";
 
   const columns = [
     { key: "date", label: "Date" },
@@ -39,9 +45,9 @@ const EmployeeReports = () => {
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <ReportStatCard label="Present Days" value={22} icon={CheckCircle} tone="success" hint="This month" />
-        <ReportStatCard label="Leaves Taken" value={2} icon={FileText} tone="warning" hint="This month" />
-        <ReportStatCard label="Avg Hours" value={"8.5h"} icon={TrendingUp} tone="primary" hint="This month" />
+        <ReportStatCard label="Present Days" value={presentDays} icon={CheckCircle} tone="success" hint="From live records" />
+        <ReportStatCard label="Leaves Taken" value={leaveDays} icon={FileText} tone="warning" hint="From live records" />
+        <ReportStatCard label="Avg Hours" value={`${averageHours}h`} icon={TrendingUp} tone="primary" hint="From live records" />
       </div>
 
       <div className="card p-5">

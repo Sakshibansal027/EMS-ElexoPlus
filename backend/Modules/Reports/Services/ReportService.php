@@ -41,4 +41,8 @@ class ReportService
     return $this->repository->getChartData($filters);
 }
 
+    public function employeeIdByEmail(string $email): ?string
+    {
+        return $this->repository->employeeIdByEmail($email);
+    }
 }

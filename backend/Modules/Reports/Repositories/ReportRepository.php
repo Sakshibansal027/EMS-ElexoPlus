@@ -7,18 +7,26 @@ use PDO;
 
 class ReportRepository
 {
+    public function employeeIdByEmail(string $email): ?string
+    {
+        $statement = Database::connection()->prepare('SELECT employee_id FROM employees WHERE email=? LIMIT 1');
+        $statement->execute([$email]);
+        return $statement->fetchColumn() ?: null;
+    }
     public function getAttendanceReports(array $filters = []): array
     {
         $sql = "
             SELECT
                 a.id,
                 a.employee_id,
+                e.employee_code,
                 e.full_name AS employee_name,
                 a.attendance_date,
                 a.check_in,
                 a.check_out,
                 a.working_hours,
                 a.status,
+                a.remarks,
                 d.department_name
             FROM attendance a
             LEFT JOIN employees e
@@ -75,19 +83,25 @@ class ReportRepository
     {
         $sql = "
             SELECT
-                o.order_id,
-                o.order_date,
+                CONCAT(o.employee_id, '-', DATE_FORMAT(o.order_date, '%Y-%m'), '-', COALESCE(o.territory_id, 'none')) AS order_id,
+                DATE_FORMAT(o.order_date, '%Y-%m-01') AS order_date,
                 o.employee_id,
                 e.full_name AS employee_name,
+                manager.full_name AS asm_name,
                 o.territory_id,
                 t.territory_name,
-                o.order_status,
-                o.order_value
+                COALESCE(MAX(tg.target_value), 0) AS target_value,
+                COALESCE(SUM(CASE WHEN o.order_status <> 'Cancelled' THEN o.order_value ELSE 0 END), 0) AS order_value
             FROM orders o
             LEFT JOIN employees e
                 ON e.employee_id = o.employee_id
+            LEFT JOIN employees manager
+                ON manager.employee_id = e.reporting_manager_id
             LEFT JOIN territories t
                 ON t.territory_id = o.territory_id
+            LEFT JOIN targets tg
+                ON tg.assigned_to_employee_id = o.employee_id
+                AND o.order_date BETWEEN tg.period_start AND tg.period_end
             WHERE 1 = 1
         ";
 
@@ -113,12 +127,17 @@ class ReportRepository
             $params['territory_id'] = $filters['territory_id'];
         }
 
-        if (!empty($filters['status'])) {
-            $sql .= " AND o.order_status = :order_status";
-            $params['order_status'] = $filters['status'];
-        }
-
-        $sql .= " ORDER BY o.order_date DESC";
+        $sql .= "
+            GROUP BY
+                o.employee_id,
+                e.full_name,
+                manager.full_name,
+                o.territory_id,
+                t.territory_name,
+                YEAR(o.order_date),
+                MONTH(o.order_date)
+            ORDER BY order_date DESC, employee_name ASC
+        ";
 
         $statement = Database::connection()->prepare($sql);
         $statement->execute($params);
@@ -139,16 +158,30 @@ class ReportRepository
                 d.department_name,
                 e.designation_id,
                 ds.designation_name,
-                e.employee_status_id
+                es.status_name AS employee_status,
+                et.employment_type_name AS employment_type,
+                wl.location_name AS work_location,
+                e.date_of_joining
             FROM employees e
             LEFT JOIN departments d
                 ON d.department_id = e.department_id
             LEFT JOIN designations ds
                 ON ds.designation_id = e.designation_id
+            LEFT JOIN employee_statuses es
+                ON es.employee_status_id = e.employee_status_id
+            LEFT JOIN employment_types et
+                ON et.employment_type_id = e.employment_type_id
+            LEFT JOIN work_locations wl
+                ON wl.work_location_id = e.work_location_id
             WHERE 1 = 1
         ";
 
         $params = [];
+
+        if (!empty($filters['employee_id'])) {
+            $sql .= ' AND e.employee_id = :report_employee_id';
+            $params['report_employee_id'] = $filters['employee_id'];
+        }
 
         if (!empty($filters['department_id'])) {
             $sql .= " AND e.department_id = :department_id";
@@ -329,8 +362,15 @@ class ReportRepository
 
                 (
                     SELECT COUNT(*)
+                    FROM employees e
+                    INNER JOIN employee_statuses es ON es.employee_status_id = e.employee_status_id
+                    WHERE es.status_name IN ('Active', 'System Live')
+                ) AS active_employees,
+
+                (
+                    SELECT COUNT(*)
                     FROM attendance
-                    WHERE status = 'Present'
+                    WHERE status IN ('Present', 'Late', 'WFH', 'Work From Home', 'Half Day')
                     $attendanceWhere
                 ) AS present_records,
 
@@ -342,11 +382,23 @@ class ReportRepository
                 ) AS absent_records,
 
                 (
+                    SELECT COUNT(*)
+                    FROM attendance
+                    WHERE 1 = 1
+                    $attendanceWhere
+                ) AS attendance_records,
+
+                (
                     SELECT COALESCE(SUM(order_value), 0)
                     FROM orders
                     WHERE 1 = 1
                     $salesWhere
-                ) AS total_sales
+                ) AS total_sales,
+
+                (
+                    SELECT COALESCE(SUM(target_value), 0)
+                    FROM targets
+                ) AS total_target
         ";
 
         $statement = Database::connection()->prepare($sql);
@@ -406,12 +458,14 @@ class ReportRepository
     $salesSql = "
         SELECT
             DATE_FORMAT(o.order_date, '%b') AS name,
-            COALESCE(SUM(tg.target_value), 0) AS target,
+            COALESCE((
+                SELECT SUM(tg.target_value)
+                FROM targets tg
+                WHERE tg.period_start <= LAST_DAY(o.order_date)
+                  AND tg.period_end >= DATE_FORMAT(o.order_date, '%Y-%m-01')
+            ), 0) AS target,
             COALESCE(SUM(o.order_value), 0) AS actual
         FROM orders o
-        LEFT JOIN targets tg
-            ON tg.assigned_to_employee_id = o.employee_id
-            AND o.order_date BETWEEN tg.period_start AND tg.period_end
         WHERE 1 = 1
         $salesWhere
         GROUP BY YEAR(o.order_date), MONTH(o.order_date)
@@ -422,6 +476,18 @@ class ReportRepository
     $statement->execute($params);
 
     $monthlySalesTrend = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+    $salesCategorySql = "
+        SELECT o.order_status AS name, COALESCE(SUM(o.order_value), 0) AS value
+        FROM orders o
+        WHERE 1 = 1
+        $salesWhere
+        GROUP BY o.order_status
+        ORDER BY value DESC
+    ";
+    $statement = Database::connection()->prepare($salesCategorySql);
+    $statement->execute($params);
+    $salesCategoryBreakdown = $statement->fetchAll(PDO::FETCH_ASSOC);
 
     /*
      * Department performance based on attendance.
@@ -434,7 +500,7 @@ class ReportRepository
                     CASE
                         WHEN a.status = 'Present' THEN 100
                         WHEN a.status = 'Late' THEN 75
-                        WHEN a.status = 'WFH' THEN 100
+                        WHEN a.status IN ('WFH', 'Work From Home') THEN 100
                         ELSE 0
                     END
                 ),
@@ -508,7 +574,7 @@ class ReportRepository
 
     return [
         'monthlyAttendanceTrend' => $monthlyAttendanceTrend,
-        'salesCategoryBreakdown' => [],
+        'salesCategoryBreakdown' => $salesCategoryBreakdown,
         'departmentPerformance' => $departmentPerformance,
         'monthlySalesTrend' => $monthlySalesTrend,
         'regionAchievement' => $regionAchievement,
