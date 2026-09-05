@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { fetchSEDashboardData } from '../services/seSalesService';
 
-export const useSEDashboardData = (executiveId) => {
+export const useSEDashboardData = () => {
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -11,7 +11,7 @@ export const useSEDashboardData = (executiveId) => {
     const loadDashboard = async () => {
       try {
         setIsLoading(true);
-        const result = await fetchSEDashboardData(executiveId);
+        const result = await fetchSEDashboardData();
         setData(result);
       } catch {
         setError('Failed to sync executive metrics');
@@ -20,10 +20,8 @@ export const useSEDashboardData = (executiveId) => {
       }
     };
 
-    if (executiveId) {
-      loadDashboard();
-    }
-  }, [executiveId]);
+    loadDashboard();
+  }, []);
 
   return { data, isLoading, error };
 };

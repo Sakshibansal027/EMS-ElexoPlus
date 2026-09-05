@@ -4,7 +4,7 @@ import SalesByRegionChart from "../components/SalesByRegionChart.jsx";
 import TopASM from "../components/LeadManagement.jsx";
 import useSalesStats from "../hooks/useSalesStats";
 const AdminSalesDashboard = () => {
-    const { stats, dashboard, loading } = useSalesStats();
+    const { stats, dashboard, loading, error } = useSalesStats();
 
     const cards = [
         {
@@ -35,6 +35,7 @@ const AdminSalesDashboard = () => {
 
     return (
         <div className="space-y-6">
+            {error && <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">{error}</div>}
             <div>
                 <h1 className="text-2xl font-semibold text-white">Sales Overview</h1>
                 <p className="text-sm text-gray-400">

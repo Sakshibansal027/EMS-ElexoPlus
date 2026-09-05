@@ -13,9 +13,9 @@ const REGIONS_LIST = ["North", "West", "East", "South", "Central"];
 const EXECUTIVES_LIST = ["Harshit Goel", "Rohit Verma", "Neha Raj", "Amit", "Unassigned"];
 
 export default function LeadManagement({ role = "Admin" }) { // taking role from props, default to Admin
-  const currentRole = role.toLowerCase(); // Consistent lower-case handling for safety
+  const currentRole = role === "SALES_EXECUTIVE" ? "se" : role.toLowerCase();
 
-  const [leads, setLeads] = useState([
+  const [leads, setLeads] = useState([]); /* Legacy sample data retained only as commented reference:
     {
       id: 1,
       name: "Amit Sharma",
@@ -52,15 +52,16 @@ export default function LeadManagement({ role = "Admin" }) { // taking role from
     },
     { id: 3, name: "Sanjay Gupta", company: "Balaji Traders", type: "B2B", phone: "7654321098", email: "sanjay@balajicorp.in", source: "Website Portal", region: "Central", assignedTo: "Neha Raj", status: "Proposal Sent", value: "₹12,50,000", nextFollowUp: "2026-07-11", activities: [] },
     { id: 4, name: "Ananya Das", company: "—", type: "B2C", phone: "6543210987", email: "ananya.das@outlook.com", source: "Walk-in", region: "South", assignedTo: "Amit", status: "Converted", value: "₹35,000", nextFollowUp: "", activities: [] },
-  ]);
+  ]); */
   const [isLoadingLeads, setIsLoadingLeads] = useState(true);
   const [apiError, setApiError] = useState("");
+  const [targets, setTargets] = useState([]);
 
   useEffect(() => {
     let active = true;
-    salesApi.listLeads()
-      .then((data) => { if (active) setLeads(data.map((lead) => ({ ...lead, nextFollowUp: lead.next_follow_up_date || "" }))); })
-      .catch((error) => { if (active) setApiError(error.response?.data?.message || "Unable to load sales leads."); })
+    Promise.all([salesApi.listLeads(), salesApi.targets()])
+      .then(([leadData, targetData]) => { if (active) { setLeads(leadData.map((lead) => ({ ...lead, nextFollowUp: lead.next_follow_up_date || "" }))); setTargets(targetData); } })
+      .catch((error) => { if (active) { setLeads([]); setApiError(error.response?.data?.message || "Unable to load sales leads."); } })
       .finally(() => { if (active) setIsLoadingLeads(false); });
     return () => { active = false; };
   }, []);
@@ -246,7 +247,7 @@ export default function LeadManagement({ role = "Admin" }) { // taking role from
       {isLoadingLeads && <div className="mb-4 text-xs text-zinc-500">Loading sales data...</div>}
 
       <SalesAnalytics leads={leads} />
-      <SalesTargets leads={leads} />
+      <SalesTargets leads={leads} targets={targets} readOnly={currentRole === "hr"} />
 
       {/* Trinity Core Sub-Tabs Navigation */}
       <div className="flex bg-[#121212] p-1 border border-zinc-800 rounded-xl mb-6 w-full max-w-md">

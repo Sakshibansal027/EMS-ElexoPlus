@@ -1,7 +1,7 @@
 // src/features/sales/components/TeamVisitsTracker.jsx
 import { useState, useMemo } from 'react';
 
-const TeamVisitsTracker = () => {
+const TeamVisitsTracker = ({ visits = [] }) => {
   const [activeTab, setActiveTab] = useState('today');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -10,13 +10,18 @@ const TeamVisitsTracker = () => {
   const [isMonthlyLogOpen, setIsMonthlyLogOpen] = useState(false);
   const [selectedNotes, setSelectedNotes] = useState(null);
 
-  const [teamDashboardData] = useState([
-    { id: "SE001", name: "Amit Verma", todayClient: "Vertex Industries (B2B)", todayStatus: "Completed", todayTime: "10:30 AM", notes: "Discussed bulk contract pricing. Client ready to sign renewal next week.", monthTotal: 42, monthCompleted: 38, monthPending: 4, monthCompliance: 90 },
-    { id: "SE002", name: "Rohit Sharma", todayClient: "Suresh Verma (Retail)", todayStatus: "In-Progress", todayTime: "11:45 AM", notes: "Demo session for new product variant ongoing. Client asking for discounts.", monthTotal: 40, monthCompleted: 33, monthPending: 7, monthCompliance: 83 },
-    { id: "SE003", name: "Neha Singh", todayClient: "Nexus Labs (B2B)", todayStatus: "Scheduled", todayTime: "02:15 PM", notes: "Technical architecture alignment meeting. Stakeholders to join virtually.", monthTotal: 35, monthCompleted: 28, monthPending: 7, monthCompliance: 80 },
-    { id: "SE004", name: "Sanjay Patel", todayClient: "Rohan Gupta (B2C)", todayStatus: "Scheduled", todayTime: "04:00 PM", notes: "Follow-up visit regarding the catalog shared on WhatsApp last Monday.", monthTotal: 30, monthCompleted: 22, monthPending: 8, monthCompliance: 73 },
-    { id: "SE005", name: "Vikram Mehta", todayClient: "None (Day Ended)", todayStatus: "Completed", todayTime: "05:30 PM", notes: "All routine area tasks completed. EOD report pushed to the portal.", monthTotal: 28, monthCompleted: 18, monthPending: 10, monthCompliance: 64 }
-  ]);
+  const teamDashboardData = useMemo(() => visits.map((visit) => ({
+    id: visit.visit_id,
+    name: visit.employee_name || 'Sales Executive',
+    todayClient: visit.customer || 'Unknown client',
+    todayStatus: visit.outcome ? 'Completed' : 'Scheduled',
+    todayTime: visit.visit_date || '—',
+    notes: visit.discussion_summary || 'No discussion notes recorded.',
+    monthTotal: 1,
+    monthCompleted: visit.outcome ? 1 : 0,
+    monthPending: visit.outcome ? 0 : 1,
+    monthCompliance: visit.outcome ? 100 : 0,
+  })), [visits]);
 
   const filteredData = useMemo(() => {
     return teamDashboardData.filter(se => {
