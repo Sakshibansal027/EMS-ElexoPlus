@@ -2,6 +2,7 @@
 
 namespace Modules\Reports\Controllers;
 
+use Modules\Authentication\Middleware\AuthMiddleware;
 use Modules\Reports\Services\ReportService;
 
 class ReportController
@@ -17,6 +18,7 @@ class ReportController
 
     public function attendance(array $params = []): array
     {
+        if ($error = $this->authorize()) return $error;
         return [
             'success' => true,
             'data' => $this->service->getAttendanceReports(
@@ -27,6 +29,7 @@ class ReportController
 
     public function sales(array $params = []): array
     {
+        if ($error = $this->authorize()) return $error;
         return [
             'success' => true,
             'data' => $this->service->getSalesReports(
@@ -37,6 +40,7 @@ class ReportController
 
     public function employees(array $params = []): array
     {
+        if ($error = $this->authorize()) return $error;
         return [
             'success' => true,
             'data' => $this->service->getEmployeeReports(
@@ -47,6 +51,7 @@ class ReportController
 
     public function asm(array $params = []): array
 {
+    if ($error = $this->authorize(true)) return $error;
     return [
         'success' => true,
         'data' => $this->service->getAsmReports(
@@ -57,6 +62,7 @@ class ReportController
 
     public function metrics(array $params = []): array
     {
+        if ($error = $this->authorize(true)) return $error;
         return [
             'success' => true,
             'data' => $this->service->getCompanyMetrics(
@@ -67,6 +73,7 @@ class ReportController
 
     public function charts(array $params = []): array
 {
+    if ($error = $this->authorize(true)) return $error;
     return [
         'success' => true,
         'data' => $this->service->getChartData(
@@ -86,5 +93,20 @@ class ReportController
             'status' => $_GET['status'] ?? null,
             'search' => $_GET['search'] ?? null,
         ];
+    }
+
+    private function authorize(bool $companyOnly = false): ?array
+    {
+        $auth = AuthMiddleware::handle();
+        if (isset($auth['error'])) return ['success' => false, 'message' => $auth['error'], 'status' => $auth['status']];
+        $role = strtoupper((string) ($auth['user']['role'] ?? ''));
+        $isCompanyReader = in_array($role, ['ADMIN', 'HR'], true);
+        if ($companyOnly && !$isCompanyReader) return ['success' => false, 'message' => 'You do not have permission to view company-wide reports.', 'status' => 403];
+        if (!$isCompanyReader) {
+            $employeeId = $this->service->employeeIdByEmail((string) ($auth['user']['email'] ?? ''));
+            if (!$employeeId) return ['success' => false, 'message' => 'Authenticated user is not linked to an employee.', 'status' => 422];
+            $_GET['employee_id'] = $employeeId;
+        }
+        return null;
     }
 }
