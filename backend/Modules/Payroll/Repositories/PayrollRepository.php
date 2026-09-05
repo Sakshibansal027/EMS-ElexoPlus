@@ -16,7 +16,7 @@ class PayrollRepository
     public function deleteAdjustment(string $id,string $type): bool { return Payroll::deleteAdjustment($id,$type); }
     public function updateAdjustment(string $id,string $type,array $data): ?array { return Payroll::updateAdjustment($id,$type,$data); }
     public function findAdjustment(string $id,string $type): ?array { return Payroll::findAdjustment($id,$type); }
-    public function summary(?string $periodId=null): array { return Payroll::summary($periodId); }
+    public function summary(?string $periodId=null, ?string $employeeId=null): array { return Payroll::summary($periodId,$employeeId); }
     public function countUnapprovedForPeriod(string $periodId): int { return Payroll::countUnapprovedForPeriod($periodId); }
     public function statusCounts(string $periodId): array { return Payroll::statusCounts($periodId); }
     public function report(?string $periodId=null,?string $employeeId=null): array { return Payroll::report($periodId,$employeeId); }

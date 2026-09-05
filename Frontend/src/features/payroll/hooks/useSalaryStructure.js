@@ -98,35 +98,23 @@ export const useSalaryStructure = () => {
     e.preventDefault();
 
     const formattedPayload = {
-      id: formData.id || `struct_${Date.now()}`,
+      id: formData.id || undefined,
       name: formData.name,
       code: formData.code ? formData.code.toUpperCase() : "",
       basicPercentage: formData.basicPercentage,
       hraPercentage: formData.hraPercentage,
-      allowances: {
-        specialAllowance: formData.specialAllowance,
-        medicalAllowance: formData.medicalAllowance,
-        conveyanceAllowance: formData.conveyanceAllowance,
-      },
-      bonus: {
-        type: formData.bonusType,
-        value: formData.bonusValue,
-        frequency: formData.bonusFrequency,
-      },
+      specialAllowance: formData.specialAllowance || 0,
+      medicalAllowance: formData.medicalAllowance || 0,
+      conveyanceAllowance: formData.conveyanceAllowance || 0,
+      bonusType: formData.bonusType === "Performance" ? "Fixed" : formData.bonusType,
+      bonusValue: formData.bonusValue || 0,
+      bonusFrequency: formData.bonusFrequency,
       assignedEmployees: selectedStructure ? (selectedStructure.assignedEmployees || []) : [],
       assignedCount: selectedStructure ? (selectedStructure.assignedCount || 0) : 0,
     };
 
     await payrollService.saveSalaryStructure(formattedPayload);
-
-    setStructures((prev) => {
-      const exists = prev.some((s) => (s.id || s._id) === formattedPayload.id);
-      if (exists) {
-        return prev.map((s) => ((s.id || s._id) === formattedPayload.id ? formattedPayload : s));
-      } else {
-        return [formattedPayload, ...prev];
-      }
-    });
+    await fetchData();
 
     setIsFormModalOpen(false);
   };
@@ -137,18 +125,7 @@ export const useSalaryStructure = () => {
 
     await payrollService.assignStructureToEmployees(structId, selectedEmpIds);
 
-    setStructures((prev) =>
-      prev.map((s) => {
-        if ((s.id || s._id) === structId) {
-          return {
-            ...s,
-            assignedEmployees: selectedEmpIds,
-            assignedCount: selectedEmpIds.length,
-          };
-        }
-        return s;
-      })
-    );
+    await fetchData();
 
     setIsAssignModalOpen(false);
   };
@@ -156,7 +133,7 @@ export const useSalaryStructure = () => {
   const handleDeleteStructure = async (id) => {
     if (window.confirm("Are you sure you want to delete this structure?")) {
       await payrollService.deleteSalaryStructure(id);
-      setStructures((prev) => prev.filter((s) => (s.id || s._id) !== id));
+      await fetchData();
     }
   };
 
