@@ -24,7 +24,20 @@
     <title>ElexoPlus - Employee Management System</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#111111;gap:16px;flex-direction:column">
+        <img src="/logo.png" alt="ElexoPlus" style="height:56px;opacity:.85;animation:epPulse 2s ease-in-out infinite" />
+        <div style="display:flex;gap:6px">
+          <span style="width:6px;height:6px;border-radius:50%;background:#f4c21c;animation:epBounce 1.2s ease-in-out infinite"></span>
+          <span style="width:6px;height:6px;border-radius:50%;background:#f4c21c;animation:epBounce 1.2s ease-in-out .15s infinite"></span>
+          <span style="width:6px;height:6px;border-radius:50%;background:#f4c21c;animation:epBounce 1.2s ease-in-out .3s infinite"></span>
+        </div>
+        <style>
+          @keyframes epPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+          @keyframes epBounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-8px)}}
+        </style>
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

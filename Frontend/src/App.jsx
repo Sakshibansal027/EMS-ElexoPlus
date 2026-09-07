@@ -1,14 +1,17 @@
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { NotificationProvider } from "./contexts/NotificationContext";
 import AppRoutes from "./routes/AppRoutes";
+import AppInitLoader from "./components/common/AppInitLoader";
 
 function App() {
   return (
-    <ThemeProvider>
-      <NotificationProvider>
-        <AppRoutes />
-      </NotificationProvider>
-    </ThemeProvider>
+    <AppInitLoader>
+      <ThemeProvider>
+        <NotificationProvider>
+          <AppRoutes />
+        </NotificationProvider>
+      </ThemeProvider>
+    </AppInitLoader>
   );
 }
 

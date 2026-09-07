@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useTeamOrders } from '../hooks/useTeamOrders';
 import CustomSelect from "../../../features/employee-master/components/ui/CustomSelect"
+import InlineLoader from "../../../components/common/InlineLoader";
 const TeamOrders = () => {
     const { orders, territories, isLoading, allocateTerritory } = useTeamOrders();
     const [isAllOrdersOpen, setIsAllOrdersOpen] = useState(false);
@@ -13,8 +14,8 @@ const TeamOrders = () => {
 
     if (isLoading) {
         return (
-            <div className="bg-[#0c0b09] border border-[#1d170e] rounded-2xl p-6 shadow-2xl w-full h-[350px] flex items-center justify-center">
-                <div className="text-sm text-gray-500 animate-pulse font-medium">Syncing territory allocation matrices...</div>
+            <div className="bg-[#0c0b09] border border-[#1d170e] rounded-2xl p-6 shadow-2xl w-full h-[350px]">
+                <InlineLoader message="Syncing territory allocation matrices..." />
             </div>
         );
     }

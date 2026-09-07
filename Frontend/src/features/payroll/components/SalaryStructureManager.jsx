@@ -1,7 +1,8 @@
 import React from "react";
 import { Plus, Edit2, UserCheck, X, Check, Users, Building2, Trash2 } from "lucide-react";
 import { useSalaryStructure } from "../hooks/useSalaryStructure";
-import { CustomDropdown } from "./ui/CustomDropdown"
+import { CustomDropdown } from "./ui/CustomDropdown";
+import InlineLoader from "../../../components/common/InlineLoader";
 
 export const SalaryStructureManager = () => {
   const {
@@ -27,8 +28,8 @@ export const SalaryStructureManager = () => {
 
   if (loading) {
     return (
-      <div className="p-8 text-center text-xs font-semibold text-[var(--color-foreground-muted)] animate-pulse">
-        Loading Structures...
+      <div className="p-8">
+        <InlineLoader message="Loading Structures..." />
       </div>
     );
   }

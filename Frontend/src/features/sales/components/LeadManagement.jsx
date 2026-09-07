@@ -6,6 +6,7 @@ import { LeadsPDFDocument } from "../../../../src/utils/pdfGenerator";
 import { ArrowDownToLine } from "lucide-react";
 import { SalesTargets } from "./SalesTargets";
 import CustomSelect from "../../employee-master/components/ui/CustomSelect";
+import InlineLoader from "../../../components/common/InlineLoader";
 import { salesApi } from "../services/salesApi";
 
 // static configurations for re-assignment drop-downs
@@ -244,7 +245,7 @@ export default function LeadManagement({ role = "Admin" }) { // taking role from
   return (
     <div className="mt-6 relative min-h-[600px]">
       {apiError && <div className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2 text-xs text-red-300">{apiError}</div>}
-      {isLoadingLeads && <div className="mb-4 text-xs text-zinc-500">Loading sales data...</div>}
+      {isLoadingLeads && <div className="mb-4"><InlineLoader message="Loading sales data..." className="py-4" /></div>}
 
       <SalesAnalytics leads={leads} />
       <SalesTargets leads={leads} targets={targets} readOnly={currentRole === "hr"} />

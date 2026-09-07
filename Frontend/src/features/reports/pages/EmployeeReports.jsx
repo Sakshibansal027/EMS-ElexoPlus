@@ -3,6 +3,7 @@ import { useReports } from "../hooks/useReports";
 import ReportStatCard from "../components/ReportStatCard";
 import ReportTable from "../components/ReportTable";
 import ExportOptions from "../components/ExportOptions";
+import InlineLoader from "../../../components/common/InlineLoader";
 
 const EmployeeReports = () => {
   const {
@@ -12,10 +13,7 @@ const EmployeeReports = () => {
   if (loading) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          <p className="text-muted-foreground">Loading your reports...</p>
-        </div>
+        <InlineLoader message="Loading your reports..." />
       </div>
     );
   }

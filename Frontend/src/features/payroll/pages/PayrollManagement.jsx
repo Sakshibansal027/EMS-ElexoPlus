@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { usePayrollManagement } from "../hooks/usePayrollManagement";
+import InlineLoader from "../../../components/common/InlineLoader";
 
 // UI Components
 import PayrollStatCard from "../components/payrollStatCard";
@@ -102,8 +103,8 @@ export const PayrollManagement = () => {
 
   if (loading) {
     return (
-      <div className="dashboard-bg p-8 min-h-screen flex items-center justify-center text-[var(--color-foreground)]">
-        <p className="text-lg animate-pulse font-medium">Loading payroll dashboard...</p>
+      <div className="dashboard-bg p-8 min-h-screen">
+        <InlineLoader message="Loading payroll dashboard..." />
       </div>
     );
   }

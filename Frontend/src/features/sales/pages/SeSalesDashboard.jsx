@@ -6,13 +6,15 @@ import SEPerformanceWidgets from '../components/SEPerformanceWidgets';
 import SEMyLeadsTable from '../components/SEMyLeadsTable';
 import SEMyOrdersTable from '../components/SEMyOrdersTable';
 import SETodaySummaryAndVisits from '../components/SETodaySummaryAndVisits';
+import InlineLoader from "../../../components/common/InlineLoader";
+
 const SESalesDashboard = () => {
   const { data, isLoading, error } = useSEDashboardData();
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#070707] flex items-center justify-center text-xs text-gray-500 font-medium animate-pulse">
-        Syncing executive workspace & metrics...
+      <div className="min-h-screen bg-[#070707]">
+        <InlineLoader message="Syncing executive workspace & metrics..." />
       </div>
     );
   }

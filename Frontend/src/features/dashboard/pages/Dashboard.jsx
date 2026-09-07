@@ -6,6 +6,7 @@ import AnalyticsSection from "../widgets/AnalyticsSection";
 import { useNavigate } from "react-router-dom";
 import TaskActivitySection from "../widgets/TaskActivitySection";
 import QuickActionSection from "../widgets/QuickActionSection";
+import InlineLoader from "../../../components/common/InlineLoader";
 
 const Dashboard = () => {
   const { role, user } = useOutletContext();
@@ -27,7 +28,7 @@ const Dashboard = () => {
   };
 
   if (!dashboard && loading) {
-    return <div className="py-16 text-center text-foreground-muted">Loading dashboard…</div>;
+    return <InlineLoader message="Loading dashboard..." />;
   }
 
   if (error) return <div className="py-16 text-center text-red-400">{error}</div>;

@@ -5,13 +5,14 @@ import ProfileHeader from "../components/ProfileHeader";
 import InfoCard from "../components/InfoCard";
 import ChangePasswordModal from "../components/ChangePasswordModal";
 import { openProfileDocument } from "../service/profileService";
+import InlineLoader from "../../../components/common/InlineLoader";
 
 const Profile = () => {
   const [openPasswordModal, setOpenPasswordModal] = useState(false);
   const { user, profile, permissions, loading, error } = useProfile();
 
   if (error) return <section className="p-8 text-danger">{error}</section>;
-  if (loading || !profile) return <section className="p-8 text-foreground-muted">Loading profile…</section>;
+  if (loading || !profile) return <section className="p-8"><InlineLoader message="Loading profile..." /></section>;
 
   return (
     <section className="space-y-8">
