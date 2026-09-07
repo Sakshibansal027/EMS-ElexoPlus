@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DollarSign, X, ArrowUpRight, Calendar, Tag, Plus } from "lucide-react";
-import { getExpenseStatusStyle as getStatusStyle, formatAmount, createExpenseClaim } from "../utils/payroll";
+import { getExpenseStatusStyle as getStatusStyle, formatAmount } from "../utils/payroll";
 
-const ExpensesReimbursementCard = ({ expenses = [] }) => {
-    // Purely initialized with incoming props
+const ExpensesReimbursementCard = ({ expenses = [], onCreate, errorMessage }) => {
     const [expensesList, setExpensesList] = useState(expenses);
     const [isViewAllOpen, setIsViewAllOpen] = useState(false);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [formError, setFormError] = useState("");
 
     // Form State
     const [formData, setFormData] = useState({
@@ -15,20 +16,36 @@ const ExpensesReimbursementCard = ({ expenses = [] }) => {
         date: new Date().toISOString().split("T")[0],
     });
 
-    const handleAddExpense = (e) => {
+    useEffect(() => {
+        setExpensesList(expenses);
+    }, [expenses]);
+
+    const handleAddExpense = async (e) => {
         e.preventDefault();
-        if (!formData.type || !formData.amount) return;
+        if (!formData.type.trim() || !formData.amount || Number(formData.amount) <= 0 || !formData.date) {
+            setFormError("Enter a category, a positive amount, and the expense date.");
+            return;
+        }
+        if (!onCreate) {
+            setFormError("Expense claims are unavailable for this account.");
+            return;
+        }
 
-        const newClaim = createExpenseClaim(
-            formData.type,
-            formData.amount,
-            formData.date,
-            expensesList.length
-        );
-
-        setExpensesList([newClaim, ...expensesList]);
-        setFormData({ type: "", amount: "", date: new Date().toISOString().split("T")[0] });
-        setIsAddModalOpen(false);
+        setIsSubmitting(true);
+        setFormError("");
+        try {
+            await onCreate({
+                expense_type: formData.type.trim(),
+                amount: Number(formData.amount),
+                expense_date: formData.date,
+            });
+            setFormData({ type: "", amount: "", date: new Date().toISOString().split("T")[0] });
+            setIsAddModalOpen(false);
+        } catch (error) {
+            setFormError(error?.message || "Unable to submit the expense claim.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const previewExpenses = expensesList.slice(0, 3);
@@ -123,6 +140,11 @@ const ExpensesReimbursementCard = ({ expenses = [] }) => {
                         </div>
 
                         <form onSubmit={handleAddExpense} className="p-6 space-y-4">
+                            {(formError || errorMessage) && (
+                                <p className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+                                    {formError || errorMessage}
+                                </p>
+                            )}
                             <div>
                                 <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">
                                     Expense Category / Type
@@ -176,9 +198,10 @@ const ExpensesReimbursementCard = ({ expenses = [] }) => {
                                 </button>
                                 <button
                                     type="submit"
+                                    disabled={isSubmitting}
                                     className="px-5 py-2 bg-yellow-500 hover:bg-yellow-400 text-black text-xs font-bold rounded-xl transition-all uppercase tracking-wider"
                                 >
-                                    Submit Claim
+                                    {isSubmitting ? "Submitting..." : "Submit Claim"}
                                 </button>
                             </div>
                         </form>

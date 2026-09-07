@@ -35,11 +35,11 @@ const AttendanceImpactCard = ({ data }) => {
                         <div>
                             <p className="text-xs text-zinc-400">Total Unplanned Leaves / LOP</p>
                             <p className="text-base font-bold text-white mt-0.5">
-                                {summary.totalUnplannedLeaves || "14 Days"}
+                                {summary.totalUnplannedLeaves ?? "0 Days"}
                             </p>
                         </div>
                         <span className="text-[10px] bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-1 rounded font-medium">
-                            {summary.impactLevel || "High Impact"}
+                            {summary.impactLevel ?? "No impact"}
                         </span>
                     </div>
 
@@ -47,7 +47,7 @@ const AttendanceImpactCard = ({ data }) => {
                         <div>
                             <p className="text-xs text-zinc-400">Estimated Payroll Loss</p>
                             <p className="text-base font-bold text-red-400 mt-0.5">
-                                {summary.estimatedLoss || "₹12,400"}
+                                {summary.estimatedLoss ?? "₹0"}
                             </p>
                         </div>
                         <AlertCircle size={18} className="text-red-400/80" />
@@ -58,7 +58,7 @@ const AttendanceImpactCard = ({ data }) => {
                 <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-xl p-2.5 flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-yellow-500 shrink-0"></span>
                     <p className="text-[11px] text-zinc-300">
-                        {summary.crossedLopCount ?? 3} team members crossed LOP limits this month.
+                        {summary.crossedLopCount ?? 0} team members crossed LOP limits this month.
                     </p>
                 </div>
             </div>

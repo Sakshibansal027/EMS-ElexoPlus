@@ -40,7 +40,7 @@ import { PayrollReportsExporter } from "../components/PayrollReportsAndActions";
 
 import { adminTabsConfig } from "../config/AdminTabs";
 import { PAYROLL_TABS } from "../constants/payroll";
-import { X, Send } from "lucide-react";
+import { LayoutDashboard, Send, X } from "lucide-react";
 
 export const PayrollManagement = () => {
   const {
@@ -53,6 +53,7 @@ export const PayrollManagement = () => {
     salaryRevisions = [],
     lopCases = [],
     bankTransfers = [],
+    reimbursements = [],
     stages = [],
     currentStage = 1,
     exceptions = [],
@@ -61,10 +62,14 @@ export const PayrollManagement = () => {
     joiningExitData = null,
     isAttendanceFrozen,
     isSubmitting,
+    isFreezing,
+    currentPeriodLabel,
+    dispatchingPayrollId,
     selectedEmployeeForHold,
     isHoldModalOpen,
     loading,
     error,
+    operationError,
 
     // Modals & Drawers
     isBankDrawerOpen,
@@ -87,12 +92,21 @@ export const PayrollManagement = () => {
 
     // Actions
     processPayroll,
+    verifyPayroll,
+    rejectPayroll,
+    approvePayroll,
+    payPayroll,
     approveSalaryRevision,
     rejectSalaryRevision,
     resolveLopCase,
     handleFreezeAttendance,
     handleSubmitToFinance,
     handleHoldUpdated,
+    reviewReimbursement,
+    applyReimbursement,
+    createReimbursement,
+    dispatchBankTransfer,
+    viewPayroll,
     downloadPayslip,
     downloadHistory,
   } = usePayrollManagement();
@@ -100,6 +114,18 @@ export const PayrollManagement = () => {
   // Tab states for views with tab switchers
   const [adminActiveTab, setAdminActiveTab] = useState("overview");
   const [dualActiveTab, setDualActiveTab] = useState(PAYROLL_TABS.TEAM || PAYROLL_TABS.MANAGEMENT || "TEAM");
+  const [drawerTransferReferences, setDrawerTransferReferences] = useState({});
+
+  const dispatchFromBankDrawer = async (transfer) => {
+    const reference = (drawerTransferReferences[transfer.payrollId] || "").trim();
+    if (!reference) return;
+    await dispatchBankTransfer(transfer.payrollId, reference);
+    setDrawerTransferReferences((previous) => {
+      const next = { ...previous };
+      delete next[transfer.payrollId];
+      return next;
+    });
+  };
 
   if (loading) {
     return (
@@ -133,6 +159,11 @@ export const PayrollManagement = () => {
 
   return (
     <div className="min-h-screen text-[var(--color-foreground)]">
+      {operationError && (
+        <div className="sticky top-3 z-40 mx-auto mt-4 max-w-5xl rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+          {operationError}
+        </div>
+      )}
       {/* 🔴 1. FULL PAYROLL CONTROL VIEW (ADMIN ORIGINAL UI) */}
       {isFullControlView && (
         <div className="dashboard-bg p-6 sm:p-8 min-h-screen text-[var(--color-foreground)] max-w-7xl mx-auto space-y-6 relative animate-fadeIn">
@@ -266,7 +297,12 @@ export const PayrollManagement = () => {
             {adminActiveTab === "disbursements" && (
               <div className="space-y-8 animate-fadeIn">
                 <section className="space-y-4">
-                  <BankTransfers transfers={bankTransfers} onViewAll={openBankDrawer} />
+                  <BankTransfers
+                    transfers={bankTransfers}
+                    onViewAll={openBankDrawer}
+                    onDispatch={dispatchBankTransfer}
+                    dispatchingPayrollId={dispatchingPayrollId}
+                  />
                 </section>
 
                 <section className="space-y-4 pt-4">
@@ -282,7 +318,15 @@ export const PayrollManagement = () => {
                 </section>
 
                 <section className="space-y-4 pt-4">
-                  <PayrollTable records={records} processPayroll={processPayroll} />
+                  <PayrollTable
+                    records={records}
+                    onProcess={processPayroll}
+                    onVerify={verifyPayroll}
+                    onApprove={approvePayroll}
+                    onPay={payPayroll}
+                    onViewRecord={viewPayroll}
+                    onDownloadPayslip={downloadPayslip}
+                  />
                 </section>
               </div>
             )}
@@ -515,7 +559,10 @@ export const PayrollManagement = () => {
                   <AttendanceImpactCard data={teamData?.attendanceImpact} />
                 </div>
                 <div className="lg:col-span-5 h-full flex flex-col">
-                  <ExpenseReimbursementCard expenses={teamData?.expenseReimbursements} />
+                  <ExpenseReimbursementCard
+                    expenses={teamData?.expenseReimbursements}
+                    onApprove={(reimbursementId) => reviewReimbursement(reimbursementId, "Approved")}
+                  />
                 </div>
                 <div className="lg:col-span-3 h-full flex flex-col">
                   <QuickReportsCard reports={teamData?.quickReports} />
@@ -634,9 +681,13 @@ export const PayrollManagement = () => {
             <div className="xl:col-span-6">
               <IncentiveProjectionCard targetData={personalPayroll?.incentiveProjection} />
             </div>
-            <div className="xl:col-span-6">
-              <ExpensesReimbursementCard expenses={personalPayroll?.expenseReimbursements} />
-            </div>
+                <div className="xl:col-span-6">
+              <ExpensesReimbursementCard
+                expenses={personalPayroll?.expenseReimbursements}
+                onCreate={createReimbursement}
+                errorMessage={operationError}
+              />
+                </div>
           </div>
         </div>
       )}
@@ -709,12 +760,31 @@ export const PayrollManagement = () => {
                       <span>A/C: {t.account}</span>
                       <span>IFSC: {t.ifsc}</span>
                     </div>
-                    <button
-                      onClick={() => alert(`Initiating bank transfer batch for ${t.name}`)}
-                      className="w-full py-2 text-xs font-bold rounded-lg bg-[var(--color-primary)] text-primary-foreground hover:opacity-90 transition inline-flex items-center justify-center gap-1.5 cursor-pointer"
-                    >
-                      <Send size={13} /> Dispatch Payout
-                    </button>
+                    {t.transferStatus === "Ready" && !t.isOnHold ? (
+                      <div className="flex gap-2">
+                        <input
+                          value={drawerTransferReferences[t.payrollId] || ""}
+                          onChange={(event) => setDrawerTransferReferences((previous) => ({
+                            ...previous,
+                            [t.payrollId]: event.target.value,
+                          }))}
+                          placeholder="Bank UTR / reference"
+                          className="min-w-0 flex-1 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 text-xs"
+                        />
+                        <button
+                          type="button"
+                          disabled={!drawerTransferReferences[t.payrollId]?.trim() || dispatchingPayrollId === t.payrollId}
+                          onClick={() => dispatchFromBankDrawer(t)}
+                          className="shrink-0 px-3 py-2 text-xs font-bold rounded-lg bg-[var(--color-primary)] text-primary-foreground hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 transition inline-flex items-center justify-center gap-1.5"
+                        >
+                          <Send size={13} /> {dispatchingPayrollId === t.payrollId ? "Dispatching..." : "Dispatch"}
+                        </button>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-[var(--color-foreground-muted)]">
+                        {t.isOnHold ? "Blocked: employee has an active salary hold." : `Transfer ${t.transferStatus}.`}
+                      </p>
+                    )}
                   </div>
                 ))
               )}

@@ -60,12 +60,28 @@ class PayrollOperationsRepository
 
     public function revision(string $id): ?array
     {
-        foreach ($this->revisions() as $revision) {
-            if ($revision['salary_revision_id'] === $id) {
-                return $revision;
-            }
-        }
-        return null;
+        $statement = $this->db()->prepare(
+            'SELECT sr.*, e.employee_code, e.full_name AS employee_name,
+                    d.department_name
+             FROM salary_revisions sr
+             JOIN employees e ON e.employee_id = sr.employee_id
+             LEFT JOIN departments d ON d.department_id = e.department_id
+             WHERE sr.salary_revision_id = ?
+             LIMIT 1'
+        );
+        $statement->execute([$id]);
+        return $statement->fetch() ?: null;
+    }
+
+    public function hasPendingRevision(string $employeeId): bool
+    {
+        $statement = $this->db()->prepare(
+            "SELECT 1 FROM salary_revisions
+             WHERE employee_id = ? AND status = 'Pending'
+             LIMIT 1"
+        );
+        $statement->execute([$employeeId]);
+        return (bool) $statement->fetchColumn();
     }
 
     public function createRevision(array $data): array
@@ -132,6 +148,52 @@ class PayrollOperationsRepository
                  bonus, gross_salary, net_salary)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
         )->execute([Uuid::generate(), $employeeId, ...$values]);
+    }
+
+    /**
+     * Preserve an employee's current salary-component split when a gross
+     * revision becomes effective.  It prevents a client from choosing a
+     * favourable (or invalid) component mix during approval.
+     */
+    public function revisedCompensation(string $employeeId, float $grossSalary): array
+    {
+        $employee = $this->employee($employeeId);
+        if (!$employee) {
+            throw new \RuntimeException('Employee not found.');
+        }
+
+        $oldGross = max(0.0, (float) ($employee['gross_salary'] ?? 0));
+        $componentNames = ['basic_salary', 'hra', 'allowance', 'bonus'];
+        $components = [];
+
+        if ($oldGross > 0) {
+            $allocated = 0.0;
+            foreach ($componentNames as $index => $name) {
+                if ($index === count($componentNames) - 1) {
+                    $components[$name] = round($grossSalary - $allocated, 2);
+                    continue;
+                }
+
+                $value = round($grossSalary * ((float) ($employee[$name] ?? 0) / $oldGross), 2);
+                $components[$name] = $value;
+                $allocated += $value;
+            }
+
+            $netSalary = round($grossSalary * ((float) ($employee['net_salary'] ?? 0) / $oldGross), 2);
+        } else {
+            // A compensation record should normally already exist, but this
+            // safe fallback keeps the model internally consistent if legacy
+            // data is incomplete.
+            $components = [
+                'basic_salary' => round($grossSalary * 0.50, 2),
+                'hra' => round($grossSalary * 0.20, 2),
+                'allowance' => round($grossSalary * 0.30, 2),
+                'bonus' => 0.0,
+            ];
+            $netSalary = $grossSalary;
+        }
+
+        return [...$components, 'gross_salary' => $grossSalary, 'net_salary' => $netSalary];
     }
 
     public function lopCases(?string $employeeId = null, ?string $status = 'Pending'): array
@@ -296,12 +358,17 @@ class PayrollOperationsRepository
 
     public function reimbursement(string $id): ?array
     {
-        foreach ($this->reimbursements() as $reimbursement) {
-            if ($reimbursement['reimbursement_id'] === $id) {
-                return $reimbursement;
-            }
-        }
-        return null;
+        $sql = 'SELECT er.*, e.employee_code, e.full_name AS employee_name,
+                       d.department_name, pp.payroll_month, pp.payroll_year
+                FROM expense_reimbursements er
+                JOIN employees e ON e.employee_id = er.employee_id
+                LEFT JOIN departments d ON d.department_id = e.department_id
+                LEFT JOIN payroll_periods pp ON pp.payroll_period_id = er.payroll_period_id
+                WHERE er.reimbursement_id = ?
+                LIMIT 1';
+        $statement = $this->db()->prepare($sql);
+        $statement->execute([$id]);
+        return $statement->fetch() ?: null;
     }
 
     public function createReimbursement(array $data): array
@@ -338,12 +405,16 @@ class PayrollOperationsRepository
 
     public function applyReimbursement(string $id, string $payrollId, string $incentiveId): ?array
     {
-        $this->db()->prepare(
+        $statement = $this->db()->prepare(
             'UPDATE expense_reimbursements
-             SET payroll_id=?, applied_incentive_id=?
-             WHERE reimbursement_id=? AND status=\'Approved\''
-        )->execute([$payrollId, $incentiveId, $id]);
-        return $this->reimbursement($id);
+             SET payroll_id=?, applied_incentive_id=?, status=\'Paid\'
+             WHERE reimbursement_id=?
+               AND status=\'Approved\'
+               AND payroll_id IS NULL
+               AND applied_incentive_id IS NULL'
+        );
+        $statement->execute([$payrollId, $incentiveId, $id]);
+        return $statement->rowCount() === 1 ? $this->reimbursement($id) : null;
     }
 
     public function draftPayrollForEmployee(string $employeeId, ?string $periodId = null, ?string $payrollId = null): ?array
@@ -399,7 +470,12 @@ class PayrollOperationsRepository
     {
         $sql = 'SELECT p.payroll_id, p.employee_id, p.net_salary, p.payroll_status,
                        e.employee_code, e.full_name AS employee_name,
-                       ba.bank_name, ba.account_number, ba.ifsc_code,
+                       ba.bank_name,
+                       CASE
+                           WHEN ba.account_number IS NULL OR ba.account_number = \'\' THEN NULL
+                           ELSE CONCAT(\'XXXX\', RIGHT(ba.account_number, 4))
+                       END AS account_masked,
+                       ba.ifsc_code,
                        bt.payroll_bank_transfer_id, bt.status AS transfer_status,
                        bt.transaction_reference, bt.dispatched_at, bt.failure_reason,
                        EXISTS(
@@ -429,12 +505,49 @@ class PayrollOperationsRepository
 
     public function transferForPayroll(string $payrollId): ?array
     {
-        foreach ($this->transfers() as $transfer) {
-            if ($transfer['payroll_id'] === $payrollId) {
-                return $transfer;
-            }
-        }
-        return null;
+        $statement = $this->db()->prepare(
+            'SELECT p.payroll_id, p.employee_id, p.net_salary, p.payroll_status,
+                    e.employee_code, e.full_name AS employee_name,
+                    ba.bank_name,
+                    CASE
+                        WHEN ba.account_number IS NULL OR ba.account_number = \'\' THEN NULL
+                        ELSE CONCAT(\'XXXX\', RIGHT(ba.account_number, 4))
+                    END AS account_masked,
+                    ba.ifsc_code,
+                    bt.payroll_bank_transfer_id, bt.status AS transfer_status,
+                    bt.transaction_reference, bt.dispatched_at, bt.failure_reason,
+                    EXISTS(
+                        SELECT 1 FROM payroll_holds ph
+                        WHERE ph.employee_id=p.employee_id AND ph.status=\'Active\'
+                    ) AS is_on_hold
+             FROM payrolls p
+             JOIN employees e ON e.employee_id=p.employee_id
+             LEFT JOIN employee_bank_accounts ba
+                    ON ba.employee_id=e.employee_id AND ba.is_primary=1
+             LEFT JOIN payroll_bank_transfers bt ON bt.payroll_id=p.payroll_id
+             WHERE p.payroll_id=?
+             LIMIT 1'
+        );
+        $statement->execute([$payrollId]);
+        return $statement->fetch() ?: null;
+    }
+
+    public function payroll(string $payrollId): ?array
+    {
+        return Payroll::find($payrollId);
+    }
+
+    /** Returns raw account data for an ADMIN-only dispatch transaction. */
+    public function primaryBankAccount(string $employeeId): ?array
+    {
+        $statement = $this->db()->prepare(
+            'SELECT bank_name, account_number, ifsc_code
+             FROM employee_bank_accounts
+             WHERE employee_id=? AND is_primary=1
+             LIMIT 1'
+        );
+        $statement->execute([$employeeId]);
+        return $statement->fetch() ?: null;
     }
 
     public function createDispatchedTransfer(array $data): array
