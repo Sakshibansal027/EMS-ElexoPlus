@@ -6,10 +6,25 @@ export const salesService = {
   getSeDashboardData: async (executiveId) => {
     return fetchSEDashboardData(executiveId);
   },
+  getAdminDashboardData: async () => {
+    const [dashboard, leads, orders, targets, visits, reports] = await Promise.all([
+      salesApi.dashboard(), salesApi.listLeads(), salesApi.orders(), salesApi.targets(), salesApi.visits(), salesApi.dailyReports(),
+    ]);
+    return salesService._buildDashboardResponse(dashboard, leads, orders, targets, visits, reports, 'ADMIN');
+  },
+  getHrDashboardData: async () => {
+    const [dashboard, leads, orders, targets, visits, reports] = await Promise.all([
+      salesApi.dashboard(), salesApi.listLeads(), salesApi.orders(), salesApi.targets(), salesApi.visits(), salesApi.dailyReports(),
+    ]);
+    return salesService._buildDashboardResponse(dashboard, leads, orders, targets, visits, reports, 'HR');
+  },
   getAsmDashboardData: async () => {
     const [dashboard, leads, orders, targets, visits, reports] = await Promise.all([
       salesApi.dashboard(), salesApi.listLeads(), salesApi.orders(), salesApi.targets(), salesApi.visits(), salesApi.dailyReports(),
     ]);
+    return salesService._buildDashboardResponse(dashboard, leads, orders, targets, visits, reports, 'ASM');
+  },
+  _buildDashboardResponse: (dashboard, leads, orders, targets, visits, reports, role) => {
     const deliveredByEmployee = orders.filter((order) => order.order_status === 'Delivered').reduce((all, order) => ({
       ...all,
       [order.employee_id]: (all[order.employee_id] || 0) + Number(order.order_value || 0),
@@ -55,7 +70,6 @@ export const salesService = {
     };
   },
 
-  // Future API layer handle karne ke liye create lead skeleton bhi ready rakha hai
   createLead: async (leadData) => {
     return salesApi.createLead(leadData);
   },

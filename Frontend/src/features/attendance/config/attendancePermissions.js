@@ -52,16 +52,16 @@ const attendancePermissions = {
 
     showStats: true,
     showAnalytics: true,
-    showDepartmentAnalytics: true,
+    showDepartmentAnalytics: false,
     showAttendanceTable: true,
     showCorrections: true,
     showQuickActions: true,
 
-    canApproveCorrections: true,
+    canApproveCorrections: false,
     canEditAttendance: false,
     canExport: false,
     canViewReports: true,
-    canViewAllEmployees: true,
+    canViewAllEmployees: false,
   },
 
   [ROLES.SALES_EXECUTIVE]: {

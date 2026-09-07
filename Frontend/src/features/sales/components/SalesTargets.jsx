@@ -90,7 +90,7 @@ export function SalesTargets({ leads = [], targets = [], readOnly = false }) {
     .filter(a => a.name.toLowerCase().includes(searchTerm.toLowerCase()) || a.role.toLowerCase().includes(searchTerm.toLowerCase()))
     .map((agent) => {
       const agentConvertedLeads = leads.filter(l => {
-        const matchesAgent = l.assignedTo === agent.name;
+        const matchesAgent = l.assignedTo === agent.name || l.assignedSeId === agent.employeeId;
         const matchesStatus = l.status === "Converted";
         const matchesSegment = segmentFilter === "All" || l.type === segmentFilter;
         return matchesAgent && matchesStatus && matchesSegment;

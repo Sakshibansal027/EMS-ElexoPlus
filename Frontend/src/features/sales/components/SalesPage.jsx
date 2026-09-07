@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useSalesData } from "../hooks/useSalesData";
-import { SalesCards } from "../components/SalesCards";
+import { SalesCards } from "../components/SalesCard";
 import LeadManagement from "./LeadManagement"; 
 
 const SalesPage = () => {

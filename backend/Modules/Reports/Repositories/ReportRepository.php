@@ -216,6 +216,9 @@ class ReportRepository
 
     public function getAsmReports(array $filters = []): array
 {
+    $asmDesignation = $filters['asm_designation'] ?? 'Area Sales Manager';
+    $seDesignation = $filters['se_designation'] ?? 'Sales Executive';
+
     $sql = "
         SELECT
             asm.employee_id AS id,
@@ -227,7 +230,7 @@ class ReportRepository
                 FROM employees se
                 INNER JOIN designations se_ds
                     ON se_ds.designation_id = se.designation_id
-                WHERE se_ds.designation_name = 'Sales Executive'
+                WHERE se_ds.designation_name = :se_designation_team
                   AND se.reporting_manager_id = asm.employee_id
             ) AS teamSize,
 
@@ -251,7 +254,7 @@ class ReportRepository
                     FROM employees se
                     INNER JOIN designations se_ds
                         ON se_ds.designation_id = se.designation_id
-                    WHERE se_ds.designation_name = 'Sales Executive'
+                    WHERE se_ds.designation_name = :se_designation_perf
                       AND se.reporting_manager_id = asm.employee_id
                 ) = 0 THEN 0
                 ELSE (
@@ -272,7 +275,7 @@ class ReportRepository
                         ON se_ds.designation_id = se.designation_id
                     LEFT JOIN targets se_target
                         ON se_target.assigned_to_employee_id = se.employee_id
-                    WHERE se_ds.designation_name = 'Sales Executive'
+                    WHERE se_ds.designation_name = :se_designation_detail
                       AND se.reporting_manager_id = asm.employee_id
                 )
             END AS teamPerformance
@@ -288,10 +291,15 @@ class ReportRepository
         LEFT JOIN territories t
             ON t.territory_id = tg.territory_id
 
-        WHERE asm_ds.designation_name = 'Area Sales Manager'
+        WHERE asm_ds.designation_name = :asm_designation
     ";
 
-    $params = [];
+    $params = [
+        'asm_designation' => $asmDesignation,
+        'se_designation_team' => $seDesignation,
+        'se_designation_perf' => $seDesignation,
+        'se_designation_detail' => $seDesignation,
+    ];
 
     if (!empty($filters['employee_id'])) {
         $sql .= " AND asm.employee_id = :asm_employee_id";
