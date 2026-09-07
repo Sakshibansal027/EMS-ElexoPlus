@@ -10,15 +10,16 @@ import InlineLoader from "../../../components/common/InlineLoader";
 import { salesApi } from '../services/salesApi';
 const AsmSalesDashboard = () => {
   const { cards, data: initialData, loading, error } = useSalesData();
-  const asmAssignedTerritory = "All Assigned Territories";
+  const asmAssignedTerritory = initialData?.asmTerritory || "All Assigned Territories";
 
   // Modals & Feedback States
   const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
   const [selectedSeForTarget, setSelectedSeForTarget] = useState(null);
   const [selectedSeForFeedback, setSelectedSeForFeedback] = useState(null);
-  const [isFullPerformanceOpen, setIsFullPerformanceOpen] = useState(false); // View Full Performance Modal State
+  const [isFullPerformanceOpen, setIsFullPerformanceOpen] = useState(false);
   const [feedbackText, setFeedbackText] = useState('');
   const [actionError, setActionError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form Lead Type State
   const [leadFormType, setLeadFormType] = useState('B2B');
@@ -35,7 +36,7 @@ const AsmSalesDashboard = () => {
 
   // Form Initial States
   const [leadForm, setLeadForm] = useState({
-    companyName: '', customerName: '', contactPerson: '', phone: '', email: '', requirement: '', estimatedValue: '', assignedSeId: 'SE001', gstNumber: ''
+    companyName: '', customerName: '', contactPerson: '', phone: '', email: '', requirement: '', estimatedValue: '', assignedSeId: '', gstNumber: ''
   });
 
   const PIPELINE_STAGES = ['New Lead', 'Contacted', 'Proposal Sent', 'In Negotiation', 'Closed'];
@@ -55,18 +56,12 @@ const AsmSalesDashboard = () => {
           feedback: se.feedback || ''
         };
       });
-      // Hydrate the existing dashboard state from the API response.
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLocalSePerformanceList(enrichedSeList);
     }
     if (initialData?.leadsPipeline) {
       setAllLeads(initialData.leadsPipeline);
     }
-  }, [initialData]);
-
-  const filteredSePerformanceList = useMemo(() => {
-    return localSePerformanceList;
-  }, [localSePerformanceList]);
+  }, [initialData?.sePerformanceList, initialData?.leadsPipeline]);
 
   const filteredLeadsForAsm = useMemo(() => {
     return allLeads.filter(lead => {
@@ -86,7 +81,9 @@ const AsmSalesDashboard = () => {
 
   const handleLeadSubmit = async (e) => {
     e.preventDefault();
-    const targetSe = filteredSePerformanceList.find(se => se.id === leadForm.assignedSeId) || { name: 'Unassigned SE' };
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    const targetSe = localSePerformanceList.find(se => se.id === leadForm.assignedSeId) || { name: 'Unassigned SE' };
     let newLeadObj;
     try {
       const created = await salesApi.createLead({
@@ -103,21 +100,26 @@ const AsmSalesDashboard = () => {
       });
       newLeadObj = { ...created, name: created.name || created.lead_name, segment: created.segment || leadFormType, status: created.status || 'New Lead', value: Number(created.value || leadForm.estimatedValue || 0), assignedSeId: leadForm.assignedSeId, assignedSeName: targetSe.name };
     } catch {
+      setIsSubmitting(false);
       return;
     }
 
     setAllLeads(prevLeads => [newLeadObj, ...prevLeads]);
     setActivePipelineTab(leadFormType);
     setIsLeadModalOpen(false);
-    setLeadForm({ companyName: '', customerName: '', contactPerson: '', phone: '', email: '', requirement: '', estimatedValue: '', assignedSeId: 'SE001', gstNumber: '' });
+    setLeadForm({ companyName: '', customerName: '', contactPerson: '', phone: '', email: '', requirement: '', estimatedValue: '', assignedSeId: '', gstNumber: '' });
+    setIsSubmitting(false);
   };
 
   const handleTargetSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     const updatedTargetValue = Number(e.target.targetAmount.value);
     try {
       await salesApi.createTarget({ assigned_to_employee_id: selectedSeForTarget.id, target_value: updatedTargetValue });
     } catch {
+      setIsSubmitting(false);
       return;
     }
     setLocalSePerformanceList(prevList =>
@@ -134,6 +136,7 @@ const AsmSalesDashboard = () => {
       })
     );
     setSelectedSeForTarget(null);
+    setIsSubmitting(false);
   };
 
   const handleFeedbackSubmit = async (e) => {
@@ -142,10 +145,13 @@ const AsmSalesDashboard = () => {
       setActionError('No daily report is available for this executive yet.');
       return;
     }
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
       await salesApi.updateDailyReportFeedback(selectedSeForFeedback.feedbackReportId, feedbackText);
     } catch (requestError) {
       setActionError(requestError.response?.data?.message || 'Unable to save feedback.');
+      setIsSubmitting(false);
       return;
     }
     setLocalSePerformanceList(prevList =>
@@ -154,13 +160,14 @@ const AsmSalesDashboard = () => {
     setSelectedSeForFeedback(null);
     setFeedbackText('');
     setActionError('');
+    setIsSubmitting(false);
   };
 
   if (loading) return <div className="min-h-screen"><InlineLoader message="Loading KPI Metrics..." /></div>;
   if (error) return <div className="p-6 text-red-500 bg-[#141414] min-h-screen">{error}</div>;
   const executiveOptions = [
     { label: "All Executives", value: "ALL" },
-    ...filteredSePerformanceList.map(se => ({
+    ...localSePerformanceList.map(se => ({
       label: se.name,
       value: se.id
     }))
@@ -216,7 +223,7 @@ const AsmSalesDashboard = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#1f1f1f]/60 text-sm">
-              {filteredSePerformanceList.map((se) => (
+              {localSePerformanceList.map((se) => (
                 <tr key={se.id} className="hover:bg-[#151515] transition-colors duration-150">
                   <td className="py-4 px-2 font-medium text-gray-200">{se.name}</td>
                   <td className="py-4 px-2 font-mono text-gray-400">{se.target ? se.target.toLocaleString('en-IN') : '0'}</td>
@@ -282,7 +289,7 @@ const AsmSalesDashboard = () => {
               onValueChange={(value) => setSelectedSeFilter(value)}
               options={executiveOptions}
               variant="pill"
-              width="w-[150px]" // Aap layout ke hisab se width adjust kar sakte ho (e.g., w-44, w-48)
+              width="w-[150px]"
               placeholder="All Executives"
             />
 
@@ -395,7 +402,7 @@ const AsmSalesDashboard = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#1f1f1f]/40">
-                  {filteredSePerformanceList.map((se) => {
+                  {localSePerformanceList.map((se) => {
                     const gap = (se.target || 0) - (se.achievement || 0);
                     return (
                       <tr key={se.id} className="hover:bg-[#151515] transition-colors">
@@ -437,7 +444,7 @@ const AsmSalesDashboard = () => {
               </div>
               <div className="flex justify-end gap-3 border-t border-[#2a2a2a] pt-4">
                 <button type="button" onClick={() => setSelectedSeForFeedback(null)} className="px-4 py-2 border border-[#2a2a2a] text-gray-400 rounded-lg text-xs hover:bg-[#1c1c1c]">Cancel</button>
-                <button type="submit" className="px-5 py-2 bg-yellow-500 text-black font-semibold rounded-lg text-xs hover:bg-yellow-600 shadow-md">Push Feedback</button>
+                <button type="submit" disabled={isSubmitting} className="px-5 py-2 bg-yellow-500 text-black font-semibold rounded-lg text-xs hover:bg-yellow-600 shadow-md disabled:opacity-50 disabled:cursor-not-allowed">{isSubmitting ? 'Saving...' : 'Push Feedback'}</button>
               </div>
             </form>
           </div>
@@ -459,7 +466,7 @@ const AsmSalesDashboard = () => {
               </div>
               <div className="mt-2 flex justify-end gap-3 border-t border-[#2a2a2a] pt-4">
                 <button type="button" onClick={() => setSelectedSeForTarget(null)} className="px-4 py-2 border border-[#2a2a2a] text-gray-400 rounded-lg text-xs hover:bg-[#1c1c1c]">Cancel</button>
-                <button type="submit" className="px-5 py-2 bg-yellow-500 text-black font-semibold rounded-lg text-xs hover:bg-yellow-600 shadow-md">Confirm Target</button>
+                <button type="submit" disabled={isSubmitting} className="px-5 py-2 bg-yellow-500 text-black font-semibold rounded-lg text-xs hover:bg-yellow-600 shadow-md disabled:opacity-50 disabled:cursor-not-allowed">{isSubmitting ? 'Saving...' : 'Confirm Target'}</button>
               </div>
             </form>
           </div>
@@ -533,12 +540,12 @@ const AsmSalesDashboard = () => {
                 </div>
                 <div>
                   <label className="block text-[11px] text-gray-400 uppercase tracking-wider mb-1 font-medium">Assign Executive (SE)</label>
-                  <select className="w-full bg-[#161616] border border-[#2a2a2a] rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-yellow-500" value={leadForm.assignedSeId} onChange={(e) => setLeadForm({ ...leadForm, assignedSeId: e.target.value })}>{filteredSePerformanceList.map(se => <option key={se.id} value={se.id}>{se.name} ({se.id})</option>)}</select>
+                  <select className="w-full bg-[#161616] border border-[#2a2a2a] rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-yellow-500" value={leadForm.assignedSeId} onChange={(e) => setLeadForm({ ...leadForm, assignedSeId: e.target.value })}>{localSePerformanceList.map(se => <option key={se.id} value={se.id}>{se.name} ({se.id})</option>)}</select>
                 </div>
               </div>
               <div className="mt-4 flex justify-end gap-3 border-t border-[#2a2a2a] pt-4">
                 <button type="button" onClick={() => setIsLeadModalOpen(false)} className="px-4 py-2 border border-[#2a2a2a] text-gray-400 rounded-lg text-xs hover:bg-[#1c1c1c]">Cancel</button>
-                <button type="submit" className="px-5 py-2 bg-yellow-500 text-black font-semibold rounded-lg text-xs hover:bg-yellow-600 shadow-md">Save Lead</button>
+                <button type="submit" disabled={isSubmitting} className="px-5 py-2 bg-yellow-500 text-black font-semibold rounded-lg text-xs hover:bg-yellow-600 shadow-md disabled:opacity-50 disabled:cursor-not-allowed">{isSubmitting ? 'Saving...' : 'Save Lead'}</button>
               </div>
             </form>
           </div>

@@ -189,39 +189,55 @@ class LeaveRequestService
             return ['success' => false, 'message' => 'No active HR approver is configured to continue this request.', 'status' => 422];
         }
 
+        $db = Database::connection();
+        try {
+            $db->beginTransaction();
+
             $updatedStage = $this->approvals->recordDecision($pendingStage['approval_id'], $decision, $remarks);
             if (!$updatedStage || empty($updatedStage['updated'])) {
                 $db->rollBack();
                 return ['success' => false, 'message' => 'This approval was already processed. Refresh the queue and try again.', 'status' => 409];
             }
 
-        if ($decision === 'Rejected') {
-            $this->requests->setStatus($leaveRequestId, 'Rejected');
-            return ['success' => true, 'message' => 'Leave request rejected.'];
-        }
+            if ($decision === 'Rejected') {
+                $this->requests->setStatus($leaveRequestId, 'Rejected');
+                $db->commit();
+                return ['success' => true, 'message' => 'Leave request rejected.'];
+            }
 
-        // Approved at this stage — figure out if there's a next one.
-        if ($pendingStage['approval_level'] === 'ASM') {
-            $this->approvals->create([
-                'leave_request_id' => $leaveRequestId,
-                'approver_employee_id' => $nextApproverEmployeeId,
-                'approval_level' => 'HR',
-                'decision' => 'Pending',
-            ]);
-            $this->requests->setStatus($leaveRequestId, 'Under Review');
+            // Approved at this stage — figure out if there's a next one.
+            if ($pendingStage['approval_level'] === 'ASM') {
+                $this->approvals->create([
+                    'leave_request_id' => $leaveRequestId,
+                    'approver_employee_id' => $nextApproverEmployeeId,
+                    'approval_level' => 'HR',
+                    'decision' => 'Pending',
+                ]);
+                $this->requests->setStatus($leaveRequestId, 'Under Review');
+                $db->commit();
 
-            return ['success' => true, 'message' => 'Approved by ASM, forwarded to HR.'];
-        }
+                return ['success' => true, 'message' => 'Approved by ASM, forwarded to HR.'];
+            }
 
-        // HR-level approval is the final stage — finalize the request.
-        $this->requests->setStatus($leaveRequestId, 'Approved');
+            // HR-level approval is the final stage — finalize the request.
+            $this->requests->setStatus($leaveRequestId, 'Approved');
 
-        $requestedDays = $this->calculateRequestedDays($request['start_date'], $request['end_date'], $request['day_type'], $workingDays);
-        $year = (int) substr($request['start_date'], 0, 4);
-        $balance = $this->balances->findForEmployeeYear($request['employee_id'], $request['leave_policy_id'], $year);
+            $requestedDays = $this->calculateRequestedDays($request['start_date'], $request['end_date'], $request['day_type'], $workingDays);
+            $year = (int) substr($request['start_date'], 0, 4);
+            $balance = $this->balances->findForEmployeeYear($request['employee_id'], $request['leave_policy_id'], $year);
 
-        if ($balance) {
-            $this->balances->deductDays($balance['leave_balance_id'], $requestedDays);
+            if ($balance) {
+                $this->balances->deductDays($balance['leave_balance_id'], $requestedDays);
+            }
+
+            $db->commit();
+        } catch (\Throwable $exception) {
+            try {
+                if ($db->inTransaction()) $db->rollBack();
+            } catch (\Throwable) {
+                // Preserve the original database error.
+            }
+            throw $exception;
         }
 
         return ['success' => true, 'message' => 'Leave request fully approved.'];

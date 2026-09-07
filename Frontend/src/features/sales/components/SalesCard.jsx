@@ -6,7 +6,7 @@ const cardMap = {
   targetAchievement: "Target Achievement",
 
   activeASM: "Active ASM",
-  activeSE: "Active SE",
+  activeSE: "Active SEs",
   performanceSummary: "Performance Summary",
   monthlyAchievement: "Monthly Achievement",
 

@@ -90,8 +90,29 @@ class DashboardService
     private function activities(string $role, string $employeeId): array
     {
         $items = [];
-        foreach ($this->repository->rows('SELECT order_no,order_value,created_at FROM orders WHERE employee_id=? ORDER BY created_at DESC LIMIT 4', [$employeeId]) as $row) $items[] = $this->activity('Order created', "Order {$row['order_no']} for ₹" . number_format((float) $row['order_value'], 2), 'success', $row['created_at']);
-        foreach ($this->repository->rows('SELECT lead_name,created_at FROM leads WHERE assigned_employee_id=? ORDER BY created_at DESC LIMIT 3', [$employeeId]) as $row) $items[] = $this->activity('Lead added', $row['lead_name'], 'info', $row['created_at']);
+
+        $orderEmployeeIds = [$employeeId];
+        $leadEmployeeIds = [$employeeId];
+
+        if ($role === 'ASM') {
+            $teamIds = $this->repository->directReportIds($employeeId);
+            $orderEmployeeIds = array_filter(array_merge([$employeeId], $teamIds));
+            $leadEmployeeIds = array_filter(array_merge([$employeeId], $teamIds));
+        }
+
+        [$orderMarks, $orderParams] = $this->inClause($orderEmployeeIds);
+        if ($orderMarks) {
+            foreach ($this->repository->rows("SELECT order_no,order_value,created_at FROM orders WHERE employee_id IN ($orderMarks) ORDER BY created_at DESC LIMIT 4", $orderParams) as $row) {
+                $items[] = $this->activity('Order created', "Order {$row['order_no']} for ₹" . number_format((float) $row['order_value'], 2), 'success', $row['created_at']);
+            }
+        }
+
+        [$leadMarks, $leadParams] = $this->inClause($leadEmployeeIds);
+        if ($leadMarks) {
+            foreach ($this->repository->rows("SELECT lead_name,created_at FROM leads WHERE assigned_employee_id IN ($leadMarks) ORDER BY created_at DESC LIMIT 3", $leadParams) as $row) {
+                $items[] = $this->activity('Lead added', $row['lead_name'], 'info', $row['created_at']);
+            }
+        }
         if (in_array($role, ['ADMIN', 'HR'], true)) {
             $leaveActivity = $this->repository->rows('SELECT lr.status,lr.updated_at,e.full_name FROM leave_requests lr INNER JOIN employees e ON e.employee_id=lr.employee_id ORDER BY lr.updated_at DESC LIMIT 5');
             foreach ($leaveActivity as $row) $items[] = $this->activity('Leave ' . strtolower($row['status']), $row['full_name'] . "'s leave request", $row['status'] === 'Approved' ? 'success' : 'warning', $row['updated_at']);

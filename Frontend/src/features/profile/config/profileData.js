@@ -99,6 +99,7 @@ const PROFILE_DATA = {
 
     employment: [
       { label: "Employee ID", value: "EMP056" },
+      { label: "Designation", value: "Area Sales Manager" },
       { label: "Department", value: "Sales" },
       { label: "Reporting To", value: "Harshit Goel" },
       { label: "Joining Date", value: "15 Feb 2024" },

@@ -58,6 +58,10 @@ export const useSalesData = () => {
 
         if (role === 'SE' || role === 'SALES_EXECUTIVE') {
           result = await salesService.getSeDashboardData(userId);
+        } else if (role === 'ADMIN') {
+          result = await salesService.getAdminDashboardData(userId);
+        } else if (role === 'HR') {
+          result = await salesService.getHrDashboardData(userId);
         } else if (role === 'ASM') {
           result = await salesService.getAsmDashboardData(userId);
         } else {

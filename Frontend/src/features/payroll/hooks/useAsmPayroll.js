@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { asmPayrollService } from "../services/asmPayrollService";
 import { PAYROLL_TABS } from "../constants/payroll";
 import { downloadFile, downloadPayrollHistory } from "../utils/payroll";
@@ -14,6 +14,8 @@ export const useAsmPayroll = () => {
   const [isPayslipOpen, setIsPayslipOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isRevisionOpen, setIsRevisionOpen] = useState(false);
+  const payrollRef = useRef(payroll);
+  payrollRef.current = payroll;
 
   useEffect(() => {
     asmPayrollService.getPayroll().then(setPayroll)
@@ -39,7 +41,13 @@ export const useAsmPayroll = () => {
     closeHistory: () => setIsHistoryOpen(false),
     openRevisions: () => setIsRevisionOpen(true),
     closeRevisions: () => setIsRevisionOpen(false),
-    downloadPayslip: () => downloadFile(payroll.latestPayslip?.pdfUrl, `${payroll.latestPayslip?.month || "Payroll"}-Payslip.pdf`),
-    downloadHistory: (item) => downloadPayrollHistory(item ? [item] : payroll.payrollHistory),
+    downloadPayslip: () => {
+      const p = payrollRef.current;
+      downloadFile(p.latestPayslip?.pdfUrl, `${p.latestPayslip?.month || "Payroll"}-Payslip.pdf`);
+    },
+    downloadHistory: (item) => {
+      const p = payrollRef.current;
+      downloadPayrollHistory(item ? [item] : p.payrollHistory);
+    },
   };
 };
