@@ -1,67 +1,118 @@
-import React, { useState } from "react";
-import { Eye, Download, X } from "lucide-react";
-import PayslipModal from "./PayslipModal";
+import React, { useMemo, useState } from "react";
+import { Download, Eye, LoaderCircle, X } from "lucide-react";
+import PayslipModal from "./payslipModal.jsx";
 
-export const PayrollModal = ({ isOpen, onClose, records = [], processPayroll }) => {
+const currency = (value) => "₹" + Number(value || 0).toLocaleString("en-IN");
+
+const nextAction = (record, actions) => {
+  if (record.status === "Draft" && actions.onProcess) return ["Process", () => actions.onProcess(record.id)];
+  if (record.status === "Processing" && record.verificationStatus === "Pending" && actions.onVerify) {
+    return ["Verify", () => actions.onVerify(record.id)];
+  }
+  if (record.status === "Processing" && record.verificationStatus === "Verified" && actions.onApprove) {
+    return ["Approve", () => actions.onApprove(record.id)];
+  }
+  if (record.status === "Approved" && actions.onPay) return ["Mark Paid", () => actions.onPay(record.id)];
+  return null;
+};
+
+export const PayrollModal = ({
+  isOpen,
+  onClose,
+  records = [],
+  onProcess,
+  onVerify,
+  onApprove,
+  onPay,
+  onViewRecord,
+  onDownloadPayslip,
+}) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
-  const [selectedPayslipRecord, setSelectedPayslipRecord] = useState(null); // <-- State for Payslip Modal inside View All
+  const [selectedPayslipData, setSelectedPayslipData] = useState(null);
+  const [busyId, setBusyId] = useState(null);
+  const [error, setError] = useState("");
+  const statuses = useMemo(
+    () => ["All", ...Array.from(new Set(records.map((record) => record.status).filter(Boolean)))],
+    [records],
+  );
 
   if (!isOpen) return null;
 
   const filteredRecords = records.filter((record) => {
-    const matchesSearch = 
-      record.employeeName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      record.department?.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesStatus = 
-      statusFilter === "All" || record.status === statusFilter;
-
-    return matchesSearch && matchesStatus;
+    const search = searchQuery.toLowerCase();
+    const matchesSearch =
+      record.employeeName?.toLowerCase().includes(search) ||
+      record.department?.toLowerCase().includes(search) ||
+      record.employeeCode?.toLowerCase().includes(search);
+    return matchesSearch && (statusFilter === "All" || record.status === statusFilter);
   });
 
+  const openRecord = async (record) => {
+    setBusyId(record.id);
+    setError("");
+    try {
+      const detail = onViewRecord ? await onViewRecord(record.id) : { payslipData: record };
+      setSelectedPayslipData(detail?.payslipData || detail?.payroll || record);
+    } catch (requestError) {
+      setError(requestError?.message || "Unable to load this payroll.");
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const download = async (record) => {
+    setBusyId(record.id);
+    setError("");
+    try {
+      let payload = record;
+      if (!payload.payslipId && onViewRecord) {
+        const detail = await onViewRecord(record.id);
+        payload = detail?.payslip || detail?.payslipData || record;
+      }
+      await onDownloadPayslip?.(payload);
+    } catch (requestError) {
+      setError(requestError?.message || "No generated payslip is available for this payroll.");
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fadeIn">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
       <div className="card w-full max-w-5xl max-h-[90vh] flex flex-col bg-[var(--color-background-elevated)] border border-[var(--color-border)] shadow-2xl rounded-2xl overflow-hidden">
-        
-        {/* MODAL HEADER */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--color-border)]">
           <div>
-            <h2 className="text-xl font-bold tracking-tight text-[var(--color-foreground)]">
-              All Payroll Records
-            </h2>
-            <p className="text-xs text-[var(--color-foreground-muted)] mt-0.5">
-              Complete disbursement list with search and filter controls
+            <h2 className="text-xl font-bold">All Payroll Records</h2>
+            <p className="mt-0.5 text-xs text-[var(--color-foreground-muted)]">
+              Search and act on live payroll records.
             </p>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-xl bg-[var(--color-secondary)] hover:bg-[var(--color-border)] text-[var(--color-foreground)] transition cursor-pointer"
-          >
+          <button type="button" onClick={onClose} className="p-2 rounded-xl bg-[var(--color-secondary)]">
             <X size={18} />
           </button>
         </div>
 
-        {/* SEARCH & FILTERS */}
-        <div className="p-6 border-b border-[var(--color-border)] flex flex-col md:flex-row gap-4 items-center justify-between">
+        <div className="p-5 border-b border-[var(--color-border)] flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <input
-            type="text"
-            placeholder="Search by name or department..."
+            type="search"
+            placeholder="Search name, employee code, or department..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full md:w-80 px-4 py-2 rounded-xl bg-[var(--color-background-secondary)] border border-[var(--color-border)] text-sm text-[var(--color-foreground)] focus:outline-none transition"
+            onChange={(event) => setSearchQuery(event.target.value)}
+            className="w-full sm:w-80 px-4 py-2 rounded-xl bg-[var(--color-background-secondary)] border border-[var(--color-border)] text-sm"
           />
-
-          <div className="flex items-center gap-2 w-full md:w-auto">
-            {["All", "Processed", "Pending"].map((status) => (
+          <div className="flex flex-wrap gap-2">
+            {statuses.map((status) => (
               <button
                 key={status}
+                type="button"
                 onClick={() => setStatusFilter(status)}
-                className={`px-4 py-1.5 rounded-full text-xs font-semibold transition cursor-pointer ${
-                  statusFilter === status
-                    ? "bg-[var(--color-primary)] text-white font-bold shadow-md"
-                    : "bg-[var(--color-secondary)] text-[var(--color-foreground-muted)] hover:bg-[var(--color-border)]"
-                }`}
+                className={
+                  "px-3 py-1.5 rounded-full text-xs font-semibold " +
+                  (statusFilter === status
+                    ? "bg-[var(--color-primary)] text-white"
+                    : "bg-[var(--color-secondary)] text-[var(--color-foreground-muted)]")
+                }
               >
                 {status}
               </button>
@@ -69,96 +120,54 @@ export const PayrollModal = ({ isOpen, onClose, records = [], processPayroll }) 
           </div>
         </div>
 
-        {/* TABLE CONTAINER */}
-        <div className="overflow-y-auto flex-1 custom-scrollbar p-6">
+        {error && <div className="mx-5 mt-4 rounded-lg bg-red-500/10 border border-red-500/30 px-3 py-2 text-xs text-red-300">{error}</div>}
+
+        <div className="overflow-y-auto flex-1 p-5">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-[var(--color-border)] text-[var(--color-muted-foreground)]">
-                <th className="px-4 py-3 font-bold text-xs uppercase tracking-wider">Employee</th>
-                <th className="px-4 py-3 font-bold text-xs uppercase tracking-wider">Department</th>
-                <th className="px-4 py-3 font-bold text-xs uppercase tracking-wider">Pay Period</th>
-                <th className="px-4 py-3 font-bold text-xs uppercase tracking-wider">Net Pay</th>
-                <th className="px-4 py-3 font-bold text-xs uppercase tracking-wider">Status</th>
-                <th className="px-4 py-3 font-bold text-xs uppercase tracking-wider text-right">Action</th>
+                <th className="px-3 py-3 text-xs uppercase">Employee</th>
+                <th className="px-3 py-3 text-xs uppercase">Period</th>
+                <th className="px-3 py-3 text-xs uppercase">Net Pay</th>
+                <th className="px-3 py-3 text-xs uppercase">Status</th>
+                <th className="px-3 py-3 text-right text-xs uppercase">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--color-border)]">
               {filteredRecords.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="px-4 py-10 text-center text-[var(--color-muted-foreground)] text-sm">
+                  <td colSpan="5" className="px-3 py-12 text-center text-sm text-[var(--color-foreground-muted)]">
                     No matching payroll records found.
                   </td>
                 </tr>
               ) : (
                 filteredRecords.map((record) => {
-                  const initials = record.employeeName
-                    ? record.employeeName.split(" ").map((n) => n[0]).join("").substring(0, 2)
-                    : "EM";
-
+                  const action = nextAction(record, { onProcess, onVerify, onApprove, onPay });
+                  const busy = busyId === record.id;
                   return (
-                    <tr key={record.id} className="hover:bg-[var(--color-card-hover)] transition-colors">
-                      <td className="px-4 py-3.5">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-[var(--color-secondary)] border border-[var(--color-border-light)] text-[var(--color-primary)] font-bold text-xs flex items-center justify-center shrink-0">
-                            {initials}
-                          </div>
-                          <div>
-                            <div className="font-semibold text-sm text-[var(--color-foreground)]">
-                              {record.employeeName}
-                            </div>
-                            <div className="text-xs text-[var(--color-foreground-muted)]">
-                              {record.role}
-                            </div>
-                          </div>
-                        </div>
+                    <tr key={record.id}>
+                      <td className="px-3 py-3">
+                        <p className="text-sm font-semibold">{record.employeeName}</p>
+                        <p className="text-xs text-[var(--color-foreground-muted)]">{record.employeeCode}</p>
                       </td>
-                      <td className="px-4 py-3.5 text-sm text-[var(--color-foreground-muted)]">
-                        {record.department}
-                      </td>
-                      <td className="px-4 py-3.5 text-sm text-[var(--color-foreground-muted)]">
-                        {record.payPeriod}
-                      </td>
-                      <td className="px-4 py-3.5 text-sm font-bold text-[var(--color-foreground)]">
-                        ₹{record.netPay?.toLocaleString()}
-                      </td>
-                      <td className="px-4 py-3.5">
-                        {record.status === "Processed" ? (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-500/10 text-green-400 border border-green-500/20">
-                            Processed
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">
-                            Pending
-                          </span>
-                        )}
-                      </td>
-                      
-                      {/* ACTION BUTTONS (View, Download, Process) */}
-                      <td className="px-4 py-3.5 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          {record.status === "Pending" && (
-                            <button
-                              onClick={() => processPayroll(record.id)}
-                              className="px-2.5 py-1 text-xs font-bold rounded-md bg-[var(--color-primary)] text-white hover:opacity-90 transition cursor-pointer"
-                            >
-                              Process
+                      <td className="px-3 py-3 text-sm">{record.payPeriod}</td>
+                      <td className="px-3 py-3 text-sm font-bold">{currency(record.netPay)}</td>
+                      <td className="px-3 py-3 text-xs">{record.status}</td>
+                      <td className="px-3 py-3">
+                        <div className="flex justify-end gap-2">
+                          {action && (
+                            <button type="button" onClick={action[1]} className="btn-primary px-2 py-1 text-xs">
+                              {action[0]}
                             </button>
                           )}
-
-                          {/* View Payslip Button */}
-                          <button
-                            onClick={() => setSelectedPayslipRecord(record)}
-                            className="px-2.5 py-1 text-xs font-bold rounded-md bg-[var(--color-secondary)] hover:bg-[var(--color-border)] text-[var(--color-foreground)] transition cursor-pointer flex items-center gap-1"
-                            title="View Payslip Letterhead"
-                          >
-                            <Eye size={13} /> View
+                          <button type="button" onClick={() => openRecord(record)} disabled={busy} className="p-1.5 rounded bg-[var(--color-secondary)]">
+                            {busy ? <LoaderCircle size={13} className="animate-spin" /> : <Eye size={13} />}
                           </button>
-
-                          {/* Download Button */}
                           <button
-                            onClick={() => alert(`Downloading payslip for ${record.employeeName}`)}
-                            className="p-1.5 text-xs font-bold rounded-md bg-[var(--color-secondary)] hover:bg-[var(--color-border)] text-[var(--color-foreground)] transition cursor-pointer flex items-center justify-center"
-                            title="Download Payslip"
+                            type="button"
+                            onClick={() => download(record)}
+                            disabled={busy || record.status !== "Paid"}
+                            className="p-1.5 rounded bg-[var(--color-secondary)] disabled:opacity-40"
                           >
                             <Download size={13} />
                           </button>
@@ -171,16 +180,11 @@ export const PayrollModal = ({ isOpen, onClose, records = [], processPayroll }) 
             </tbody>
           </table>
         </div>
-
       </div>
 
-      {/* Nested Payslip Letterhead Modal */}
-      {selectedPayslipRecord && (
-        <PayslipModal
-          data={selectedPayslipRecord}
-          onClose={() => setSelectedPayslipRecord(null)}
-        />
-      )}
+      {selectedPayslipData && <PayslipModal data={selectedPayslipData} onClose={() => setSelectedPayslipData(null)} />}
     </div>
   );
 };
+
+export default PayrollModal;

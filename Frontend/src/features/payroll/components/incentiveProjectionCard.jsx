@@ -2,10 +2,10 @@ import { useState } from "react";
 import { TrendingUp, Target, Award, ShieldCheck } from "lucide-react";
 
 const IncentiveProjectionCard = ({ targetData }) => {
-    const [achievedSales, setAchievedSales] = useState(targetData?.currentSales || 850000);
-    const targetQuota = targetData?.targetQuota || 1000000;
-    const progress = (achievedSales / targetQuota) * 100;
-    const rate = progress >= 120 ? 4 : progress >= 100 ? 3.2 : (targetData?.baseIncentivePercentage || 2.5);
+    const [achievedSales, setAchievedSales] = useState(targetData?.currentSales ?? 0);
+    const targetQuota = targetData?.targetQuota ?? 0;
+    const progress = targetQuota > 0 ? (achievedSales / targetQuota) * 100 : 0;
+    const rate = progress >= 120 ? 4 : progress >= 100 ? 3.2 : (targetData?.baseIncentivePercentage ?? 0);
     const currentProjectedIncentive = Math.round((achievedSales * rate) / 100);
     const quotaPercentage = Math.min(Math.round(progress), 150);
 
@@ -52,11 +52,12 @@ const IncentiveProjectionCard = ({ targetData }) => {
                 
                 <input 
                     type="range" 
-                    min="500000" 
-                    max="1500000" 
-                    step="25000"
+                    min="0"
+                    max={Math.max(targetQuota * 1.5, 1)}
+                    step={Math.max(Math.round(targetQuota / 40), 1)}
                     value={achievedSales}
                     onChange={(e) => setAchievedSales(Number(e.target.value))}
+                    disabled={targetQuota === 0}
                     className="w-full accent-yellow-500 bg-[#222] h-1.5 rounded-lg appearance-none cursor-pointer"
                 />
                 

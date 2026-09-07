@@ -4,6 +4,37 @@ import { ReportPreviewModal } from "./reports/ReportPreviewModal";
 
 export const PayrollReports = ({ records = [] }) => {
   const [selectedPreviewReport, setSelectedPreviewReport] = useState(null);
+  const numeric = (value) => Number(value || 0);
+  const latestRecord = records[0] || {};
+  const liveTrend = records.map((record) => ({
+    month: record.payPeriod || record.month || "—",
+    gross: numeric(record.grossSalary),
+    netPay: numeric(record.netPay),
+  }));
+  const liveIncentives = records
+    .filter((record) => numeric(record.totalIncentives) > 0)
+    .map((record) => ({
+      name: record.employeeName || record.employeeCode || "Employee",
+      amount: numeric(record.totalIncentives),
+      status: record.status || "Recorded",
+    }));
+  const liveDepartmentData = Object.values(records.reduce((groups, record) => {
+    const name = record.department || "Unassigned";
+    groups[name] ||= { name, target: 0, achieved: 0, percentage: 0 };
+    groups[name].target += numeric(record.grossSalary);
+    groups[name].achieved += numeric(record.netPay);
+    return groups;
+  }, {})).map((group) => ({
+    ...group,
+    percentage: group.target ? Math.round((group.achieved / group.target) * 100) : 0,
+  }));
+  const liveContext = {
+    month: latestRecord.payPeriod || "No payroll period",
+    employeeName: latestRecord.employeeName || "No payroll records",
+    employeeId: latestRecord.employeeCode || "—",
+    designation: latestRecord.role || "—",
+    department: latestRecord.department || "—",
+  };
 
   const reportsList = [
     {
@@ -113,10 +144,58 @@ export const PayrollReports = ({ records = [] }) => {
         ],
       },
     },
-  ];
+  ].map((report) => {
+    if (report.id === "monthly") {
+      return { ...report, data: { ...liveContext, trendData: liveTrend } };
+    }
+    if (report.id === "department") {
+      return { ...report, data: { ...liveContext, employeeName: "All Departments", employeeId: "DEPT-SUMMARY", designation: "Department Overview", targetData: liveDepartmentData } };
+    }
+    if (report.id === "deduction") {
+      return {
+        ...report,
+        data: {
+          ...liveContext,
+          performanceData: records.map((record) => ({
+            month: record.payPeriod || record.month || "—",
+            performance: numeric(record.grossSalary) ? Math.round(((numeric(record.grossSalary) - numeric(record.totalDeductions)) / numeric(record.grossSalary)) * 100) : 0,
+            incentive: numeric(record.totalDeductions),
+          })),
+        },
+      };
+    }
+    if (report.id === "lop") {
+      return { ...report, data: { ...liveContext, employeeName: "Deduction Summary", employeeId: "DEDUCTION-SUMMARY", trendData: records.map((record) => ({ month: record.payPeriod || record.month || "—", netPay: numeric(record.totalDeductions), gross: numeric(record.grossSalary) })) } };
+    }
+    return { ...report, data: { ...liveContext, incentives: liveIncentives } };
+  });
 
-  const handleDownloadReport = (title) => {
-    alert(`Downloading ${title} as CSV/PDF...`);
+  const handleDownloadReport = (report) => {
+    const lines = [
+      ["Employee Code", "Employee", "Department", "Period", "Gross", "Incentives", "Deductions", "Net Pay", "Status"],
+      ...records.map((row) => [
+        row.employeeCode || row.employeeId || "",
+        row.employeeName || "",
+        row.department || "",
+        row.month || "",
+        row.grossSalary || 0,
+        row.totalIncentives || 0,
+        row.totalDeductions || 0,
+        row.netPay || 0,
+        row.status || "",
+      ]),
+    ];
+    const csv = lines
+      .map((line) => line.map((value) => `"${String(value).replaceAll('"', '""')}"`).join(","))
+      .join("\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${report.id}-payroll-report.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -161,7 +240,7 @@ export const PayrollReports = ({ records = [] }) => {
 
               <button
                 type="button"
-                onClick={() => handleDownloadReport(report.title)}
+                onClick={() => handleDownloadReport(report)}
                 className="px-3 py-1.5 text-xs font-bold rounded-lg bg-[var(--color-primary)] text-white hover:opacity-90 transition flex items-center gap-1.5 cursor-pointer"
               >
                 <Download size={13} /> Export

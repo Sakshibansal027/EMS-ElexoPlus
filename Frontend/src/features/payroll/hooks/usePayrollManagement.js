@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from "react";
 import { useOutletContext } from "react-router-dom";
 import { getPayrollPermissions } from "../config/permissions/payrollPermissions";
 import payrollService from "../services/payrollService";
-import { downloadFile, downloadPayrollHistory } from "../utils/payroll";
 
 const normalizeRole = (role) => {
   const upper = String(role || "SALES_EXECUTIVE").toUpperCase();
@@ -19,7 +18,7 @@ const getCurrentUserFromStore = (outletContext, propsRole) => {
   if (rawRole) {
     const userObj = outletContext?.user || outletContext;
     return {
-      id: userObj?.id || userObj?.empId || "EMP001",
+      id: userObj?.id || userObj?.user_id || userObj?.employee_id || userObj?.empId || "EMP001",
       name: userObj?.name || "User",
       role: normalizeRole(rawRole),
     };
@@ -48,7 +47,7 @@ const getCurrentUserFromStore = (outletContext, propsRole) => {
     "ADMIN";
 
   return {
-    id: rawUser?.id || rawUser?.empId || "EMP001",
+    id: rawUser?.id || rawUser?.user_id || rawUser?.employee_id || rawUser?.empId || "EMP001",
     name: rawUser?.name || "Harshit Goel",
     role: normalizeRole(role),
   };
@@ -79,6 +78,7 @@ export const usePayrollManagement = (propsRole) => {
     reports: [],
     bankTransfers: [],
     structures: [],
+    reimbursements: [],
     stages: [],
     currentStage: 1,
     exceptions: [],
@@ -89,10 +89,13 @@ export const usePayrollManagement = (propsRole) => {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [operationError, setOperationError] = useState(null);
 
   // Tab & Modal UI States
   const [activeTab, setActiveTab] = useState("overview");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isFreezing, setIsFreezing] = useState(false);
+  const [dispatchingPayrollId, setDispatchingPayrollId] = useState(null);
   const [selectedEmployeeForHold, setSelectedEmployeeForHold] = useState(null);
 
   const [isPayslipOpen, setIsPayslipOpen] = useState(false);
@@ -119,13 +122,10 @@ export const usePayrollManagement = (propsRole) => {
     window.addEventListener("roleChange", handleRoleCheck);
     window.addEventListener("userChange", handleRoleCheck);
 
-    const intervalId = setInterval(handleRoleCheck, 500);
-
     return () => {
       window.removeEventListener("storage", handleRoleCheck);
       window.removeEventListener("roleChange", handleRoleCheck);
       window.removeEventListener("userChange", handleRoleCheck);
-      clearInterval(intervalId);
     };
   }, [outletContext, propsRole]);
 
@@ -137,7 +137,7 @@ export const usePayrollManagement = (propsRole) => {
       const data = await payrollService.getPayrollDashboardData(currentUser.role, currentUser.id);
       setDashboardData((prev) => ({ ...prev, ...data }));
     } catch (err) {
-      setError(err?.message || "Failed to load payroll management data.");
+      setError(payrollService.getErrorMessage(err, "Failed to load payroll management data."));
     } finally {
       setLoading(false);
     }
@@ -150,70 +150,195 @@ export const usePayrollManagement = (propsRole) => {
   // Operations
   const handleProcessPayroll = async (payrollId) => {
     try {
+      setOperationError(null);
       await payrollService.processPayroll(payrollId);
-      fetchData();
+      await fetchData();
     } catch (err) {
       console.error("Failed to process payroll:", err);
+      setOperationError(payrollService.getErrorMessage(err, "Unable to process this payroll."));
+    }
+  };
+
+  const handleVerifyPayroll = async (payrollId) => {
+    try {
+      setOperationError(null);
+      await payrollService.verifyPayroll(payrollId);
+      await fetchData();
+    } catch (err) {
+      setOperationError(payrollService.getErrorMessage(err, "Unable to verify this payroll."));
+    }
+  };
+
+  const handleRejectPayroll = async (payrollId) => {
+    try {
+      setOperationError(null);
+      await payrollService.rejectPayroll(payrollId);
+      await fetchData();
+    } catch (err) {
+      setOperationError(payrollService.getErrorMessage(err, "Unable to reject this payroll."));
+    }
+  };
+
+  const handleApprovePayroll = async (payrollId) => {
+    try {
+      setOperationError(null);
+      await payrollService.approvePayroll(payrollId);
+      await fetchData();
+    } catch (err) {
+      setOperationError(payrollService.getErrorMessage(err, "Unable to approve this payroll."));
+    }
+  };
+
+  const handlePayPayroll = async (payrollId) => {
+    try {
+      setOperationError(null);
+      await payrollService.payPayroll(payrollId);
+      await fetchData();
+    } catch (err) {
+      setOperationError(payrollService.getErrorMessage(err, "Unable to mark this payroll as paid."));
     }
   };
 
   const handleApproveRevision = async (revisionId) => {
     try {
+      setOperationError(null);
       await payrollService.approveSalaryRevision(revisionId);
-      fetchData();
+      await fetchData();
     } catch (err) {
       console.error("Failed to approve salary revision:", err);
+      setOperationError(payrollService.getErrorMessage(err, "Unable to approve this salary revision."));
     }
   };
 
   const handleRejectRevision = async (revisionId) => {
     try {
+      setOperationError(null);
       await payrollService.rejectSalaryRevision(revisionId);
-      fetchData();
+      await fetchData();
     } catch (err) {
       console.error("Failed to reject salary revision:", err);
+      setOperationError(payrollService.getErrorMessage(err, "Unable to reject this salary revision."));
     }
   };
 
   const handleResolveLopCase = async (caseId) => {
     try {
+      setOperationError(null);
       await payrollService.resolveLopCase(caseId);
-      fetchData();
+      await fetchData();
     } catch (err) {
       console.error("Failed to resolve LOP case:", err);
+      setOperationError(payrollService.getErrorMessage(err, "Unable to resolve this LOP case."));
     }
   };
 
   const handleFreezeAttendance = async () => {
-    const result = await payrollService.freezeAttendance();
-    if (result.success) {
-      setDashboardData((prev) => ({ ...prev, isAttendanceFrozen: true }));
+    setIsFreezing(true);
+    try {
+      setOperationError(null);
+      await payrollService.freezeAttendance(dashboardData.currentPeriodId);
+      await fetchData();
+    } catch (err) {
+      setOperationError(payrollService.getErrorMessage(err, "Unable to freeze attendance."));
+    } finally {
+      setIsFreezing(false);
     }
   };
 
   const handleSubmitToFinance = async () => {
     setIsSubmitting(true);
     try {
-      const result = await payrollService.submitToFinance();
-      if (result.success) {
-        setDashboardData((prev) => ({
-          ...prev,
-          currentStage: result.nextStage,
-          isAttendanceFrozen: result.attendanceFrozen,
-        }));
-      }
+      setOperationError(null);
+      await payrollService.submitToFinance(dashboardData.currentPeriodId);
+      await fetchData();
+    } catch (err) {
+      setOperationError(payrollService.getErrorMessage(err, "Unable to submit this payroll period for verification."));
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleHoldUpdated = async (payload) => {
-    const updatedDirectory = await payrollService.updateSalaryHold(
-      dashboardData.directory,
-      payload
-    );
-    setDashboardData((prev) => ({ ...prev, directory: updatedDirectory }));
+    try {
+      setOperationError(null);
+      await payrollService.updateSalaryHold(payload);
+      await fetchData();
+    } catch (err) {
+      const message = payrollService.getErrorMessage(err, "Unable to update the salary hold.");
+      setOperationError(message);
+      throw new Error(message);
+    }
   };
+
+  const handleReviewReimbursement = async (reimbursementId, status) => {
+    try {
+      setOperationError(null);
+      await payrollService.reviewReimbursement(reimbursementId, status);
+      await fetchData();
+    } catch (err) {
+      const message = payrollService.getErrorMessage(err, "Unable to review this reimbursement.");
+      setOperationError(message);
+      throw new Error(message);
+    }
+  };
+
+  const handleApplyReimbursement = async (reimbursementId, payrollId) => {
+    try {
+      setOperationError(null);
+      await payrollService.applyReimbursement(reimbursementId, payrollId);
+      await fetchData();
+    } catch (err) {
+      const message = payrollService.getErrorMessage(err, "Unable to apply this reimbursement to payroll.");
+      setOperationError(message);
+      throw new Error(message);
+    }
+  };
+
+  const handleCreateReimbursement = async (payload) => {
+    try {
+      setOperationError(null);
+      await payrollService.createReimbursement(payload);
+      await fetchData();
+    } catch (err) {
+      const message = payrollService.getErrorMessage(err, "Unable to submit this reimbursement claim.");
+      setOperationError(message);
+      throw new Error(message);
+    }
+  };
+
+  const handleDispatchBankTransfer = async (payrollId, transactionReference) => {
+    setDispatchingPayrollId(payrollId);
+    try {
+      setOperationError(null);
+      await payrollService.dispatchBankTransfer(payrollId, transactionReference);
+      await fetchData();
+    } catch (err) {
+      const message = payrollService.getErrorMessage(err, "Unable to dispatch this bank transfer.");
+      setOperationError(message);
+      throw new Error(message);
+    } finally {
+      setDispatchingPayrollId(null);
+    }
+  };
+
+  const handleDownloadPayslip = async (payslip) => {
+    const payload = typeof payslip === "object"
+      ? payslip
+      : dashboardData.personalPayroll?.latestPayslip;
+    const payslipId = payload?.payslipId || payload?.id || payslip;
+    const fileName = (payload?.month || "Payroll") + "-Payslip.pdf";
+
+    try {
+      setOperationError(null);
+      await payrollService.downloadPayslip(payslipId, fileName);
+    } catch (err) {
+      const message = payrollService.getErrorMessage(err, "Unable to download this payslip.");
+      setOperationError(message);
+      throw new Error(message);
+    }
+  };
+
+  const viewPayroll = (payrollId) => payrollService.getPayrollDetail(payrollId);
 
   const permissions = getPayrollPermissions(currentUser.role);
 
@@ -223,6 +348,7 @@ export const usePayrollManagement = (propsRole) => {
     permissions,
     loading,
     error,
+    operationError,
     metrics: dashboardData.metrics,
     directory: dashboardData.directory,
     teamData: dashboardData.teamData,
@@ -233,6 +359,7 @@ export const usePayrollManagement = (propsRole) => {
     lopCases: dashboardData.lopCases,
     reports: dashboardData.reports,
     bankTransfers: dashboardData.bankTransfers,
+    reimbursements: dashboardData.reimbursements,
     structures: dashboardData.structures,
     stages: dashboardData.stages,
     currentStage: dashboardData.currentStage,
@@ -241,11 +368,15 @@ export const usePayrollManagement = (propsRole) => {
     departmentLiability: dashboardData.departmentLiability,
     joiningExitData: dashboardData.joiningExitData,
     isAttendanceFrozen: dashboardData.isAttendanceFrozen,
+    currentPeriodLabel: dashboardData.currentPeriodLabel,
+    currentPeriodId: dashboardData.currentPeriodId,
 
     // UI States & Setters
     activeTab,
     setActiveTab,
     isSubmitting,
+    isFreezing,
+    dispatchingPayrollId,
     isHoldModalOpen: Boolean(selectedEmployeeForHold),
     selectedEmployeeForHold,
     isPayslipOpen,
@@ -269,21 +400,23 @@ export const usePayrollManagement = (propsRole) => {
     closeBankDrawer: () => setIsBankDrawerOpen(false),
 
     processPayroll: handleProcessPayroll,
+    verifyPayroll: handleVerifyPayroll,
+    rejectPayroll: handleRejectPayroll,
+    approvePayroll: handleApprovePayroll,
+    payPayroll: handlePayPayroll,
     approveSalaryRevision: handleApproveRevision,
     rejectSalaryRevision: handleRejectRevision,
     resolveLopCase: handleResolveLopCase,
     handleFreezeAttendance,
     handleSubmitToFinance,
     handleHoldUpdated,
-    downloadPayslip: () =>
-      downloadFile(
-        dashboardData.personalPayroll?.latestPayslip?.pdfUrl,
-        `${dashboardData.personalPayroll?.latestPayslip?.month || "Payroll"}-Payslip.pdf`
-      ),
-    downloadHistory: (item) =>
-      downloadPayrollHistory(
-        item ? [item] : dashboardData.personalPayroll?.payrollHistory || []
-      ),
+    reviewReimbursement: handleReviewReimbursement,
+    applyReimbursement: handleApplyReimbursement,
+    createReimbursement: handleCreateReimbursement,
+    dispatchBankTransfer: handleDispatchBankTransfer,
+    viewPayroll,
+    downloadPayslip: handleDownloadPayslip,
+    downloadHistory: handleDownloadPayslip,
     refetch: fetchData,
   };
 };

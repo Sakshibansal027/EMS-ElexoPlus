@@ -1,52 +1,125 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { Download, Eye, ArrowRight, LoaderCircle } from "lucide-react";
+import { CustomDropdown } from "./ui/CustomDropdown";
 import { PayrollModal } from "./PayrollModal";
-import { CustomDropdown } from "./ui/CustomDropdown"; 
-import { PayrollReviewModal } from "./PayrollReviewModal";
 import PayslipModal from "./PayslipModal";
-import { Eye, Download, ArrowRight } from "lucide-react";
-import payrollService from "../services/payrollService";
 import InlineLoader from "../../../components/common/InlineLoader";
 
-export const PayrollTable = ({
-  records: propRecords,
-  loading: propLoading = false,
-  error: propError = null,
-  processPayroll: propProcessPayroll,
-  refetch: propRefetch,
-  limit = 4,
-}) => {
-  const loading = propLoading;
-  const error = propError;
-  const refetch = propRefetch;
-  const [internalRecords, setInternalRecords] = useState([]);
-  const [selectedMonth, setSelectedMonth] = useState("July 2026");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedRecordForReview, setSelectedRecordForReview] = useState(null);
-  const [selectedPayslipRecord, setSelectedPayslipRecord] = useState(null);
+const currency = (value) => "₹" + Number(value || 0).toLocaleString("en-IN");
 
-  useEffect(() => {
-    if (!propRecords || propRecords.length === 0) {
-      payrollService.getPayrollRecords().then((res) => {
-        setInternalRecords(res.data || res || []);
-      });
-    }
-  }, [propRecords]);
+const statusClass = (status) => {
+  if (status === "Paid") return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+  if (status === "Approved") return "bg-sky-500/10 text-sky-400 border-sky-500/20";
+  if (status === "Processing") return "bg-amber-500/10 text-amber-400 border-amber-500/20";
+  return "bg-zinc-500/10 text-zinc-300 border-zinc-500/20";
+};
 
-  const records = (propRecords && propRecords.length > 0) ? propRecords : internalRecords;
-  const processPayroll = propProcessPayroll || ((id) => {
-    payrollService.processPayroll(id);
-    setInternalRecords((prev) => prev.map((r) => r.id === id ? { ...r, status: "Processed" } : r));
+const actionFor = (record, actions = {}) => {
+  if (record.status === "Draft" && actions.onProcess) {
+    return { label: "Process", run: () => actions.onProcess(record.id) };
+  }
+  if (
+    record.status === "Processing" &&
+    record.verificationStatus === "Pending" &&
+    actions.onVerify
+  ) {
+    return { label: "Verify", run: () => actions.onVerify(record.id) };
+  }
+  if (
+    record.status === "Processing" &&
+    record.verificationStatus === "Verified" &&
+    actions.onApprove
+  ) {
+    return { label: "Approve", run: () => actions.onApprove(record.id) };
+  }
+  if (record.status === "Approved" && actions.onPay) {
+    return { label: "Mark Paid", run: () => actions.onPay(record.id) };
+  }
+  return null;
+};
+
+const sortedPeriods = (records) =>
+  Array.from(new Set(records.map((record) => record.payPeriod).filter(Boolean))).sort((left, right) => {
+    const leftRecord = records.find((record) => record.payPeriod === left);
+    const rightRecord = records.find((record) => record.payPeriod === right);
+    return (
+      (rightRecord?.payrollYear || 0) * 12 +
+      (rightRecord?.payrollMonth || 0) -
+      ((leftRecord?.payrollYear || 0) * 12 + (leftRecord?.payrollMonth || 0))
+    );
   });
 
-  const months = ["June 2026", "July 2026", "August 2026"];
+export const PayrollTable = ({
+  records = [],
+  loading = false,
+  error = null,
+  refetch,
+  limit = 4,
+  onProcess,
+  onVerify,
+  onApprove,
+  onPay,
+  onViewRecord,
+  onDownloadPayslip,
+}) => {
+  const [selectedPeriod, setSelectedPeriod] = useState("All periods");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedPayslipData, setSelectedPayslipData] = useState(null);
+  const [viewLoadingId, setViewLoadingId] = useState(null);
+  const [actionError, setActionError] = useState("");
 
-  const monthFilteredRecords = records.filter(
-    (record) => record.payPeriod === selectedMonth
+  const periods = useMemo(() => sortedPeriods(records), [records]);
+  const periodOptions = useMemo(() => ["All periods", ...periods], [periods]);
+
+  useEffect(() => {
+    if (selectedPeriod !== "All periods" && !periods.includes(selectedPeriod)) {
+      setSelectedPeriod("All periods");
+    }
+  }, [periods, selectedPeriod]);
+
+  const periodFilteredRecords = records.filter(
+    (record) => selectedPeriod === "All periods" || record.payPeriod === selectedPeriod,
   );
+  const displayedRecords = limit ? periodFilteredRecords.slice(0, limit) : periodFilteredRecords;
 
-  const displayedRecords = limit
-    ? monthFilteredRecords.slice(0, limit)
-    : monthFilteredRecords;
+  const openPayslip = async (record) => {
+    setActionError("");
+    setViewLoadingId(record.id);
+    try {
+      const detail = onViewRecord ? await onViewRecord(record.id) : { payslipData: record };
+      setSelectedPayslipData(detail?.payslipData || detail?.payroll || record);
+    } catch (requestError) {
+      setActionError(requestError?.message || "Unable to load this payroll record.");
+    } finally {
+      setViewLoadingId(null);
+    }
+  };
+
+  const downloadPayslip = async (record) => {
+    setActionError("");
+    setViewLoadingId(record.id);
+    try {
+      let payload = record;
+      if (!payload.payslipId && onViewRecord) {
+        const detail = await onViewRecord(record.id);
+        payload = detail?.payslip || detail?.payslipData || record;
+      }
+      await onDownloadPayslip?.(payload);
+    } catch (requestError) {
+      setActionError(requestError?.message || "A payslip is available only after this payroll is paid.");
+    } finally {
+      setViewLoadingId(null);
+    }
+  };
+
+  const runAction = async (action) => {
+    setActionError("");
+    try {
+      await action.run();
+    } catch (requestError) {
+      setActionError(requestError?.message || "Unable to update this payroll.");
+    }
+  };
 
   if (loading) {
     return (
@@ -58,148 +131,137 @@ export const PayrollTable = ({
 
   if (error) {
     return (
-      <div className="card p-5 bg-[rgba(231,76,60,0.08)] border border-[var(--color-danger)] text-[var(--color-danger)] rounded-[var(--radius-lg)] flex justify-between items-center">
-        <span>Failed to load records: {error}</span>
-        <button onClick={refetch} className="px-4 py-1.5 bg-[var(--color-danger)] text-white text-xs font-bold rounded-[var(--radius-sm)]">
-          Retry
-        </button>
+      <div className="card p-5 flex items-center justify-between gap-4 border border-red-500/30 text-red-400">
+        <span className="text-sm">{error}</span>
+        {refetch && (
+          <button type="button" onClick={refetch} className="btn-primary px-3 py-1.5 text-xs">
+            Retry
+          </button>
+        )}
       </div>
     );
   }
 
+  const actionProps = { onProcess, onVerify, onApprove, onPay, onViewRecord, onDownloadPayslip };
+
   return (
     <div className="space-y-5">
-      
-      {/* HEADER SECTION (Matching Bank Transfer layout style) */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div>
-            <div className="flex items-center gap-3">
-              <h2 className="text-xl font-bold tracking-tight text-[var(--color-foreground)]">Payroll Records</h2>
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="px-3 py-1 text-xs font-bold rounded-full bg-[var(--color-primary)]/10 text-[var(--color-primary)] border border-[var(--color-primary)]/20 flex items-center gap-1 cursor-pointer transition-all hover:bg-[var(--color-primary)]/20"
-              >
-                <span>View All</span>
-                <ArrowRight size={12} />
-              </button>
-            </div>
-            <p className="text-sm text-[var(--color-foreground-muted)] mt-0.5">
-              Manage and track salary disbursement records for {selectedMonth}.
-            </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <div className="flex items-center gap-3">
+            <h2 className="text-xl font-bold tracking-tight text-[var(--color-foreground)]">Payroll Records</h2>
+            <button
+              type="button"
+              onClick={() => setIsModalOpen(true)}
+              className="px-3 py-1 text-xs font-bold rounded-full bg-[var(--color-primary)]/10 text-[var(--color-primary)] border border-[var(--color-primary)]/20 inline-flex items-center gap-1 cursor-pointer"
+            >
+              View all <ArrowRight size={12} />
+            </button>
           </div>
+          <p className="mt-0.5 text-sm text-[var(--color-foreground-muted)]">
+            Live payroll records from the selected period.
+          </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="w-40">
+          <div className="w-44">
             <CustomDropdown
-              value={selectedMonth}
-              onChange={(val) => setSelectedMonth(val)}
-              options={months}
-              placeholder="Select Month"
+              value={selectedPeriod}
+              onChange={setSelectedPeriod}
+              options={periodOptions}
+              placeholder="Select period"
             />
           </div>
-
-          <span className="px-3 py-1.5 text-xs font-bold rounded-xl bg-[var(--color-primary)]/10 text-[var(--color-primary)] border border-[var(--color-primary)]/20 flex items-center gap-1.5 shadow-sm">
-            <span className="w-2 h-2 rounded-full bg-[var(--color-primary)] animate-pulse"></span>
-            {monthFilteredRecords.length} Records Found
+          <span className="px-3 py-1.5 text-xs font-bold rounded-xl bg-[var(--color-primary)]/10 text-[var(--color-primary)] border border-[var(--color-primary)]/20">
+            {periodFilteredRecords.length} records
           </span>
         </div>
       </div>
 
-      {/* TABLE CARD CONTAINER */}
-      <div className="card overflow-hidden border border-[var(--color-border)] shadow-[var(--shadow-md)] rounded-2xl bg-[var(--color-background-elevated)]">
-        <div className="overflow-x-auto custom-scrollbar">
+      {actionError && (
+        <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-xs text-red-300">
+          {actionError}
+        </div>
+      )}
+
+      <div className="card overflow-hidden border border-[var(--color-border)] rounded-2xl bg-[var(--color-background-elevated)]">
+        <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-[var(--color-background-secondary,#171717)] border-b border-[var(--color-border)] text-[var(--color-muted-foreground)]">
-                <th className="px-6 py-4 font-bold text-xs uppercase tracking-wider">Employee</th>
-                <th className="px-6 py-4 font-bold text-xs uppercase tracking-wider">Department</th>
-                <th className="px-6 py-4 font-bold text-xs uppercase tracking-wider">Pay Period</th>
-                <th className="px-6 py-4 font-bold text-xs uppercase tracking-wider">Net Pay</th>
-                <th className="px-6 py-4 font-bold text-xs uppercase tracking-wider">Status</th>
-                <th className="px-6 py-4 font-bold text-xs uppercase tracking-wider text-right">Action</th>
+              <tr className="bg-[var(--color-background-secondary)] border-b border-[var(--color-border)] text-[var(--color-muted-foreground)]">
+                <th className="px-6 py-4 text-xs font-bold uppercase">Employee</th>
+                <th className="px-6 py-4 text-xs font-bold uppercase">Department</th>
+                <th className="px-6 py-4 text-xs font-bold uppercase">Pay Period</th>
+                <th className="px-6 py-4 text-xs font-bold uppercase">Net Pay</th>
+                <th className="px-6 py-4 text-xs font-bold uppercase">Status</th>
+                <th className="px-6 py-4 text-right text-xs font-bold uppercase">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[var(--color-border)] bg-[var(--color-card)]">
+            <tbody className="divide-y divide-[var(--color-border)]">
               {displayedRecords.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="px-6 py-12 text-center text-[var(--color-muted-foreground)] caption">
-                    No payroll records found for {selectedMonth}.
+                  <td colSpan="6" className="px-6 py-12 text-center text-sm text-[var(--color-foreground-muted)]">
+                    No payroll records found for this selection.
                   </td>
                 </tr>
               ) : (
                 displayedRecords.map((record) => {
                   const initials = record.employeeName
-                    ? record.employeeName.split(" ").map((n) => n[0]).join("").substring(0, 2)
-                    : "EM";
+                    .split(" ")
+                    .map((word) => word[0])
+                    .join("")
+                    .slice(0, 2)
+                    .toUpperCase();
+                  const action = actionFor(record, actionProps);
+                  const isBusy = viewLoadingId === record.id;
 
                   return (
-                    <tr key={record.id} className="hover:bg-[var(--color-card-hover)] transition-colors duration-150 group">
+                    <tr key={record.id} className="hover:bg-[var(--color-card-hover)]">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-[var(--color-secondary)] border border-[var(--color-border-light)] text-[var(--color-primary)] font-bold text-xs flex items-center justify-center shrink-0 shadow-sm">
-                            {initials}
+                          <div className="w-9 h-9 rounded-full bg-[var(--color-secondary)] text-[var(--color-primary)] font-bold text-xs flex items-center justify-center">
+                            {initials || "EM"}
                           </div>
                           <div>
-                            <div className="font-semibold text-sm text-[var(--color-foreground)] group-hover:text-[var(--color-primary)] transition-colors">
-                              {record.employeeName}
-                            </div>
-                            <div className="caption text-xs text-[var(--color-foreground-muted)]">
-                              {record.role}
-                            </div>
+                            <p className="font-semibold text-sm">{record.employeeName}</p>
+                            <p className="text-xs text-[var(--color-foreground-muted)]">{record.employeeCode}</p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-sm font-medium text-[var(--color-foreground-muted)]">
-                        {record.department}
-                      </td>
-                      <td className="px-6 py-4 text-sm font-medium text-[var(--color-foreground-muted)]">
-                        {record.payPeriod}
-                      </td>
-                      <td className="px-6 py-4 text-sm font-bold text-[var(--color-foreground)]">
-                        ₹{record.netPay?.toLocaleString()}
+                      <td className="px-6 py-4 text-sm text-[var(--color-foreground-muted)]">{record.department}</td>
+                      <td className="px-6 py-4 text-sm text-[var(--color-foreground-muted)]">{record.payPeriod}</td>
+                      <td className="px-6 py-4 text-sm font-bold">{currency(record.netPay)}</td>
+                      <td className="px-6 py-4">
+                        <span className={"inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold " + statusClass(record.status)}>
+                          {record.status}
+                        </span>
                       </td>
                       <td className="px-6 py-4">
-                        {record.status === "Processed" ? (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[rgba(46,204,113,0.12)] text-[var(--color-success)] border border-[rgba(46,204,113,0.25)]">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-success)]"></span>
-                            Processed
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[rgba(255,191,0,0.12)] text-[var(--color-warning)] border border-[rgba(255,191,0,0.25)]">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-warning)]"></span>
-                            Pending
-                          </span>
-                        )}
-                      </td>
-                      
-                      {/* Action Column with Process, View, and Download options */}
-                      <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          {record.status === "Pending" && (
+                          {action && (
                             <button
-                              onClick={() => setSelectedRecordForReview(record)}
-                              className="btn-primary px-2.5 py-1.5 text-xs font-bold shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-primary)] active:scale-95 transition-all duration-200 cursor-pointer"
+                              type="button"
+                              onClick={() => runAction(action)}
+                              className="btn-primary px-2.5 py-1.5 text-xs font-bold"
                             >
-                              Review & Process
+                              {action.label}
                             </button>
                           )}
-
-                          {/* View Payslip Button */}
                           <button
-                            onClick={() => setSelectedPayslipRecord(record)}
-                            className="px-2.5 py-1.5 text-xs font-bold rounded-md bg-[var(--color-secondary)] hover:bg-[var(--color-border)] text-[var(--color-foreground)] transition cursor-pointer flex items-center gap-1"
-                            title="View Payslip Letterhead"
+                            type="button"
+                            onClick={() => openPayslip(record)}
+                            disabled={isBusy}
+                            className="p-1.5 rounded-md bg-[var(--color-secondary)] hover:bg-[var(--color-border)] disabled:opacity-50"
+                            title="View payroll"
                           >
-                            <Eye size={13} /> View
+                            {isBusy ? <LoaderCircle size={13} className="animate-spin" /> : <Eye size={13} />}
                           </button>
-
-                          {/* Download Button */}
                           <button
-                            onClick={() => alert(`Downloading payslip for ${record.employeeName}`)}
-                            className="p-1.5 text-xs font-bold rounded-md bg-[var(--color-secondary)] hover:bg-[var(--color-border)] text-[var(--color-foreground)] transition cursor-pointer flex items-center justify-center"
-                            title="Download Payslip"
+                            type="button"
+                            onClick={() => downloadPayslip(record)}
+                            disabled={isBusy || record.status !== "Paid"}
+                            className="p-1.5 rounded-md bg-[var(--color-secondary)] hover:bg-[var(--color-border)] disabled:cursor-not-allowed disabled:opacity-40"
+                            title={record.status === "Paid" ? "Download payslip" : "Payslip is generated after payment"}
                           >
                             <Download size={13} />
                           </button>
@@ -214,30 +276,16 @@ export const PayrollTable = ({
         </div>
       </div>
 
-      {/* Full View All Modal */}
       <PayrollModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        records={monthFilteredRecords}
-        processPayroll={processPayroll}
+        records={periodFilteredRecords}
+        {...actionProps}
       />
 
-      {/* Salary Breakdown Review Modal */}
-      <PayrollReviewModal
-        isOpen={!!selectedRecordForReview}
-        onClose={() => setSelectedRecordForReview(null)}
-        record={selectedRecordForReview}
-        onConfirm={(id) => {
-          processPayroll(id);
-          setSelectedRecordForReview(null);
-        }}
-      />
-
-      {/* Payslip Letterhead Modal */}
-      <PayslipModal
-        data={selectedPayslipRecord}
-        onClose={() => setSelectedPayslipRecord(null)}
-      />
+      {selectedPayslipData && (
+        <PayslipModal data={selectedPayslipData} onClose={() => setSelectedPayslipData(null)} />
+      )}
     </div>
   );
 };
