@@ -10,6 +10,7 @@ import {
   Filter,
   Bell,
 } from "lucide-react";
+import InlineLoader from "../../../components/common/InlineLoader";
 import useNotifications from "../../../contexts/useNotifications";
 import SelectDropdown from "../../../components/ui/SelectDropdown";
 import {
@@ -193,7 +194,7 @@ const NotificationsPage = () => {
       )}
 
       {loading ? (
-        <div className="card py-16 text-center text-sm text-muted-foreground">Loading notifications…</div>
+        <div className="card"><InlineLoader message="Loading notifications..." /></div>
       ) : list.length === 0 ? (
         <div className="card flex flex-col items-center justify-center py-20">
           <Bell size={48} className="mb-4 text-muted-foreground/40" />

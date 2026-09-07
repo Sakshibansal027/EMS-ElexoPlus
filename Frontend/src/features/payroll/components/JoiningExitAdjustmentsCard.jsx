@@ -1,3 +1,4 @@
+import InlineLoader from "../../../components/common/InlineLoader";
 
 const JoiningExitAdjustmentsCard = ({
   data = {
@@ -8,8 +9,8 @@ const JoiningExitAdjustmentsCard = ({
 }) => {
   if (loading) {
     return (
-      <div className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-2xl p-5 h-48 flex items-center justify-center text-[var(--color-foreground-muted)] text-xs">
-        Loading Adjustments...
+      <div className="bg-[var(--color-card)] border border-[var(--color-border)] rounded-2xl p-5 h-48">
+        <InlineLoader message="Loading Adjustments..." />
       </div>
     );
   }

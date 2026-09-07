@@ -6,6 +6,7 @@ import SalesTrendChart from '../components/SalesTrendChart';
 import TeamVisitsTracker from '../components/TeamVisitsTracker';
 import TeamOrders from '../components/TeamOrders';
 import CustomSelect from '../../employee-master/components/ui/CustomSelect';
+import InlineLoader from "../../../components/common/InlineLoader";
 import { salesApi } from '../services/salesApi';
 const AsmSalesDashboard = () => {
   const { cards, data: initialData, loading, error } = useSalesData();
@@ -155,7 +156,7 @@ const AsmSalesDashboard = () => {
     setActionError('');
   };
 
-  if (loading) return <div className="p-6 text-yellow-500 bg-[#141414] min-h-screen">Loading KPI Metrics...</div>;
+  if (loading) return <div className="min-h-screen"><InlineLoader message="Loading KPI Metrics..." /></div>;
   if (error) return <div className="p-6 text-red-500 bg-[#141414] min-h-screen">{error}</div>;
   const executiveOptions = [
     { label: "All Executives", value: "ALL" },

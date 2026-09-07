@@ -6,6 +6,7 @@ import { useReports } from "../hooks/useReports";
 
 import ReportStatCard from "../components/ReportStatCard";
 import ReportFilters from "../components/ReportFilters";
+import InlineLoader from "../../../components/common/InlineLoader";
 import ReportTable from "../components/ReportTable";
 import ExportOptions from "../components/ExportOptions";
 
@@ -45,10 +46,7 @@ const AdminReports = () => {
   if (loading) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          <p className="text-muted-foreground">Loading reports data...</p>
-        </div>
+        <InlineLoader message="Loading reports data..." />
       </div>
     );
   }

@@ -2,14 +2,12 @@
  * Small presentational helpers for loading and empty states in the
  * Attendance module. Kept in-module so no other feature is affected.
  */
-import { Loader2, Inbox } from "lucide-react";
+import { Inbox } from "lucide-react";
+import InlineLoader from "../../../components/common/InlineLoader";
 
-export const AttendanceLoading = ({ label = "Loading attendance…" }) => (
+export const AttendanceLoading = ({ label = "Loading attendance..." }) => (
   <div className="flex min-h-[240px] w-full items-center justify-center rounded-xl border border-border bg-background-elevated p-8">
-    <div className="flex flex-col items-center gap-3 text-muted-foreground">
-      <Loader2 size={22} className="animate-spin text-primary" />
-      <p className="text-sm">{label}</p>
-    </div>
+    <InlineLoader message={label} />
   </div>
 );
 

@@ -5,6 +5,7 @@ import AddEmployeeModal from "../components/AddEmployeeModal/AddEmployeeModal";
 import EmployeeSearch from "../components/EmployeeSearch";
 import EmployeeFilters from "../components/EmployeeFilters";
 import EmployeeGrid from "../components/EmployeeGrid";
+import InlineLoader from "../../../components/common/InlineLoader";
 
 
 import useEmployees from "../hooks/useEmployees";
@@ -95,7 +96,7 @@ const EmployeeMaster = () => {
             />
           </div>
         </div>
-        {loading ? <p className="py-10 text-center text-foreground-muted">Loading employees…</p> : <EmployeeGrid employees={filteredEmployees} onEdit={handleEdit} onDelete={deleteEmployee} />}
+        {loading ? <InlineLoader message="Loading employees..." /> : <EmployeeGrid employees={filteredEmployees} onEdit={handleEdit} onDelete={deleteEmployee} />}
       </div>
 
       {openAddModal && (

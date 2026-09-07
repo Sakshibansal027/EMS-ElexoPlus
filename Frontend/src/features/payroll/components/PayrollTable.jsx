@@ -5,6 +5,7 @@ import { PayrollReviewModal } from "./PayrollReviewModal";
 import PayslipModal from "./PayslipModal";
 import { Eye, Download, ArrowRight } from "lucide-react";
 import payrollService from "../services/payrollService";
+import InlineLoader from "../../../components/common/InlineLoader";
 
 export const PayrollTable = ({
   records: propRecords,
@@ -49,11 +50,8 @@ export const PayrollTable = ({
 
   if (loading) {
     return (
-      <div className="card p-10 text-center flex flex-col items-center justify-center gap-3">
-        <div className="w-6 h-6 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin"></div>
-        <p className="caption text-[var(--color-foreground-muted)] font-medium">
-          Loading payroll records...
-        </p>
+      <div className="card p-10">
+        <InlineLoader message="Loading payroll records..." />
       </div>
     );
   }
