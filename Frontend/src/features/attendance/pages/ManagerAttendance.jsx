@@ -8,6 +8,9 @@ import AttendanceTable from "../components/AttendanceTable";
 import { AttendanceTrendChart } from "../components/AttendanceCharts";
 import AttendanceTimeline from "../components/AttendanceTimeline";
 import CorrectionsTable from "../components/CorrectionsTable";
+import CheckInPanel from "../components/CheckInPanel";
+import LiveClockCard from "../components/LiveClockCard";
+import TodayShiftCard from "../components/TodayShiftCard";
 import { AttendanceLoading } from "../components/AttendanceStates";
 
 import { attendanceService } from "../services/attendanceService";
@@ -115,6 +118,12 @@ const ManagerAttendance = () => {
         <AttendanceStatCard label="Present" value={totals.present} icon={UserCheck} tone="success" />
         <AttendanceStatCard label="Late" value={totals.late} icon={Clock} tone="warning" />
         <AttendanceStatCard label="Absent" value={totals.absent} icon={UserX} tone="danger" />
+      </div>
+
+      <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <LiveClockCard />
+        <CheckInPanel />
+        <TodayShiftCard />
       </div>
 
       <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
