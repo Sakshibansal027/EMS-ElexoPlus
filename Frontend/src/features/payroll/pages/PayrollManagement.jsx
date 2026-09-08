@@ -180,7 +180,7 @@ export const PayrollManagement = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none border-b border-[var(--color-border)]">
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide border-b border-[var(--color-border)]">
             {adminTabs.map((tab) => {
               const Icon = tab.icon || LayoutDashboard;
               const isActive = adminActiveTab === tab.id;

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { X, Sliders, Check, Trash2 } from "lucide-react";
+import SelectDropdown from "../../../components/ui/SelectDropdown.jsx";
 
 const LeavePolicyModal = ({ isOpen, onClose, policy, onSave, onDelete }) => {
     const [formData, setFormData] = useState({
@@ -63,7 +64,7 @@ const LeavePolicyModal = ({ isOpen, onClose, policy, onSave, onDelete }) => {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-            <div className="bg-card border border-border/80 w-full max-w-xl rounded-3xl p-6 shadow-2xl relative overflow-hidden">
+            <div className="bg-card border border-border/80 w-full max-w-xl rounded-3xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto overflow-x-hidden custom-scrollbar">
                 <div className="flex items-center justify-between pb-4 border-b border-border/60 mb-6">
                     <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-xl bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center text-yellow-400">
@@ -115,26 +116,19 @@ const LeavePolicyModal = ({ isOpen, onClose, policy, onSave, onDelete }) => {
                         </div>
                         <div>
                             <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">Accrual Freq</label>
-                            <select 
+                            <SelectDropdown
                                 value={formData.accrualFrequency}
-                                onChange={(e) => setFormData({...formData, accrualFrequency: e.target.value})}
-                                className="w-full bg-background/60 border border-border/80 rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:border-yellow-400 bg-card"
-                            >
-                                <option value="Monthly">Monthly</option>
-                                <option value="Quarterly">Quarterly</option>
-                                <option value="Yearly">Yearly</option>
-                            </select>
+                                onValueChange={(value) => setFormData({...formData, accrualFrequency: value})}
+                                options={["Monthly", "Quarterly", "Yearly"]}
+                            />
                         </div>
                         <div>
                             <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">Method</label>
-                            <select 
+                            <SelectDropdown
                                 value={formData.accrualMethod}
-                                onChange={(e) => setFormData({...formData, accrualMethod: e.target.value})}
-                                className="w-full bg-background/60 border border-border/80 rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:border-yellow-400 bg-card"
-                            >
-                                <option value="Pro-rata">Pro-rata</option>
-                                <option value="Upfront">Upfront</option>
-                            </select>
+                                onValueChange={(value) => setFormData({...formData, accrualMethod: value})}
+                                options={["Pro-rata", "Upfront"]}
+                            />
                         </div>
                     </div>
 

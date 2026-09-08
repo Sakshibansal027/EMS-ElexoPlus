@@ -1,10 +1,8 @@
-import Select from "react-select";
-
 import {
     applyLeaveMessages,
     leaveDurationOptions,
 } from "../config/applyLeaveForm.js";
-import { selectStyles } from "../config/leaveStyles.js";
+import SelectDropdown from "../../../components/ui/SelectDropdown.jsx";
 
 const ApplyLeaveModal = ({ employee, onClose, form }) => {
     const {
@@ -184,21 +182,14 @@ const ApplyLeaveModal = ({ employee, onClose, form }) => {
                             gap-4
                         "
                     >
-                        <Select
+                        <SelectDropdown
                             options={leaveTypeOptions}
-                            value={leaveType}
-                            onChange={updateLeaveType}
+                            value={leaveType?.value || ""}
+                            onValueChange={(value) => updateLeaveType(
+                                leaveTypeOptions.find((option) => option.value === value) || null
+                            )}
                             placeholder="Select leave type..."
-                            styles={{
-                                ...selectStyles,
-                                control: (base) => ({
-                                    ...selectStyles.control(base),
-                                    borderColor:
-                                        errors.leaveType
-                                            ? "#ef4444"
-                                            : "#303030",
-                                }),
-                            }}
+                            className={errors.leaveType ? "border-red-500" : ""}
                         />
 
                         <input
@@ -259,27 +250,16 @@ const ApplyLeaveModal = ({ employee, onClose, form }) => {
                         Leave Duration
                     </label>
 
-                    <select
+                    <SelectDropdown
                         value={dayType}
-                        onChange={(event) =>
-                            setDayType(
-                                event.target.value
-                            )
-                        }
-                        className="
-                            input
-                            w-full
-                            px-4
-                            py-3
-                            rounded-lg
-                        "
-                    >
-                        {leaveDurationOptions.map((option) => (
-                            <option key={option} value={option} disabled={option === "Half Day" && isHalfDayDisabled}>
-                                {option}
-                            </option>
-                        ))}
-                    </select>
+                        onValueChange={setDayType}
+                        options={leaveDurationOptions.map((option) => ({
+                            value: option,
+                            label: option,
+                            disabled: option === "Half Day" && isHalfDayDisabled,
+                        }))}
+                        className={errors.dayType ? "border-red-500" : ""}
+                    />
                         {errors.dayType && (
                             <p className="text-red-400 text-xs mt-2">
                                 {applyLeaveMessages.halfDay}
