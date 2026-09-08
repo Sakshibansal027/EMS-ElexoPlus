@@ -274,7 +274,7 @@ const SEMyLeadsTable = ({ leads = [], onViewDirectory }) => {
 
         {/* Stage Filter Tabs (Table Mode) */}
         {viewMode === 'table' && (
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
             {tabs.map((tab) => {
               const isActive = selectedFilter === tab.label;
               return (

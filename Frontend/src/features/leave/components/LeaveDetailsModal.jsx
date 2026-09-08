@@ -76,7 +76,7 @@ const LeaveDetailsSidebar = ({
                     </div>
 
                     {/* Scrollable Content */}
-                    <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                    <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
                         
                         {/* Status Banner */}
                         <div className="flex items-center justify-between p-4 rounded-2xl bg-card/60 border border-border/80 shadow-sm relative overflow-hidden">

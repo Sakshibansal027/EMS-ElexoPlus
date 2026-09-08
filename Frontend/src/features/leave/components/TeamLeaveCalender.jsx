@@ -110,7 +110,7 @@ export default function TeamLeaveCalendar({
                         </span>
                     </div>
 
-                    <div className="space-y-2 overflow-y-auto flex-1">
+                    <div className="space-y-2 overflow-y-auto custom-scrollbar flex-1">
                         {currentMonthHolidays.length === 0 ? (
                             <div className="flex items-center justify-center h-full text-xs italic text-gray-500">
                                 No holidays scheduled.
@@ -149,7 +149,7 @@ export default function TeamLeaveCalendar({
                             </span>
                         </div>
 
-                        <div className="space-y-2 overflow-y-auto flex-1">
+                        <div className="space-y-2 overflow-y-auto custom-scrollbar flex-1">
                             {currentMonthLeaves.length === 0 ? (
                                 <div className="flex items-center justify-center h-full text-xs italic text-gray-500">
                                     No team leaves recorded.

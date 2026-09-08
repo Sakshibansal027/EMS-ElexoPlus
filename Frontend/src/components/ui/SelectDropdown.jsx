@@ -54,6 +54,7 @@ const SelectDropdown = ({
                 <Select.Item
                   key={val}
                   value={val}
+                  disabled={typeof opt !== "string" && opt.disabled}
                   className="
                     relative
                     flex
@@ -69,6 +70,8 @@ const SelectDropdown = ({
                     outline-none
                     transition-all
                     duration-150
+                    data-[disabled]:pointer-events-none
+                    data-[disabled]:opacity-50
                     data-[highlighted]:bg-primary/10
                     data-[highlighted]:text-primary
                     data-[state=checked]:text-primary

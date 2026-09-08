@@ -169,6 +169,7 @@ const UpcomingLeavesCard = ({
                             p-6
                             max-h-[80vh]
                             overflow-y-auto
+                            custom-scrollbar
                         "
                     >
                         <div className="flex items-center justify-between mb-5">
