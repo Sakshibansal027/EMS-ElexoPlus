@@ -8,6 +8,10 @@ import AttendanceTable from "../components/AttendanceTable";
 import { AttendanceTrendChart } from "../components/AttendanceCharts";
 import AttendanceTimeline from "../components/AttendanceTimeline";
 import CorrectionsTable from "../components/CorrectionsTable";
+import CheckInPanel from "../components/CheckInPanel";
+import LiveClockCard from "../components/LiveClockCard";
+import TodayShiftCard from "../components/TodayShiftCard";
+import AttendanceCalendar from "../components/AttendanceCalendar";
 import { AttendanceLoading } from "../components/AttendanceStates";
 
 import { attendanceService } from "../services/attendanceService";
@@ -118,10 +122,20 @@ const ManagerAttendance = () => {
       </div>
 
       <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <LiveClockCard />
+        <CheckInPanel />
+        <TodayShiftCard />
+      </div>
+
+      <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <AttendanceTrendChart data={trend} />
         </div>
         <AttendanceTimeline records={teamRecords} />
+      </div>
+
+      <div className="mb-6">
+        <AttendanceCalendar records={teamRecords} />
       </div>
 
       <div className="mb-6">
