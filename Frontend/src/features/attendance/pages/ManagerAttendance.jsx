@@ -11,6 +11,7 @@ import CorrectionsTable from "../components/CorrectionsTable";
 import CheckInPanel from "../components/CheckInPanel";
 import LiveClockCard from "../components/LiveClockCard";
 import TodayShiftCard from "../components/TodayShiftCard";
+import AttendanceCalendar from "../components/AttendanceCalendar";
 import { AttendanceLoading } from "../components/AttendanceStates";
 
 import { attendanceService } from "../services/attendanceService";
@@ -131,6 +132,10 @@ const ManagerAttendance = () => {
           <AttendanceTrendChart data={trend} />
         </div>
         <AttendanceTimeline records={teamRecords} />
+      </div>
+
+      <div className="mb-6">
+        <AttendanceCalendar records={teamRecords} />
       </div>
 
       <div className="mb-6">
